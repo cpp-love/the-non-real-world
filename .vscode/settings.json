@@ -1,0 +1,173 @@
+{
+    "compile-runner.fileGroups": {
+        "测试AlgebraicExpression类": [
+            "${workspaceFolder}\\src\\Maths\\AlgebraicExpression.cpp",
+            "${workspaceFolder}\\tests\\Maths\\testAlgeExpr.cpp"
+        ],
+        "文件版本生成器": [
+            "${workspaceFolder}\\template\\generate_file_version.cpp"
+        ]
+    },
+    "compile-runner.outputPath": "${workspaceFolder}\\bin\\${fileBasenameNoExtension}.exe",
+    "compile-runner.compilerFlags": [
+        "-fdiagnostics-color=always",
+        "-g",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-std=c++17"
+        // /*
+        ,
+        "-finput-charset=UTF-8",
+        "-fexec-charset=UTF-8"
+        // */
+        // 转换文件格式(至Win系统(GBK)格式)
+        /*
+        ,
+        "-finput-charset=UTF-8",
+        "-fexec-charset=GBK"
+        */
+        // 转换文件格式(至UTF-8格式)
+        /*
+        ,
+        "-finput-charset=UTF-8",
+        "-fexec-charset=UTF-8"
+        */
+        // 项目头文件路径
+        // /*
+        ,
+        "-I",
+        "${workspaceFolder}/include"
+        // */
+        // 第三方库头、库文件路径
+        /*
+        ,
+        "-I",
+        "C:/msys64/ucrt64/include",
+        "-L""C:/msys64/ucrt64/lib"
+        */
+        // SFML配置
+        /*
+        // 按依赖顺序链接
+        ,
+        "-lsfml-graphics",
+        "-lsfml-window",
+        "-lsfml-system"
+        */
+        // TGUI配置
+        /*
+        ,
+        "-ltgui"
+        */
+        // spdlog配置
+        /*
+        ,
+        "-lspdlog"
+        */
+    ],
+    "files.associations": {
+        ".clang-format": "yaml",
+        "Doxyfile": "doxyfile",
+        "*.cpp": "cpp",
+        "array": "cpp",
+        "atomic": "cpp",
+        "bit": "cpp",
+        "bitset": "cpp",
+        "cctype": "cpp",
+        "charconv": "cpp",
+        "chrono": "cpp",
+        "clocale": "cpp",
+        "cmath": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "cstdarg": "cpp",
+        "cstddef": "cpp",
+        "cstdint": "cpp",
+        "cstdio": "cpp",
+        "cstdlib": "cpp",
+        "ctime": "cpp",
+        "cwchar": "cpp",
+        "cwctype": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "exception": "cpp",
+        "algorithm": "cpp",
+        "functional": "cpp",
+        "iterator": "cpp",
+        "memory": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "optional": "cpp",
+        "random": "cpp",
+        "ratio": "cpp",
+        "string_view": "cpp",
+        "system_error": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "format": "cpp",
+        "fstream": "cpp",
+        "initializer_list": "cpp",
+        "iomanip": "cpp",
+        "iosfwd": "cpp",
+        "iostream": "cpp",
+        "istream": "cpp",
+        "limits": "cpp",
+        "new": "cpp",
+        "numbers": "cpp",
+        "ostream": "cpp",
+        "semaphore": "cpp",
+        "span": "cpp",
+        "sstream": "cpp",
+        "stdexcept": "cpp",
+        "stop_token": "cpp",
+        "streambuf": "cpp",
+        "text_encoding": "cpp",
+        "thread": "cpp",
+        "typeinfo": "cpp",
+        "variant": "cpp",
+        "locale": "cpp",
+        "map": "cpp",
+        "complex": "cpp",
+        "flat_map": "cpp",
+        "ranges": "cpp",
+        "any": "cpp",
+        "strstream": "cpp",
+        "barrier": "cpp",
+        "cfenv": "cpp",
+        "cinttypes": "cpp",
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "coroutine": "cpp",
+        "csetjmp": "cpp",
+        "csignal": "cpp",
+        "cstring": "cpp",
+        "cuchar": "cpp",
+        "forward_list": "cpp",
+        "set": "cpp",
+        "unordered_set": "cpp",
+        "expected": "cpp",
+        "regex": "cpp",
+        "source_location": "cpp",
+        "flat_set": "cpp",
+        "future": "cpp",
+        "generator": "cpp",
+        "latch": "cpp",
+        "mutex": "cpp",
+        "print": "cpp",
+        "scoped_allocator": "cpp",
+        "shared_mutex": "cpp",
+        "spanstream": "cpp",
+        "stacktrace": "cpp",
+        "stdfloat": "cpp",
+        "syncstream": "cpp",
+        "typeindex": "cpp",
+        "valarray": "cpp",
+        "filesystem": "cpp",
+        "cerrno": "cpp"
+    },
+    "markdown.validate.enabled": true
+}

@@ -1,0 +1,29 @@
+{
+    "version": 4,
+    "env": {
+        "INCLUDEPATH": [
+            // 用MSYS2的头文件
+            "C:/msys64/ucrt64/include/**",
+            "C:/msys64/ucrt64/include/c++/15.1.0/**"
+        ],
+        "DEFINES": []
+    },
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${INCLUDEPATH}",
+                "${workspaceFolder}/include/**"
+            ],
+            "defines": [
+                "${DEFINES}"
+            ],
+            "windowsSdkVersion": "10.0.22621.0",
+            "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "enableConfigurationSquiggles": true
+}

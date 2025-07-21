@@ -1,0 +1,89 @@
+{
+    "version": "2.0.0",
+    "inputs": [
+        {
+            "id": "selectFileGroup",
+            "type": "pickString",
+            "description": "选择要编译的文件组",
+            "options": [
+                "测试AlgebraicExpression类",
+                "文件版本生成器"
+            ],
+            "default": "核心模块"
+        }
+    ],
+    "tasks": [
+        {
+            "label": "C/C++: g++.exe 编译文件组",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}\\.vscode\\compile_runner.py",
+                "--group",
+                "${input:selectFileGroup}"
+            ],
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "workspaceFolder": "${workspaceFolder}",
+                    "file": "${file}"
+                }
+            },
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": "absolute",
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false
+            },
+            "detail": "编译 The Non-\"real\" World 项目的文件组的任务"
+        },
+        {
+            "label": "C/C++: g++.exe 编译自定义项目",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}\\.vscode\\compile_runner.py",
+                "--interactive"
+            ],
+            "group": "build",
+            "problemMatcher": "$gcc",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "detail": "编译自定义项目的任务"
+        },
+        {
+            "label": "清理构建",
+            "type": "shell",
+            "command": "rm -rf ${workspaceFolder}\\bin",
+            "windows": {
+                "command": "rmdir /s /q bin"
+            },
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "C/C++: doxygen 生成文档",
+            "type": "shell",
+            "command": "doxygen", // 生成 Doxygen 文档
+            "args": [
+                "${workspaceFolder}\\Doxyfile"
+            ],
+            "problemMatcher": [],
+            "detail": "生成 Doxygen 文档的任务"
+        }
+    ]
+}

@@ -1,0 +1,16 @@
+\page file_versions functions.hpp 版本历史
+\tableofcontent
+
+# 目录
+
+[TOC]
+
+# functions.hpp 版本历史
+
+***
+
+## [0.1.0-1] - 2025-07-18 - [cpp-love(15865418+cpp-love@user.noreply.gitee.com)](15865418+cpp-love@user.noreply.gitee.com)
+
+### Added(新增)
+
+1. 添加了 `gcd` （最大公约数）和 `lcm` （最小公倍数）的函数
