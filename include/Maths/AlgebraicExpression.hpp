@@ -18,6 +18,7 @@
 #ifndef __MATHS_ALGEGRAIC_EXPRESSION_HPP__
 #define __MATHS_ALGEGRAIC_EXPRESSION_HPP__
 
+#include "Maths/Maths_base.hpp"
 #include <map>
 #include <memory>
 
@@ -59,8 +60,8 @@ namespace tnrw {
                                    const AlgebraicExpression &rhs) noexcept;
 
             // using别名
-            using ConstantType = long long; ///< 常量值类型
-            using VariableType = char;      ///< 变量字符类型
+            using ConstantType = ConstantType; ///< 常量值类型
+            using VariableType = VariableType; ///< 变量字符类型
             template <typename T>
             using VariableDictType = std::map<VariableType, T>; ///< 变量字典类型
 
@@ -224,6 +225,11 @@ namespace tnrw {
              */
             std::string toString() const noexcept;
             /**
+             * @brief 将代数式转为人类可读的字符串
+             * @return std::wstring 人类可读的字符串
+             */
+            std::wstring toWString() const noexcept;
+            /**
              * @brief 将原代数式取相反数
              */
             void changeToOpposite() noexcept;
@@ -268,7 +274,7 @@ namespace tnrw {
          * @brief 减法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 常量
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相减后的副本
          */
         const AlgebraicExpression
         operator-(const AlgebraicExpression              &lhs,
@@ -277,7 +283,7 @@ namespace tnrw {
          * @brief 减法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相减后的副本
          */
         const AlgebraicExpression operator-(const AlgebraicExpression::ConstantType lhs,
                                             const AlgebraicExpression &rhs) noexcept;
@@ -286,7 +292,7 @@ namespace tnrw {
          * @brief 减法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 变量
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相减后的副本
          */
         const AlgebraicExpression
         operator-(const AlgebraicExpression              &lhs,
@@ -295,7 +301,7 @@ namespace tnrw {
          * @brief 减法运算符
          * @param [in] lhs 变量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相减后的副本
          */
         const AlgebraicExpression operator-(const AlgebraicExpression::VariableType lhs,
                                             const AlgebraicExpression &rhs) noexcept;
@@ -303,7 +309,7 @@ namespace tnrw {
          * @brief 乘法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 常量
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相乘后的副本
          */
         const AlgebraicExpression
         operator*(const AlgebraicExpression              &lhs,
@@ -312,7 +318,7 @@ namespace tnrw {
          * @brief 乘法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相乘后的副本
          */
         const AlgebraicExpression operator*(const AlgebraicExpression::ConstantType lhs,
                                             const AlgebraicExpression &rhs) noexcept;
@@ -321,7 +327,7 @@ namespace tnrw {
          * @brief 乘法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 变量
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相乘后的副本
          */
         const AlgebraicExpression
         operator*(const AlgebraicExpression              &lhs,
@@ -330,7 +336,7 @@ namespace tnrw {
          * @brief 乘法运算符
          * @param [in] lhs 变量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相乘后的副本
          */
         const AlgebraicExpression operator*(const AlgebraicExpression::VariableType lhs,
                                             const AlgebraicExpression &rhs) noexcept;
@@ -338,7 +344,7 @@ namespace tnrw {
          * @brief 除法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 常量
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相除后的副本
          */
         const AlgebraicExpression
         operator/(const AlgebraicExpression              &lhs,
@@ -347,7 +353,7 @@ namespace tnrw {
          * @brief 除法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相除后的副本
          */
         const AlgebraicExpression operator/(const AlgebraicExpression::ConstantType lhs,
                                             const AlgebraicExpression &rhs) noexcept;
@@ -356,7 +362,7 @@ namespace tnrw {
          * @brief 除法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 变量
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相除后的副本
          */
         const AlgebraicExpression
         operator/(const AlgebraicExpression              &lhs,
@@ -365,7 +371,7 @@ namespace tnrw {
          * @brief 除法运算符
          * @param [in] lhs 变量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return const AlgebraicExpression 两项相除后的副本
          */
         const AlgebraicExpression operator/(const AlgebraicExpression::VariableType lhs,
                                             const AlgebraicExpression &rhs) noexcept;
@@ -395,20 +401,7 @@ namespace tnrw {
         /// @brief AlgebraicExpression类的内联自定义字面量命名空间
         inline namespace AlgebraicExpression_literals {
 
-            /**
-             * @brief 创建常量
-             * @param [in] constant 常量值字面量
-             * @return AlgebraicExpression::ConstantType 创建的常量类型
-             */
-            Maths::AlgebraicExpression::ConstantType
-            operator""_c(const unsigned long long constant) noexcept;
-            /**
-             * @brief 创建变量
-             * @param [in] variable 变量字符字面量
-             * @return AlgebraicExpression::VariableType 创建的变量类型
-             */
-            Maths::AlgebraicExpression::VariableType
-            operator""_v(const char variable) noexcept;
+            using namespace Maths_base_literals;
 
             /**
              * @brief 以常量字面量创建代数式类

@@ -5,11 +5,11 @@
             "${workspaceFolder}\\tests\\Maths\\testAlgeExpr.cpp"
         ],
         "文件版本生成器": [
-            "${workspaceFolder}\\template\\generate_file_version.cpp"
+            "${workspaceFolder}\\helper\\generate_file_version.cpp"
         ]
     },
-    "compile-runner.outputPath": "${workspaceFolder}\\bin\\${fileBasenameNoExtension}.exe",
-    "compile-runner.compilerFlags": [
+    "compile-runner.outputPath": "${workspaceFolder}\\bin\\exe\\${fileBasenameNoExtension}.exe",
+    "compile-runner.FrontCompilerArgs": [
         "-fdiagnostics-color=always",
         "-g",
         "-O2",
@@ -22,11 +22,11 @@
         "-fexec-charset=UTF-8"
         // */
         // 转换文件格式(至Win系统(GBK)格式)
-        /*
+        // /*
         ,
         "-finput-charset=UTF-8",
         "-fexec-charset=GBK"
-        */
+        // */
         // 转换文件格式(至UTF-8格式)
         /*
         ,
@@ -39,12 +39,18 @@
         "-I",
         "${workspaceFolder}/include"
         // */
-        // 第三方库头、库文件路径
+        // 第三方库头文件路径
         /*
         ,
         "-I",
         "C:/msys64/ucrt64/include",
-        "-L""C:/msys64/ucrt64/lib"
+        */
+    ],
+    "compile-runner.BackCompilerArgs": [
+        // 第三方库库文件路径
+        /*
+        "-L",
+        "C:/msys64/ucrt64/lib"
         */
         // SFML配置
         /*

@@ -47,8 +47,13 @@ def get_vscode_config():
                     "output_path": settings.get(
                         "compile-runner.outputPath", "${workspaceFolder}/build/output"
                     ),
-                    "compiler_flags": settings.get(
-                        "compile-runner.compilerFlags", ["-O2", "-g"]
+                    "front_compiler_flags": settings.get(
+                        "compile-runner.FrontCompilerArgs",
+                        ["-O2", "-g", "-Wall", "-Wextra"],
+                    ),
+                    "back_compiler_flags": settings.get(
+                        "compile-runner.BackCompilerArgs",
+                        ["-O2", "-g", "-Wall", "-Wextra"],
                     ),
                 }
     except Exception as e:
@@ -65,7 +70,8 @@ def get_vscode_config():
         "output_path": os.path.join(
             os.getenv("WORKSPACE_FOLDER", ""), "build", "output"
         ),
-        "compiler_flags": ["-O2", "-g"],
+        "front_compiler_flags": ["-O2", "-g", "-Wall", "-Wextra"],
+        "back_compiler_flags": [],
     }
 
 
@@ -141,9 +147,10 @@ def expand_for_compiler_command(flags):
     return flags_str
 
 
-def get_compiler_commands(files, output_path, flags):
+def get_compiler_commands(files, output_path, front_flags, back_flags):
     """根据平台获取编译命令"""
-    flags_str = expand_for_compiler_command(flags)
+    front_flags_str = expand_for_compiler_command(front_flags)
+    back_flags_str = expand_for_compiler_command(back_flags)
 
     # 处理 Windows 路径
     if platform.system() == "Windows":
@@ -161,8 +168,10 @@ def get_compiler_commands(files, output_path, flags):
         )
         file_objs += file_obj
         file_objs += " "
-        commands.append(f"g++ {flags_str}{file} -o {file_obj} -c")
-    commands.append(f"g++ {flags_str}{file_objs}-o {output_path}")
+        commands.append(f"g++ {front_flags_str}{file} -o {file_obj} {back_flags_str}-c")
+    commands.append(
+        f"g++ {front_flags_str}{file_objs}-o {output_path} {back_flags_str}"
+    )
 
     return commands
 
@@ -205,14 +214,19 @@ def main():
 
     # 获取未改变的文件
     unchanged_index = list()
-    print("以下输出的文件哪些是未改变的？未改变输入1，改变输入其他")
+    print(":: 以下输出的文件哪些未改变？未改变输入1，改变输入其他")
     for i in range(len(files)):
-        print(f"{i + 1}. {files[i]}")
+        print(f":: {i + 1}. {files[i]}")
         if input() == "1":
             unchanged_index.append(i)
 
     # 获取编译命令
-    compile_cmds = get_compiler_commands(files, output_path, config["compiler_flags"])
+    compile_cmds = get_compiler_commands(
+        files,
+        output_path,
+        config["front_compiler_flags"],
+        config["back_compiler_flags"],
+    )
 
     for i in range(len(compile_cmds)):
 

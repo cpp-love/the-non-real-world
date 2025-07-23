@@ -12,6 +12,8 @@
 #ifndef __MATHS_FWD_HPP__
 #define __MATHS_FWD_HPP__
 
+#include "Maths/Maths_base.hpp"
+
 /**@defgroup Maths description
  * @brief 
  * @details 
@@ -20,18 +22,8 @@
 
 /** @} Maths*/
 
-/**
- * @brief "The Non-real World" 游戏的命名空间
- * @details 此游戏的所有API都在此命名空间内
- */
 namespace tnrw {
 
-    /**
-     * @brief 数学相关的命名空间
-     * @details
-     * - 为了方便游戏的血量、攻击系统的开发，先行开发作为血条值的一些相关类
-     * - 同时也为了方便游戏的开发，先行定义一些数学相关的函数
-     */
     namespace Maths {
 
         // Algebraicexpression.hpp
@@ -51,6 +43,7 @@ namespace tnrw {
         // Algebraicexpression.hpp
         inline namespace AlgebraicExpression_literals {
 
+            using namespace Maths_base_literals;
             Maths::AlgebraicExpression
             operator""_cexpr(const unsigned long long constant) noexcept;
             Maths::AlgebraicExpression operator""_vexpr(const char variable) noexcept;

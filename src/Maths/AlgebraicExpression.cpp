@@ -28,11 +28,6 @@ namespace tnrw {
 
         /// @brief `tnrw::Maths` 命名空间的一些功能的实现细节
         namespace Details {
-            // using 声明
-            using ConstantType = AlgebraicExpression::ConstantType;
-            using VariableType = AlgebraicExpression::VariableType;
-            template <typename T>
-            using VariableDictType = AlgebraicExpression::VariableDictType<T>;
 
             /**
              * @brief 代数式树的节点
@@ -335,6 +330,67 @@ namespace tnrw {
                     root->m_value);
             }
             /**
+             * @brief 将代数式转为 `std::wstring`
+             * @param [in] root 根节点
+             * @return std::wstring 人类可读的字符串
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
+             */
+            inline std::wstring toWStringFromNode(const Node::Ptr &root) noexcept {
+                // 分类处理
+                return std::visit(
+                    [&root](auto &val) -> std::wstring {
+                        using T = std::decay_t<decltype(val)>;
+
+                        if constexpr (std::is_same_v<T, Node::ConstantValue>) {
+                            return std::to_wstring(val);
+                        } else if constexpr (std::is_same_v<T, Node::VariableValue>) {
+                            if (root->m_type[Node::toSize(Node::TypeIndex::Negative)])
+                                return L'-' + std::wstring(1, val);
+                            else
+                                return std::wstring(1, val);
+                        } else {
+                            std::wstring s;
+                            if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
+                                s += L"- (";
+                            }
+                            if (val.m_op_type
+                                == Node::OperatorValue::OperatorType::Division) {
+                                s += L'(';
+                                s += toWStringFromNode(val.m_children[0]);
+                                s += L") / (";
+                                s += toWStringFromNode(val.m_children[1]);
+                                s += L')';
+                            } else {
+                                std::wstring op;
+                                switch (val.m_op_type) {
+                                    case Node::OperatorValue::OperatorType::Addition:
+                                        op = L" + ";
+                                        break;
+                                    case Node::OperatorValue::OperatorType::
+                                        Multiplication:
+                                        op = L" * ";
+                                        break;
+                                    case Node::OperatorValue::OperatorType::Division:
+                                        break;
+                                }
+                                for (std::size_t i = val.m_children.size() - 1; true;
+                                     --i) {
+                                    s += toWStringFromNode(val.m_children[i]);
+                                    if (i == 0) {
+                                        break;
+                                    }
+                                    s += op;
+                                }
+                            }
+                            if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
+                                s += L')';
+                            }
+                            return s;
+                        }
+                    },
+                    root->m_value);
+            }
+            /**
              * @brief 比较两个代数式是否相同
              * @param [in] root1 代数式1
              * @param [in] root2 代数式2
@@ -361,7 +417,7 @@ namespace tnrw {
                 } else if (root1->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
                     return (std::get<Node::ConstantValue>(root1->m_value)
                             == std::get<Node::ConstantValue>(root2->m_value));
-                } else if (root1->m_type[Node::toSize(Node::TypeIndex::Variable)]) {
+                } else {
                     return (std::get<Node::VariableValue>(root1->m_value)
                             == std::get<Node::VariableValue>(root2->m_value));
                 }
@@ -714,8 +770,8 @@ namespace tnrw {
              * @param [in] rhs 常量
              * @warning 当根节点为 `nullptr` 时不会报错！
              * @warning 此函数仅为一个辅助函数，完备的函数见
-             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator-=(Maths::AlgebraicExpression::ConstantType rhs)
-             * @ref const Maths::AlgebraicExpression Maths::operator-(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
+             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator*=(Maths::AlgebraicExpression::ConstantType rhs)
+             * @ref const Maths::AlgebraicExpression Maths::operator*(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
              */
             inline void multiply(Node::Ptr &root, ConstantType rhs) noexcept {
                 // 分类处理
@@ -774,8 +830,8 @@ namespace tnrw {
              * @param [in] rhs 变量
              * @warning 当根节点为 `nullptr` 时不会报错！
              * @warning 此函数仅为一个辅助函数，完备的函数见
-             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator-=(Maths::AlgebraicExpression::VariableType rhs)
-             * @ref const Maths::AlgebraicExpression Maths::operator-(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::VariableType rhs)
+             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator*=(Maths::AlgebraicExpression::VariableType rhs)
+             * @ref const Maths::AlgebraicExpression Maths::operator*(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::VariableType rhs)
              */
             inline void multiply(Node::Ptr &root, VariableType rhs) noexcept {
                 // 分类处理
@@ -1111,6 +1167,10 @@ namespace tnrw {
             return Details::toStringFromNode(m_root);
         }
 
+        std::wstring AlgebraicExpression::toWString() const noexcept {
+            return Details::toWStringFromNode(m_root);
+        }
+
         void AlgebraicExpression::changeToOpposite() noexcept {
             m_root->m_type.set(Details::Node::toSize(Details::Node::TypeIndex::Negative));
         }
@@ -1208,16 +1268,16 @@ namespace tnrw {
 
     namespace literals {
 
-        inline namespace AlgebraicExpression_literals {
+        inline namespace Maths_base_literals {
+            Maths::ConstantType operator""_c(const unsigned long long constant) noexcept {
+                return static_cast<Maths::ConstantType>(constant);
+            }
+            Maths::VariableType operator""_v(const char variable) noexcept {
+                return static_cast<Maths::VariableType>(variable);
+            }
+        } // namespace Maths_base_literals
 
-            Maths::AlgebraicExpression::ConstantType
-            operator""_c(const unsigned long long constant) noexcept {
-                return static_cast<Maths::AlgebraicExpression::ConstantType>(constant);
-            }
-            Maths::AlgebraicExpression::VariableType
-            operator""_v(const char variable) noexcept {
-                return static_cast<Maths::AlgebraicExpression::VariableType>(variable);
-            }
+        inline namespace AlgebraicExpression_literals {
 
             Maths::AlgebraicExpression
             operator""_cexpr(const unsigned long long constant) noexcept {
