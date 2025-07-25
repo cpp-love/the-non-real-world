@@ -8,7 +8,7 @@
             "${workspaceFolder}\\helper\\generate_file_version.cpp"
         ]
     },
-    "compile-runner.outputPath": "${workspaceFolder}\\bin\\exe\\${fileBasenameNoExtension}.exe",
+    "compile-runner.outputPath": "${workspaceFolder}\\bin\\exes\\${fileBasenameNoExtension}.exe",
     "compile-runner.FrontCompilerArgs": [
         "-fdiagnostics-color=always",
         "-g",

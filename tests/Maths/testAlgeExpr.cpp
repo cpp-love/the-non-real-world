@@ -24,8 +24,8 @@
 constexpr std::size_t cmd_size = 10;
 
 const std::array<std::string, cmd_size> commands{
-    u8"help",     u8"new",    u8"delete",     u8"operator", u8"clear",
-    u8"getValue", u8"isZero", u8"toOpposite", u8"compare",  u8"quit"};
+    "help",     "new",    "delete",     "operator", "clear",
+    "getValue", "isZero", "toOpposite", "compare",  "quit"};
 const std::array<std::string, cmd_size> briefs{u8"提供帮助",
                                                u8"添加代数式",
                                                u8"删除代数式",
@@ -75,22 +75,21 @@ std::vector<tnrw::Maths::AlgebraicExpression> algevec(1);
 
 void processUnsuitedArgs(std::string cmd) {
     std::cout << u8"错误：命令 \"" << cmd
-              << "\" 的参数过少或过多，请键入 \"help\" 获取帮助" << std::endl;
+              << u8"\" 的参数过少或过多，请键入 \"help\" 获取帮助\n";
 }
 
 void processInvalidCmds(std::string cmd) {
-    std::cout << u8"错误：不存在命令 \"" << cmd << u8"\"，请键入 \"help\" 获取帮助"
-              << std::endl;
+    std::cout << u8"错误：不存在命令 \"" << cmd << u8"\"，请键入 \"help\" 获取帮助\n";
 }
 
 void processInvalidArgs(std::string cmd) {
-    std::cout << u8"错误：命令 \"" << cmd << "\" 有非法的参数，请键入 \"help\" 获取帮助"
-              << std::endl;
+    std::cout << u8"错误：命令 \"" << cmd
+              << u8"\" 有非法的参数，请键入 \"help\" 获取帮助\n";
 }
 
 void processOverLimitArgs(std::string cmd) {
     std::cout << u8"错误：命令 \"" << cmd
-              << u8"\" 的参数过大或过小，请键入 \"help\" 获取帮助" << std::endl;
+              << u8"\" 的参数过大或过小，请键入 \"help\" 获取帮助\n";
 }
 
 std::vector<std::string> getArgs() {
@@ -162,6 +161,23 @@ StrToTypeResult tryStrToULL(const std::string &str, unsigned long long *result) 
     }
 }
 
+/**
+ * @bug 
+ * algebraicExpression.cpp:
+ * 代数式操作：
+ * + 77
+ * + x
+ * * x
+ * - 77
+ * * x
+ * - 77
+ * / x
+ * - 77
+ * / 77
+ * oh! the gcd function only support unsigned inteeger
+ * problem! it becomes (1) / (-1) + (1) / (77 * x) + (1) / (-1) + 1 * x + (x * x) / (77) from -77 + (-77) / (x) + -77 + 77 * x + x * x
+ */
+
 int main() {
 
 #ifdef _WIN32
@@ -170,6 +186,10 @@ int main() {
 #endif
 
     while (true) {
+        std::cout << u8"现在代数式数组为：\n";
+        for (std::size_t i = 0; i < algevec.size(); ++i) {
+            std::cout << i << ": " << algevec[i].toString() << '\n';
+        }
         std::cout << u8">>> " << std::flush;
         std::vector<std::string> args = getArgs();
         // 未键入
@@ -184,7 +204,7 @@ int main() {
             if (args.size() == 1) {
                 // 输出简要描述
                 for (std::size_t i = 0; i < cmd_size; ++i) {
-                    std::cout << commands[i] << briefs[i] << '\n';
+                    std::cout << commands[i] << ' ' << briefs[i] << '\n';
                 }
                 continue;
             }
@@ -215,7 +235,11 @@ int main() {
                     processOverLimitArgs(args[0]);
                     break;
                 case StrToTypeResult::Normal:
-                    algevec.emplace(algevec.begin() + *res);
+                    if (*res > algevec.size()) {
+                        processOverLimitArgs(args[0]);
+                    } else {
+                        algevec.emplace(algevec.begin() + *res);
+                    }
                     break;
             }
         } else if (args[0] == commands[2]) {
@@ -234,7 +258,11 @@ int main() {
                     processOverLimitArgs(args[0]);
                     break;
                 case StrToTypeResult::Normal:
-                    algevec.erase(algevec.begin() + *res);
+                    if (*res >= algevec.size()) {
+                        processOverLimitArgs(args[0]);
+                    } else {
+                        algevec.erase(algevec.begin() + *res);
+                    }
                     break;
             }
         } else if (args[0] == commands[3]) {
@@ -255,46 +283,52 @@ int main() {
                 continue;
             }
             const std::size_t index = *res1;
-            if (args[2] == u8"front++") {
+            if (index >= algevec.size()) {
+                processOverLimitArgs(args[0]);
+            }
+            if (args[2] == "front++") {
                 if (args.size() == 3) {
                     std::cout << u8"结果：" << (++algevec[index]).toString() << std::endl;
                 } else {
                     processUnsuitedArgs(args[0]);
                 }
-            } else if (args[2] == u8"front--") {
+            } else if (args[2] == "front--") {
                 if (args.size() == 3) {
                     std::cout << u8"结果：" << (--algevec[index]).toString() << std::endl;
                 } else {
                     processUnsuitedArgs(args[0]);
                 }
-            } else if (args[2] == u8"back++") {
+            } else if (args[2] == "back++") {
                 if (args.size() == 3) {
                     std::cout << u8"结果：" << (algevec[index]++).toString() << std::endl;
                 } else {
                     processUnsuitedArgs(args[0]);
                 }
-            } else if (args[2] == u8"back--") {
+            } else if (args[2] == "back--") {
                 if (args.size() == 3) {
                     std::cout << u8"结果：" << (algevec[index]--).toString() << std::endl;
                 } else {
                     processUnsuitedArgs(args[0]);
                 }
-            } else if (args[2] == u8"+") {
-                if (args.size() == 3) {
-                    std::cout << u8"结果：" << (+algevec[index]).toString() << std::endl;
-                }
-            } else if (args[2] == u8"-") {
-                if (args.size() == 3) {
-                    std::cout << u8"结果：" << (-algevec[index]).toString() << std::endl;
-                }
             } else {
+                if (args[2] == "+") {
+                    if (args.size() == 3) {
+                        std::cout << u8"结果：" << (+algevec[index]).toString()
+                                  << std::endl;
+                    }
+                } else if (args[2] == "-") {
+                    if (args.size() == 3) {
+                        std::cout << u8"结果：" << (-algevec[index]).toString()
+                                  << std::endl;
+                    }
+                }
                 if (args.size() == 3) {
                     processInvalidArgs(args[0]);
                     continue;
                 }
-                if (args[3] == u8"constant") {
+                if (args[3] == "constant") {
                     std::unique_ptr<long long> res2 = std::make_unique<long long>(0);
-                    const StrToTypeResult      result2 = tryStrToLL(args[1], res2.get());
+                    const StrToTypeResult      result2 = tryStrToLL(args[4], res2.get());
                     if (result2 == StrToTypeResult::Invalid) {
                         processInvalidArgs(args[0]);
                         continue;
@@ -304,78 +338,78 @@ int main() {
                         continue;
                     }
                     const long long val = *res2;
-                    if (args[2] == u8"+") {
+                    if (args[2] == "+") {
                         std::cout << u8"结果："
                                   << (algevec[index]
                                       + static_cast<tnrw::Maths::ConstantType>(val))
                                          .toString()
                                   << std::endl;
-                    } else if (args[2] == u8"-") {
+                    } else if (args[2] == "-") {
                         std::cout << u8"结果："
                                   << (algevec[index]
                                       - static_cast<tnrw::Maths::ConstantType>(val))
                                          .toString()
                                   << std::endl;
-                    } else if (args[2] == u8"*") {
+                    } else if (args[2] == "*") {
                         std::cout << u8"结果："
                                   << (algevec[index]
                                       * static_cast<tnrw::Maths::ConstantType>(val))
                                          .toString()
                                   << std::endl;
-                    } else if (args[2] == u8"/") {
+                    } else if (args[2] == "/") {
                         std::cout << u8"结果："
                                   << (algevec[index]
                                       / static_cast<tnrw::Maths::ConstantType>(val))
                                          .toString()
                                   << std::endl;
-                    } else if (args[2] == u8"+=") {
+                    } else if (args[2] == "+=") {
                         algevec[index] += static_cast<tnrw::Maths::ConstantType>(val);
-                    } else if (args[2] == u8"-=") {
+                    } else if (args[2] == "-=") {
                         algevec[index] -= static_cast<tnrw::Maths::ConstantType>(val);
-                    } else if (args[2] == u8"*=") {
+                    } else if (args[2] == "*=") {
                         algevec[index] *= static_cast<tnrw::Maths::ConstantType>(val);
-                    } else if (args[2] == u8"/=") {
+                    } else if (args[2] == "/=") {
                         algevec[index] /= static_cast<tnrw::Maths::ConstantType>(val);
                     } else {
                         processInvalidArgs(args[0]);
                     }
-                } else if (args[3] == u8"varable") {
+                } else if (args[3] == "variable") {
                     if (args[4].size() != 1) {
                         processInvalidArgs(args[0]);
                         continue;
                     }
                     const char val = args[4][0];
-                    if (args[2] == u8"+") {
+                    if (args[2] == "+") {
                         std::cout << u8"结果："
                                   << (algevec[index]
                                       + static_cast<tnrw::Maths::VariableType>(val))
                                          .toString()
                                   << std::endl;
-                    } else if (args[2] == u8"-") {
+                    } else if (args[2] == "-") {
                         std::cout << u8"结果："
                                   << (algevec[index]
                                       - static_cast<tnrw::Maths::VariableType>(val))
                                          .toString()
                                   << std::endl;
-                    } else if (args[2] == u8"*") {
+                    } else if (args[2] == "*") {
                         std::cout << u8"结果："
                                   << (algevec[index]
                                       * static_cast<tnrw::Maths::VariableType>(val))
                                          .toString()
                                   << std::endl;
-                    } else if (args[2] == u8"/") {
+                    } else if (args[2] == "/") {
                         std::cout << u8"结果："
                                   << (algevec[index]
                                       / static_cast<tnrw::Maths::VariableType>(val))
                                          .toString()
                                   << std::endl;
-                    } else if (args[2] == u8"+=") {
+                    } else if (args[2] == "+=") {
                         algevec[index] += static_cast<tnrw::Maths::VariableType>(val);
-                    } else if (args[2] == u8"-=") {
+                    } else if (args[2] == "-=") {
                         algevec[index] -= static_cast<tnrw::Maths::VariableType>(val);
-                    } else if (args[2] == u8"*=") {
+                    } else if (args[2] == "*=") {
                         algevec[index] *= static_cast<tnrw::Maths::VariableType>(val);
-                    } else if (args[2] == u8"/=") {
+                    } else if (args[2] == "/=") {
                         algevec[index] /= static_cast<tnrw::Maths::VariableType>(val);
                     } else {
                         processInvalidArgs(args[0]);
@@ -400,7 +434,11 @@ int main() {
                     processOverLimitArgs(args[0]);
                     break;
                 case StrToTypeResult::Normal:
-                    algevec[*res].clear();
+                    if (*res >= algevec.size()) {
+                        processOverLimitArgs(args[0]);
+                    } else {
+                        algevec[*res].clear();
+                    }
                     break;
             }
         } else if (args[0] == commands[5]) {
@@ -427,7 +465,11 @@ int main() {
                     processOverLimitArgs(args[0]);
                     break;
                 case StrToTypeResult::Normal:
-                    algevec[*res].changeToOpposite();
+                    if (*res >= algevec.size()) {
+                        processOverLimitArgs(args[0]);
+                    } else {
+                        algevec[*res].changeToOpposite();
+                    }
                     break;
             }
         } else if (args[0] == commands[8]) {
@@ -447,6 +489,9 @@ int main() {
                 processOverLimitArgs(args[0]);
                 continue;
             }
+            if (*res1 >= algevec.size()) {
+                processOverLimitArgs(args[0]);
+            }
             std::unique_ptr<std::size_t> res2 = std::make_unique<std::size_t>(0);
             switch (tryStrToULL(args[1], res2.get())) {
                 case StrToTypeResult::Invalid:
@@ -456,19 +501,18 @@ int main() {
                     processOverLimitArgs(args[0]);
                     break;
                 case StrToTypeResult::Normal:
-                    std::cout << u8"结果：" << std::ios::boolalpha
-                              << (algevec[*res1] == algevec[*res2]) << std::endl;
+                    if (*res2 >= algevec.size()) {
+                        processOverLimitArgs(args[0]);
+                    } else {
+                        std::cout << u8"结果：" << std::ios::boolalpha
+                                  << (algevec[*res1] == algevec[*res2]) << std::endl;
+                    }
                     break;
             }
         } else if (args[0] == commands[9]) {
             break;
         } else {
             processInvalidCmds(args[0]);
-        }
-
-        std::cout << u8"现在代数式数组为：\n";
-        for (std::size_t i = 0; i < algevec.size(); ++i) {
-            std::cout << i << u8": " << algevec[i].toString() << '\n';
         }
     }
 

@@ -166,6 +166,8 @@ def get_compiler_commands(files, output_path, front_flags, back_flags):
             + os.path.splitext(os.path.basename(file))[0]
             + ".o"
         )
+        # 创建输出目录
+        os.makedirs(os.path.dirname(file_obj), exist_ok=True)
         file_objs += file_obj
         file_objs += " "
         commands.append(f"g++ {front_flags_str}{file} -o {file_obj} {back_flags_str}-c")

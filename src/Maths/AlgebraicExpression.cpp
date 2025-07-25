@@ -269,6 +269,23 @@ namespace tnrw {
                     is_negative);
             }
             /**
+             * @brief 将孩子节点移动到根节点
+             * @param [in] root 根节点
+             * @param [in] child 孩子节点
+             * @details 
+             * - 将孩子节点移动到临时变量，再移动到根节点，避免了移动到根节点时根节点释放掉子节点导致的悬垂指针问题
+             * - 此函数保留原来的负属性并叠加到孩子节点
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
+             */
+            inline void moveChildToRoot(Node::Ptr &root, Node::Ptr &child) {
+                bool is_nega = root->m_type[Node::toSize(Node::TypeIndex::Negative)];
+                auto new_child = std::move(child);
+                root = std::move(new_child);
+                // 保留原来的负属性
+                root->m_type[Node::toSize(Node::TypeIndex::Negative)] =
+                    root->m_type[Node::toSize(Node::TypeIndex::Negative)] ^ is_nega;
+            }
+            /**
              * @brief 将代数式转为 `std::string`
              * @param [in] root 根节点
              * @return std::string 人类可读的字符串
@@ -566,8 +583,8 @@ namespace tnrw {
                                 return rhs;
                             // 根是乘法运算符，尽量除掉其常量
                             auto &last_child = val.m_children[val.m_children.size() - 1];
-                            if (last_child
-                                    ->m_type[Node::toSize(Node::TypeIndex::Constant)])
+                            if (!last_child
+                                     ->m_type[Node::toSize(Node::TypeIndex::Constant)])
                                 return rhs;
                             auto &child_val =
                                 std::get<Node::ConstantValue>(last_child->m_value);
@@ -672,11 +689,29 @@ namespace tnrw {
                                     ->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
                                 if (root->m_type[Node::toSize(
                                         Node::TypeIndex::Negative)]) {
-                                    std::get<Node::ConstantValue>(last_child->m_value) -=
-                                        rhs;
+                                    auto &child_val = std::get<Node::ConstantValue>(
+                                        last_child->m_value);
+                                    if (child_val == rhs) {
+                                        if (val.m_children.size() == 2) {
+                                            moveChildToRoot(root, val.m_children[0]);
+                                        } else {
+                                            val.m_children.pop_back();
+                                        }
+                                    } else {
+                                        child_val -= rhs;
+                                    }
                                 } else {
-                                    std::get<Node::ConstantValue>(last_child->m_value) +=
-                                        rhs;
+                                    auto &child_val = std::get<Node::ConstantValue>(
+                                        last_child->m_value);
+                                    if (child_val == -rhs) {
+                                        if (val.m_children.size() == 2) {
+                                            moveChildToRoot(root, val.m_children[0]);
+                                        } else {
+                                            val.m_children.pop_back();
+                                        }
+                                    } else {
+                                        child_val += rhs;
+                                    }
                                 }
                             } else {
                                 if (root->m_type[Node::toSize(
@@ -706,13 +741,22 @@ namespace tnrw {
                     auto &val = std::get<Node::OperatorValue>(root->m_value);
                     if (val.m_op_type == Node::OperatorValue::OperatorType::Addition) {
                         // 根节点是加法运算符，循环尝试与子节点合并，若成功则退出，全部失败则添加其为子节点
-                        for (auto &child : val.m_children) {
+                        for (std::size_t i = 0; i < val.m_children.size(); ++i) {
+                            auto &child = val.m_children[i];
                             if (tryToMerge(
                                     child, rhs,
                                     (root->m_type[Node::toSize(Node::TypeIndex::Negative)]
                                          ? -1
-                                         : 1)))
+                                         : 1))) {
+                                if (child->m_type[Node::toSize(Node::TypeIndex::Constant)]
+                                    && std::get<Node::ConstantValue>(child->m_value)
+                                           == 0) {
+                                    swap(child,
+                                         val.m_children[val.m_children.size() - 2]);
+                                    val.m_children.erase(val.m_children.end() - 2);
+                                }
                                 return;
+                            }
                         }
                         val.m_children.push_back(std::make_unique<Node>(
                             rhs, root->m_type[Node::toSize(Node::TypeIndex::Negative)]));
@@ -720,6 +764,16 @@ namespace tnrw {
                              val.m_children[val.m_children.size() - 2]);
                         return;
                     }
+                }
+                // 根为常量，创建新节点或覆盖根
+                if (root->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
+                    if (std::get<Node::ConstantValue>(root->m_value) == 0) {
+                        root = std::make_unique<Node>(rhs);
+                    } else {
+                        root = std::move(createAdditionNode(
+                            false, std::make_unique<Node>(rhs), std::move(root)));
+                    }
+                    return;
                 }
                 // 根为其他，尝试与子节点合并，若成功则退出，失败则创建新节点
                 if (tryToMerge(root, rhs, 1))
@@ -742,13 +796,22 @@ namespace tnrw {
                     auto &val = std::get<Node::OperatorValue>(root->m_value);
                     if (val.m_op_type == Node::OperatorValue::OperatorType::Addition) {
                         // 根节点是加法运算符，循环尝试与子节点合并，若成功则退出，全部失败则添加其为子节点
-                        for (auto &child : val.m_children) {
+                        for (std::size_t i = 0; i < val.m_children.size(); ++i) {
+                            auto &child = val.m_children[i];
                             if (tryToMerge(
                                     child, rhs,
                                     (root->m_type[Node::toSize(Node::TypeIndex::Negative)]
                                          ? 1
-                                         : -1)))
+                                         : -1))) {
+                                if (child->m_type[Node::toSize(Node::TypeIndex::Constant)]
+                                    && std::get<Node::ConstantValue>(child->m_value)
+                                           == 0) {
+                                    swap(child,
+                                         val.m_children[val.m_children.size() - 2]);
+                                    val.m_children.erase(val.m_children.end() - 2);
+                                }
                                 return;
+                            }
                         }
                         val.m_children.push_back(std::make_unique<Node>(
                             rhs, !root->m_type[Node::toSize(Node::TypeIndex::Negative)]));
@@ -756,6 +819,16 @@ namespace tnrw {
                              val.m_children[val.m_children.size() - 2]);
                         return;
                     }
+                }
+                // 根为常量，创建新节点或覆盖根
+                if (root->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
+                    if (std::get<Node::ConstantValue>(root->m_value) == 0) {
+                        root = std::make_unique<Node>(rhs, true);
+                    } else {
+                        root = std::move(createAdditionNode(
+                            false, std::make_unique<Node>(rhs, true), std::move(root)));
+                    }
+                    return;
                 }
                 // 根为其他，尝试与子节点合并，若成功则退出，失败则创建新节点
                 if (tryToMerge(root, rhs, -1))
@@ -774,6 +847,11 @@ namespace tnrw {
              * @ref const Maths::AlgebraicExpression Maths::operator*(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
              */
             inline void multiply(Node::Ptr &root, ConstantType rhs) noexcept {
+                // 处理特殊情况
+                if (rhs == 0) {
+                    clearNode(root);
+                    return;
+                }
                 // 分类处理
                 std::visit(
                     [&root, &rhs](auto &val) -> void {
@@ -813,6 +891,15 @@ namespace tnrw {
                                 ConstantType rest = canDivided(val.m_children[1], rhs);
                                 if (rest != 1) {
                                     multiply(val.m_children[0], rhs);
+                                }
+                                if (rest != rhs) {
+                                    auto &den = val.m_children[1];
+                                    if (den->m_type[Node::toSize(
+                                            Node::TypeIndex::Constant)]
+                                        && std::get<Node::ConstantValue>(den->m_value)
+                                               == 1) {
+                                        moveChildToRoot(root, val.m_children[0]);
+                                    }
                                 }
                             } else {
                                 // 根是加法运算符，将常量分别乘到其子节点里
@@ -876,8 +963,16 @@ namespace tnrw {
                             } else if (val.m_op_type
                                        == Node::OperatorValue::OperatorType::Division) {
                                 // 根是除法运算符，尝试与分母相除，不行则乘到分子
-                                if (canDivided(val.m_children[1], rhs))
+                                if (canDivided(val.m_children[1], rhs)) {
+                                    auto &den = val.m_children[1];
+                                    if (den->m_type[Node::toSize(
+                                            Node::TypeIndex::Constant)]
+                                        && std::get<Node::ConstantValue>(den->m_value)
+                                               == 1) {
+                                        moveChildToRoot(root, val.m_children[0]);
+                                    }
                                     return;
+                                }
                                 multiply(val.m_children[0], rhs);
                             } else {
                                 // 根是加法运算符，将变量分别乘到其子节点里
@@ -1027,10 +1122,10 @@ namespace tnrw {
                                 }
                             } else if (val.m_op_type
                                        == Node::OperatorValue::OperatorType::Division) {
-                                // 根是除法运算符，尝试与分母相除，剩余的乘到分子
-                                if (canDivided(val.m_children[1], rhs))
+                                // 根是除法运算符，尝试与分子相除，剩余的乘到分母
+                                if (canDivided(val.m_children[0], rhs))
                                     return;
-                                multiply(val.m_children[0], rhs);
+                                multiply(val.m_children[1], rhs);
                             } else {
                                 // 根是加法运算符，将变量分别除到其子节点里
                                 for (auto &child : val.m_children) {
