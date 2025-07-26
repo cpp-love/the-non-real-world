@@ -1,8 +1,12 @@
 {
     "compile-runner.fileGroups": {
         "测试AlgebraicExpression类": [
-            "${workspaceFolder}\\src\\Maths\\AlgebraicExpression.cpp",
+            "${workspaceFolder}\\src\\Maths\\Expressions.cpp",
             "${workspaceFolder}\\tests\\Maths\\testAlgeExpr.cpp"
+        ],
+        "测试NumericExpression类": [
+            "${workspaceFolder}\\src\\Maths\\Expressions.cpp",
+            "${workspaceFolder}\\tests\\Maths\\testNumExpr.cpp"
         ],
         "文件版本生成器": [
             "${workspaceFolder}\\helper\\generate_file_version.cpp"

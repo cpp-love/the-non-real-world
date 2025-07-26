@@ -28,10 +28,10 @@ namespace tnrw {
 
         namespace Details {
             /**
-             * @brief  `Pimpl` 惯用法实现 `AlgebraicExpression` 类的私有封装（前向声明）
+             * @brief  `Pimpl` 惯用法实现 `AlgebraicExpression` 类和 `NumericExpression` 类的私有封装（前向声明）
              * @details
              * - 所有私有成员都隐藏在此结构体的完整定义中，
-             *   具体定义见源文件 @ref `AlgebraicExpression.cpp` 
+             *   具体定义见源文件 @ref `Expressions.cpp`
              * - 此结构体也是代数式树的节点定义
              * @warning 该结构体是私有的，用户不应直接访问
              */
@@ -176,22 +176,22 @@ namespace tnrw {
              * @brief 后缀自增运算符
              * @return const AlgebraicExpression& 当前对象的引用( `*this` )
              */
-            const AlgebraicExpression &operator++() noexcept;
+            AlgebraicExpression &operator++() noexcept;
             /**
              * @brief 后缀自减运算符
              * @return const AlgebraicExpression& 当前对象的引用( `*this` )
              */
-            const AlgebraicExpression &operator--() noexcept;
+            AlgebraicExpression &operator--() noexcept;
             /**
              * @brief 前缀自增运算符
              * @return AlgebraicExpression 自增前的副本
              */
-            AlgebraicExpression operator++(int) noexcept;
+            const AlgebraicExpression operator++(int) noexcept;
             /**
              * @brief 前缀自减运算符
              * @return AlgebraicExpression 自减前的副本
              */
-            AlgebraicExpression operator--(int) noexcept;
+            const AlgebraicExpression operator--(int) noexcept;
 
             // 其他成员函数
             /**
@@ -200,7 +200,7 @@ namespace tnrw {
              * @param [in] dict 变量对应的值的字典
              * @return true 代数式为0
              * @return false 代数式不为0
-             * @note 该代数式会精准判断代数式是否为0，所以字典类型应完整且精确
+             * @note 该方法会精准判断代数式是否为0，所以字典类型应完整且精确
              * @warning 对于未在字典中出现的变量 `a`，根据 `std::map::operator[](a)` 返回值带入（使用默认赋值）
              */
             template <typename T>
@@ -401,8 +401,6 @@ namespace tnrw {
         /// @brief AlgebraicExpression类的内联自定义字面量命名空间
         inline namespace AlgebraicExpression_literals {
 
-            using namespace Maths_base_literals;
-
             /**
              * @brief 以常量字面量创建代数式类
              * @param [in] constant 常量值字面量
@@ -410,14 +408,14 @@ namespace tnrw {
              * @see @ref Maths::AlgebraicExpression::AlgebraicExpression(Maths::AlgebraicExpression::ConstantType constant) "AlgebraicExpression类的以常量为参数的构造函数"
              */
             Maths::AlgebraicExpression
-            operator""_cexpr(const unsigned long long constant) noexcept;
+            operator""_cAlgeExpr(const unsigned long long constant) noexcept;
             /**
              * @brief 以变量字面量创建代数式类
              * @param [in] variable 变量字符字面量
              * @return AlgebraicExpression 创建的代数式类
              * @see @ref Maths::AlgebraicExpression::AlgebraicExpression(Maths::AlgebraicExpression::VariableType vairable) "AlgebraicExpression类的以变量为参数的构造函数"
              */
-            Maths::AlgebraicExpression operator""_vexpr(const char variable) noexcept;
+            Maths::AlgebraicExpression operator""_vAlgeExpr(const char variable) noexcept;
 
         } // namespace AlgebraicExpression_literals
 

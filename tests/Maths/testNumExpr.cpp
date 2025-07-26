@@ -1,7 +1,7 @@
 /**
- * @file testAlgeExpr.cpp
+ * @file testNumExpr.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
- * @brief 用来测试 `Maths::AlgebraicExpression` 类的源文件
+ * @brief 用来测试 `Maths::NumericExpression` 类的源文件
  * @version 0.1.0-1
  * @date 2025-07-13
  * 
@@ -9,8 +9,8 @@
  * 
  */
 
-#include "Maths/AlgebraicExpression.hpp"
 #include "Maths/Maths_base.hpp"
+#include "Maths/NumericExpression.hpp"
 #include <array>
 #include <cstdio>
 #include <iostream>
@@ -27,14 +27,14 @@ const std::array<std::string, cmd_size> commands{
     "help",     "new",    "delete",     "operator", "clear",
     "getValue", "isZero", "toOpposite", "compare",  "quit"};
 const std::array<std::string, cmd_size> briefs{u8"提供帮助",
-                                               u8"添加代数式",
-                                               u8"删除代数式",
-                                               u8"对一个代数式使用运算符",
-                                               u8"清除一个代数式",
-                                               u8"获取一个代数式的值(暂未加入)",
-                                               u8"判断一个代数式是否为0",
-                                               u8"对一个代数式取相反数",
-                                               u8"比较两个代数式",
+                                               u8"添加无字母的代数式",
+                                               u8"删除无字母的代数式",
+                                               u8"对一个无字母的代数式使用运算符",
+                                               u8"清除一个无字母的代数式",
+                                               u8"获取一个无字母的代数式的值(暂未加入)",
+                                               u8"判断一个无字母的代数式是否为0",
+                                               u8"对一个无字母的代数式取相反数",
+                                               u8"比较两个无字母的代数式",
                                                u8"退出程序"};
 const std::array<std::string, cmd_size> details{u8"\
 - help\n\
@@ -42,36 +42,36 @@ const std::array<std::string, cmd_size> details{u8"\
 - help [command]\n\
   用于获取command命令的详细使用方式", u8"\
 - new [index]\n\
-  用于在第index(从0开始)个代数式前添加一个代数式\n", u8"\
+  用于在第index(从0开始)个无字母的代数式前添加一个无字母的代数式\n", u8"\
 - delete [index]\n\
-  用于删除第index(从0开始)个代数式\n", u8"\
-- operator [index] [+= | -= | *= | /= ] [constant | variable] [value]\n\
-  用于对第index(从0开始)个代数式[+= | -= | *= | /=][常量 | 变量]的value\n\
-- operaotor [index] [+ | - | * | /] [constant | variable] [value]\n\
-  用于获取第index(从0开始)个代数式[+ | - | * | /][常量 | 变量]的value的结果\n\
+  用于删除第index(从0开始)个无字母的代数式\n", u8"\
+- operator [index] [+= | -= | *= | /= ] [value]\n\
+  用于对第index(从0开始)个无字母的代数式[+= | -= | *= | /=]常量的value\n\
+- operaotor [index] [+ | - | * | /] [value]\n\
+  用于获取第index(从0开始)个无字母的代数式[+ | - | * | /]常量的value的结果\n\
 - operator [index] [front++ | front--]\n\
-  用于获取第index(从0开始)个代数式前置[++ | --]的结果\n\
+  用于获取第index(从0开始)个无字母的代数式前置[++ | --]的结果\n\
 - operator [index] [back++ | back--]\n\
-  用于获取第index(从0开始)个代数式后置[++ | --]的结果\n\
+  用于获取第index(从0开始)个无字母的代数式后置[++ | --]的结果\n\
 - operator [index] [+ | -]\n\
-  用于获取[+ | -]第index(从0开始)个代数式的结果", u8"\
+  用于获取[+ | -]第index(从0开始)个无字母的代数式的结果", u8"\
 - clear [index]\n\
-  用于清空第index(从0开始)个代数式",
+  用于清空第index(从0开始)个无字母的代数式",
                                                 u8"\
 - getValue [index] ??\n\
   本节未完成\n\
-  原因：未定义tnrw::Maths::AlgebraicExpression的getValue方法", u8"\
+  原因：未定义tnrw::Maths::NumericExpression的getValue方法", u8"\
 - isZero [index] ??\n\
   本节未完成\n\
-  原因：未定义tnrw::Maths::AlgebraicExpression的isZero方法", u8"\
+  原因：未定义tnrw::Maths::NumericExpression的isZero方法", u8"\
 - toOpposite [index]\n\
-  原因将第index(从0开始)个代数式改为相反数", u8"\
+  原因将第index(从0开始)个无字母的代数式改为相反数", u8"\
 - compare [index1] [index2]\n\
-  用于比较第index1(从0开始)个代数式和第index2(从0开始)个代数式是否相等", u8"\
+  用于比较第index1(从0开始)个无字母的代数式和第index2(从0开始)个无字母的代数式是否相等", u8"\
 - quit\n\
   用于退出程序"};
 
-std::vector<tnrw::Maths::AlgebraicExpression> algevec(1);
+std::vector<tnrw::Maths::NumericExpression> algevec(1);
 
 void processUnsuitedArgs(std::string cmd) {
     std::cout << u8"错误：命令 \"" << cmd
@@ -171,7 +171,7 @@ int main() {
     std::cout << u8"想查看帮助，请键入 help 获取\n";
 
     while (true) {
-        std::cout << u8"现在代数式数组为：\n";
+        std::cout << u8"现在无字母的代数式数组为：\n";
         for (std::size_t i = 0; i < algevec.size(); ++i) {
             std::cout << i << ": " << algevec[i].toString() << '\n';
         }
@@ -212,7 +212,7 @@ int main() {
                 processUnsuitedArgs(args[0]);
                 continue;
             }
-            // 新建代数式
+            // 新建无字母的代数式
             std::unique_ptr<std::size_t> res = std::make_unique<std::size_t>(0);
             switch (tryStrToULL(args[1], res.get())) {
                 case StrToTypeResult::Invalid:
@@ -235,7 +235,7 @@ int main() {
                 processUnsuitedArgs(args[0]);
                 continue;
             }
-            // 删除代数式
+            // 删除无字母的代数式
             std::unique_ptr<std::size_t> res = std::make_unique<std::size_t>(0);
             switch (tryStrToULL(args[1], res.get())) {
                 case StrToTypeResult::Invalid:
@@ -253,7 +253,7 @@ int main() {
                     break;
             }
         } else if (args[0] == commands[3]) {
-            if (args.size() != 3 && args.size() != 5) {
+            if (args.size() != 3 && args.size() != 4) {
                 // 非法
                 processUnsuitedArgs(args[0]);
                 continue;
@@ -300,107 +300,60 @@ int main() {
             } else {
                 if (args[2] == "+") {
                     if (args.size() == 3) {
-                        std::cout << u8"结果：" << (+algevec[index]).toString()
-                                  << '\n';
+                        std::cout << u8"结果：" << (+algevec[index]).toString() << '\n';
                     }
                 } else if (args[2] == "-") {
                     if (args.size() == 3) {
-                        std::cout << u8"结果：" << (-algevec[index]).toString()
-                                  << '\n';
+                        std::cout << u8"结果：" << (-algevec[index]).toString() << '\n';
                     }
                 }
                 if (args.size() == 3) {
                     processInvalidArgs(args[0]);
                     continue;
                 }
-                if (args[3] == "constant") {
-                    std::unique_ptr<long long> res2 = std::make_unique<long long>(0);
-                    const StrToTypeResult      result2 = tryStrToLL(args[4], res2.get());
-                    if (result2 == StrToTypeResult::Invalid) {
-                        processInvalidArgs(args[0]);
-                        continue;
-                    }
-                    if (result2 == StrToTypeResult::OverLimit) {
-                        processOverLimitArgs(args[0]);
-                        continue;
-                    }
-                    const long long val = *res2;
-                    if (args[2] == "+") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      + static_cast<tnrw::Maths::ConstantType>(val))
-                                         .toString()
-                                  << '\n';
-                    } else if (args[2] == "-") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      - static_cast<tnrw::Maths::ConstantType>(val))
-                                         .toString()
-                                  << '\n';
-                    } else if (args[2] == "*") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      * static_cast<tnrw::Maths::ConstantType>(val))
-                                         .toString()
-                                  << '\n';
-                    } else if (args[2] == "/") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      / static_cast<tnrw::Maths::ConstantType>(val))
-                                         .toString()
-                                  << '\n';
-                    } else if (args[2] == "+=") {
-                        algevec[index] += static_cast<tnrw::Maths::ConstantType>(val);
-                    } else if (args[2] == "-=") {
-                        algevec[index] -= static_cast<tnrw::Maths::ConstantType>(val);
-                    } else if (args[2] == "*=") {
-                        algevec[index] *= static_cast<tnrw::Maths::ConstantType>(val);
-                    } else if (args[2] == "/=") {
-                        algevec[index] /= static_cast<tnrw::Maths::ConstantType>(val);
-                    } else {
-                        processInvalidArgs(args[0]);
-                    }
-                } else if (args[3] == "variable") {
-                    if (args[4].size() != 1) {
-                        processInvalidArgs(args[0]);
-                        continue;
-                    }
-                    const char val = args[4][0];
-                    if (args[2] == "+") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      + static_cast<tnrw::Maths::VariableType>(val))
-                                         .toString()
-                                  << '\n';
-                    } else if (args[2] == "-") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      - static_cast<tnrw::Maths::VariableType>(val))
-                                         .toString()
-                                  << '\n';
-                    } else if (args[2] == "*") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      * static_cast<tnrw::Maths::VariableType>(val))
-                                         .toString()
-                                  << '\n';
-                    } else if (args[2] == "/") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      / static_cast<tnrw::Maths::VariableType>(val))
-                                         .toString()
-                                  << '\n';
-                    } else if (args[2] == "+=") {
-                        algevec[index] += static_cast<tnrw::Maths::VariableType>(val);
-                    } else if (args[2] == "-=") {
-                        algevec[index] -= static_cast<tnrw::Maths::VariableType>(val);
-                    } else if (args[2] == "*=") {
-                        algevec[index] *= static_cast<tnrw::Maths::VariableType>(val);
-                    } else if (args[2] == "/=") {
-                        algevec[index] /= static_cast<tnrw::Maths::VariableType>(val);
-                    } else {
-                        processInvalidArgs(args[0]);
-                    }
+                std::unique_ptr<long long> res2 = std::make_unique<long long>(0);
+                const StrToTypeResult      result2 = tryStrToLL(args[3], res2.get());
+                if (result2 == StrToTypeResult::Invalid) {
+                    processInvalidArgs(args[0]);
+                    continue;
+                }
+                if (result2 == StrToTypeResult::OverLimit) {
+                    processOverLimitArgs(args[0]);
+                    continue;
+                }
+                const long long val = *res2;
+                if (args[2] == "+") {
+                    std::cout << u8"结果："
+                              << (algevec[index]
+                                  + static_cast<tnrw::Maths::ConstantType>(val))
+                                     .toString()
+                              << '\n';
+                } else if (args[2] == "-") {
+                    std::cout << u8"结果："
+                              << (algevec[index]
+                                  - static_cast<tnrw::Maths::ConstantType>(val))
+                                     .toString()
+                              << '\n';
+                } else if (args[2] == "*") {
+                    std::cout << u8"结果："
+                              << (algevec[index]
+                                  * static_cast<tnrw::Maths::ConstantType>(val))
+                                     .toString()
+                              << '\n';
+                } else if (args[2] == "/") {
+                    std::cout << u8"结果："
+                              << (algevec[index]
+                                  / static_cast<tnrw::Maths::ConstantType>(val))
+                                     .toString()
+                              << '\n';
+                } else if (args[2] == "+=") {
+                    algevec[index] += static_cast<tnrw::Maths::ConstantType>(val);
+                } else if (args[2] == "-=") {
+                    algevec[index] -= static_cast<tnrw::Maths::ConstantType>(val);
+                } else if (args[2] == "*=") {
+                    algevec[index] *= static_cast<tnrw::Maths::ConstantType>(val);
+                } else if (args[2] == "/=") {
+                    algevec[index] /= static_cast<tnrw::Maths::ConstantType>(val);
                 } else {
                     processInvalidArgs(args[0]);
                 }
@@ -411,7 +364,7 @@ int main() {
                 processUnsuitedArgs(args[0]);
                 continue;
             }
-            // 清空代数式
+            // 清空无字母的代数式
             std::unique_ptr<std::size_t> res = std::make_unique<std::size_t>(0);
             switch (tryStrToULL(args[1], res.get())) {
                 case StrToTypeResult::Invalid:
@@ -430,17 +383,17 @@ int main() {
             }
         } else if (args[0] == commands[5]) {
             std::cout << u8"本节未完成\n原因：未定义tnrw::Maths::"
-                         "AlgebraicExpression的getValue方法\n";
+                         "NumericExpression的getValue方法\n";
         } else if (args[0] == commands[6]) {
             std::cout << u8"本节未完成\n原因：未定义tnrw::Maths::"
-                         "AlgebraicExpression的isZero方法\n";
+                         "NumericExpression的isZero方法\n";
         } else if (args[0] == commands[7]) {
             if (args.size() != 2) {
                 // 非法
                 processUnsuitedArgs(args[0]);
                 continue;
             }
-            // 使代数式取相反数
+            // 使无字母的代数式取相反数
             std::unique_ptr<std::size_t> res = std::make_unique<std::size_t>(0);
             switch (tryStrToULL(args[1], res.get())) {
                 case StrToTypeResult::Invalid:
@@ -463,7 +416,7 @@ int main() {
                 processUnsuitedArgs(args[0]);
                 continue;
             }
-            // 比较两个代数式
+            // 比较两个无字母的代数式
             std::unique_ptr<std::size_t> res1 = std::make_unique<std::size_t>(0);
             const StrToTypeResult        result = tryStrToULL(args[1], res1.get());
             if (result == StrToTypeResult::Invalid) {

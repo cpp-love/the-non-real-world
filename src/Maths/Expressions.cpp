@@ -1,7 +1,7 @@
 /**
- * @file AlgebraicExpression.cpp
+ * @file Expressions.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
- * @brief 实现了代数式类的细节
+ * @brief 实现了代数式和无字母的代数式类的细节
  * @version 0.1.0-1
  * @date 2025-07-05
  * 
@@ -10,10 +10,13 @@
  */
 
 #include "Maths/AlgebraicExpression.hpp"
+#include "Maths/Maths_base.hpp"
+#include "Maths/NumericExpression.hpp"
 #include "Maths/functions.hpp"
 #include <bitset>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -31,30 +34,32 @@ namespace tnrw {
 
             /**
              * @brief 代数式树的节点
-             * @details 节点可以是常量、变量或运算符
-             * @note **维护说明：（原则：尽量化简）**
-             * **定义：**
-             * - 定义一个 **根节点为常量、变量或乘/除法运算符** 的树状代数式为 **`树状单项式`**
-             * - 定义一个 **根节点为加法** ， 根节点的 **子节点均为树状单项式** 为 **`树状多项式`** ，
-             *                              每个子节点称为 **`树状多项式的项`**
-             *   **注意：** `树状单项式` **并非** 数学上的单项式，它还涵盖了数学上的部分 **分式（暂无根式，可能在未来加入）** 
-             *        同理：`树状单项式` 也 **并非** 数学上的多项式
-             * **维护：**
-             * - **`树状单项式` ：**
-             *   1. 若有分母，应保持根节点为除法运算符
-             *      1. 分子 **不可以** 有加法运算符，而且分子分母均 **不可以** 有除法运算符
-             *      2. 应始终保持分数为 **最简形式** ，即应始终 **约分**
-             *      3. 分子分母应始终 **将每个乘法运算符节点中的常量孩子节点置于节点列表的末尾**
-             *      4. 分子在第0位，分母在第1位，不应有其他位
-             *      5. 分子分母内的成员的 `m_type` 应始终 **没有位标志 `TypeIndex::Negative`**
-             *   2. 若无分母，应保持根节点为乘法运算符
-             *      1. 其内 **不可以** 有加法运算符
-             *      2. 其内应始终 **将每个乘法运算符节点中的常量孩子节点置于节点列表的末尾**
-             *      5. 其内的成员的 `m_type` 应始终 **没有位标志 `TypeIndex::Negative`**
-             * - **`树状多项式` ：**
-             *   1. 应始终 **合并同类项** （部分变量相同、分子或分母相同的不用合并）
-             *   2. 应始终 **将其常量孩子节点置于节点列表的末尾**
-             * - **常量应始终没有位标志 `TypeIndex::Negative`**
+             * @details
+             * - 节点可以是常量、变量或运算符
+             * - 此结构体为代数式类( @ref tnrw::Maths::AlgebraicExpression )和无字母的代数式类( @ref tnrw::Maths::NumericExpression )的实现
+             * - **维护说明：（原则：尽量化简）**
+             *   - **定义：**
+             *     - 定义一个 **根节点为常量、变量或乘/除法运算符** 的树状代数式为 **`树状单项式`**
+             *     - 定义一个 **根节点为加法** ， 根节点的 **子节点均为树状单项式** 为 **`树状多项式`** ，
+             *                                  每个子节点称为 **`树状多项式的项`**
+             *       **注意：** `树状单项式` **并非** 数学上的单项式，它还涵盖了数学上的部分 **分式（暂无根式，可能在未来加入）** 
+             *            同理：`树状单项式` 也 **并非** 数学上的多项式
+             *   - **维护：**
+             *     - **`树状单项式` ：**
+             *       1. 若有分母，应保持根节点为除法运算符
+             *          1. 分子 **不可以** 有加法运算符，而且分子分母均 **不可以** 有除法运算符
+             *          2. 应始终保持分数为 **最简形式** ，即应始终 **约分**
+             *          3. 分子分母应始终 **将每个乘法运算符节点中的常量孩子节点置于节点列表的末尾**
+             *          4. 分子在第0位，分母在第1位，不应有其他位
+             *          5. 分子分母内的成员的 `m_type` 应始终 **没有位标志 `TypeIndex::Negative`**
+             *       2. 若无分母，应保持根节点为乘法运算符
+             *          1. 其内 **不可以** 有加法运算符
+             *          2. 其内应始终 **将每个乘法运算符节点中的常量孩子节点置于节点列表的末尾**
+             *          3. 其内的成员的 `m_type` 应始终 **没有位标志 `TypeIndex::Negative`**
+             *     - **`树状多项式` ：**
+             *       1. 应始终 **合并同类项** （部分变量相同、分子或分母相同的不用合并）
+             *       2. 应始终 **将其常量孩子节点置于节点列表的末尾**
+             *     - **常量应始终没有位标志 `TypeIndex::Negative`**
              * @warning 该结构体是私有的，用户不应直接访问
              */
             struct Node {
@@ -202,7 +207,7 @@ namespace tnrw {
              * @param [in] root 根节点
              */
             inline void clearNode(Node::Ptr &root) noexcept {
-                using namespace tnrw::literals::AlgebraicExpression_literals;
+                using namespace tnrw::literals::Maths_base_literals;
                 root = std::make_unique<Node>(0_c);
             }
             /**
@@ -424,7 +429,7 @@ namespace tnrw {
                         std::get<Node::OperatorValue>(root1->m_value).m_children;
                     const auto &children2 =
                         std::get<Node::OperatorValue>(root2->m_value).m_children;
-                    if (children1.size() == children2.size())
+                    if (children1.size() != children2.size())
                         return false;
                     for (std::size_t i = 0; i < children1.size(); ++i) {
                         if (!isEqual(children1[i], children2[i]))
@@ -567,7 +572,16 @@ namespace tnrw {
 
                         if constexpr (std::is_same_v<T, Node::ConstantValue>) {
                             // 根是常量，尽量除掉
-                            Node::ConstantValue gcdnum = gcd(val, rhs);
+                            // 解决负数
+                            if (rhs < 0) {
+                                val = -val;
+                                rhs = -rhs;
+                            }
+                            // 特殊情况
+                            if (val == 0) {
+                                return 1;
+                            }
+                            Node::ConstantValue gcdnum = gcd(std::abs(val), rhs);
                             // 返回加速
                             if (gcdnum == 1)
                                 return rhs;
@@ -588,7 +602,11 @@ namespace tnrw {
                                 return rhs;
                             auto &child_val =
                                 std::get<Node::ConstantValue>(last_child->m_value);
-                            Node::ConstantValue gcdnum = gcd(child_val, rhs);
+                            if (rhs < 0) {
+                                child_val = -child_val;
+                                rhs = -rhs;
+                            }
+                            Node::ConstantValue gcdnum = gcd(std::abs(child_val), rhs);
                             // 返回加速
                             if (gcdnum == 1)
                                 return rhs;
@@ -614,13 +632,16 @@ namespace tnrw {
                         using T = std::decay_t<decltype(val)>;
 
                         if constexpr (std::is_same_v<T, Node::ConstantValue>) {
-                            // 根是常量，返回 `false`
+                            // 根是常量，如果是值是 `0` 返回 `true` ，返回 `false`
+                            if (val == 0) {
+                                return true;
+                            }
                             return false;
                         } else if constexpr (std::is_same_v<T, Node::VariableValue>) {
                             // 根是变量，如果根与值相同，返回 `true` 并将根设为1，否则返回 `true`
                             if (val != rhs)
                                 return false;
-                            using namespace tnrw::literals::AlgebraicExpression_literals;
+                            using namespace tnrw::literals::Maths_base_literals;
                             root = std::make_unique<Node>(1_c);
                             return true;
                         } else {
@@ -927,7 +948,10 @@ namespace tnrw {
                         using T = std::decay_t<decltype(val)>;
 
                         if constexpr (std::is_same_v<T, Node::ConstantValue>) {
-                            // 根是常量，创建新节点
+                            // 根是常量，如果值是 `0` 跳过，否则创建新节点
+                            if (val == 0) {
+                                return;
+                            }
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
                                 root->m_type.reset(
                                     Node::toSize(Node::TypeIndex::Negative));
@@ -1078,7 +1102,10 @@ namespace tnrw {
                         using T = std::decay_t<decltype(val)>;
 
                         if constexpr (std::is_same_v<T, Node::ConstantValue>) {
-                            // 根是常量，创建新节点
+                            // 根是常量，如果值是 `0` 跳过，否则创建新节点
+                            if (val == 0) {
+                                return;
+                            }
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
                                 root->m_type.reset(
                                     Node::toSize(Node::TypeIndex::Negative));
@@ -1225,32 +1252,30 @@ namespace tnrw {
         AlgebraicExpression AlgebraicExpression::operator+() noexcept { return *this; }
 
         AlgebraicExpression AlgebraicExpression::operator-() noexcept {
-            m_root->m_type.set(Details::Node::toSize(Details::Node::TypeIndex::Negative));
             AlgebraicExpression copy_of_this(*this);
-            m_root->m_type.reset(
-                Details::Node::toSize(Details::Node::TypeIndex::Negative));
+            copy_of_this.changeToOpposite();
             return copy_of_this;
         }
 
-        const AlgebraicExpression &AlgebraicExpression::operator++() noexcept {
-            using namespace tnrw::literals::AlgebraicExpression_literals;
+        AlgebraicExpression &AlgebraicExpression::operator++() noexcept {
+            using namespace tnrw::literals::Maths_base_literals;
             Details::plus(m_root, 1_c);
             return *this;
         }
-        const AlgebraicExpression &AlgebraicExpression::operator--() noexcept {
-            using namespace tnrw::literals::AlgebraicExpression_literals;
+        AlgebraicExpression &AlgebraicExpression::operator--() noexcept {
+            using namespace tnrw::literals::Maths_base_literals;
             Details::plus(m_root, -1_c);
             return *this;
         }
 
-        AlgebraicExpression AlgebraicExpression::operator++(int) noexcept {
-            using namespace tnrw::literals::AlgebraicExpression_literals;
+        const AlgebraicExpression AlgebraicExpression::operator++(int) noexcept {
+            using namespace tnrw::literals::Maths_base_literals;
             AlgebraicExpression copy_of_old(*this);
             Details::plus(m_root, 1_c);
             return copy_of_old;
         }
-        AlgebraicExpression AlgebraicExpression::operator--(int) noexcept {
-            using namespace tnrw::literals::AlgebraicExpression_literals;
+        const AlgebraicExpression AlgebraicExpression::operator--(int) noexcept {
+            using namespace tnrw::literals::Maths_base_literals;
             AlgebraicExpression copy_of_old(*this);
             Details::plus(m_root, -1_c);
             return copy_of_old;
@@ -1267,7 +1292,16 @@ namespace tnrw {
         }
 
         void AlgebraicExpression::changeToOpposite() noexcept {
-            m_root->m_type.set(Details::Node::toSize(Details::Node::TypeIndex::Negative));
+            if (m_root
+                    ->m_type[Details::Node::toSize(Details::Node::TypeIndex::Constant)]) {
+                // 特殊情况
+                auto &val = std::get<Details::Node::ConstantValue>(m_root->m_value);
+                val = -val;
+            } else {
+                auto val = m_root->m_type[Details::Node::toSize(
+                    Details::Node::TypeIndex::Negative)];
+                val = !val;
+            }
         }
 
         const AlgebraicExpression
@@ -1352,11 +1386,178 @@ namespace tnrw {
 
         bool operator==(const AlgebraicExpression &lhs,
                         const AlgebraicExpression &rhs) noexcept {
-            return isEqual(lhs.m_root, rhs.m_root);
+            if (&lhs == &rhs)
+                return true;
+            return Details::isEqual(lhs.m_root, rhs.m_root);
         }
         bool operator!=(const AlgebraicExpression &lhs,
                         const AlgebraicExpression &rhs) noexcept {
-            return !isEqual(lhs.m_root, rhs.m_root);
+            if (&lhs == &rhs)
+                return false;
+            return !Details::isEqual(lhs.m_root, rhs.m_root);
+        }
+
+        // NumericExpression类的成员定义
+        NumericExpression::NumericExpression() noexcept
+            : m_root(std::make_unique<Details::Node>(static_cast<ConstantType>(0))) {}
+
+        NumericExpression::NumericExpression(const ConstantType constant) noexcept
+            : m_root(std::make_unique<Details::Node>(constant)) {}
+
+        NumericExpression::~NumericExpression() noexcept = default;
+
+        NumericExpression::NumericExpression(const NumericExpression &rhs) noexcept
+            : m_root(std::make_unique<Details::Node>(*rhs.m_root)) {}
+
+        NumericExpression::NumericExpression(NumericExpression &&rhs) noexcept
+            : m_root(std::move(rhs.m_root)) {}
+
+        NumericExpression &
+        NumericExpression::operator=(const NumericExpression &rhs) noexcept {
+            if (this != &rhs) {
+                m_root = std::make_unique<Details::Node>(*rhs.m_root);
+            }
+            return *this;
+        }
+
+        NumericExpression &
+        NumericExpression::operator=(NumericExpression &&rhs) noexcept {
+            if (this != &rhs) {
+                m_root = std::move(rhs.m_root);
+            }
+            return *this;
+        }
+
+        NumericExpression &
+        NumericExpression::operator+=(const ConstantType rhs) noexcept {
+            Details::plus(m_root, rhs);
+            return *this;
+        }
+
+        NumericExpression &
+        NumericExpression::operator-=(const ConstantType rhs) noexcept {
+            Details::plus(m_root, -rhs);
+            return *this;
+        }
+
+        NumericExpression &
+        NumericExpression::operator*=(const ConstantType rhs) noexcept {
+            Details::multiply(m_root, rhs);
+            return *this;
+        }
+
+        NumericExpression &
+        NumericExpression::operator/=(const ConstantType rhs) noexcept {
+            Details::devide(m_root, rhs);
+            return *this;
+        }
+
+        NumericExpression NumericExpression::operator+() noexcept { return *this; }
+
+        NumericExpression NumericExpression::operator-() noexcept {
+            NumericExpression copy_of_this(*this);
+            copy_of_this.changeToOpposite();
+            return copy_of_this;
+        }
+
+        NumericExpression &NumericExpression::operator++() noexcept {
+            using namespace tnrw::literals::Maths_base_literals;
+            Details::plus(m_root, 1_c);
+            return *this;
+        }
+        NumericExpression &NumericExpression::operator--() noexcept {
+            using namespace tnrw::literals::Maths_base_literals;
+            Details::plus(m_root, -1_c);
+            return *this;
+        }
+
+        const NumericExpression NumericExpression::operator++(int) noexcept {
+            using namespace tnrw::literals::Maths_base_literals;
+            NumericExpression copy_of_old(*this);
+            Details::plus(m_root, 1_c);
+            return copy_of_old;
+        }
+        const NumericExpression NumericExpression::operator--(int) noexcept {
+            using namespace tnrw::literals::Maths_base_literals;
+            NumericExpression copy_of_old(*this);
+            Details::plus(m_root, -1_c);
+            return copy_of_old;
+        }
+
+        void NumericExpression::clear() noexcept { Details::clearNode(m_root); }
+
+        std::string NumericExpression::toString() const noexcept {
+            return Details::toStringFromNode(m_root);
+        }
+
+        std::wstring NumericExpression::toWString() const noexcept {
+            return Details::toWStringFromNode(m_root);
+        }
+
+        void NumericExpression::changeToOpposite() noexcept {
+            if (m_root
+                    ->m_type[Details::Node::toSize(Details::Node::TypeIndex::Constant)]) {
+                // 特殊情况
+                auto &val = std::get<Details::Node::ConstantValue>(m_root->m_value);
+                val = -val;
+            } else {
+                auto val = m_root->m_type[Details::Node::toSize(
+                    Details::Node::TypeIndex::Negative)];
+                val = !val;
+            }
+        }
+
+        const NumericExpression
+        operator+(const NumericExpression              &lhs,
+                  const NumericExpression::ConstantType rhs) noexcept {
+            return (NumericExpression(lhs) += rhs);
+        }
+        const NumericExpression operator+(const NumericExpression::ConstantType lhs,
+                                          const NumericExpression &rhs) noexcept {
+            return (NumericExpression(rhs) += lhs);
+        }
+
+        const NumericExpression
+        operator-(const NumericExpression              &lhs,
+                  const NumericExpression::ConstantType rhs) noexcept {
+            return (NumericExpression(lhs) -= rhs);
+        }
+        const NumericExpression operator-(const NumericExpression::ConstantType lhs,
+                                          const NumericExpression &rhs) noexcept {
+            return (NumericExpression(rhs) -= lhs);
+        }
+
+        const NumericExpression
+        operator*(const NumericExpression              &lhs,
+                  const NumericExpression::ConstantType rhs) noexcept {
+            return (NumericExpression(lhs) *= rhs);
+        }
+        const NumericExpression operator*(const NumericExpression::ConstantType lhs,
+                                          const NumericExpression &rhs) noexcept {
+            return (NumericExpression(rhs) *= lhs);
+        }
+
+        const NumericExpression
+        operator/(const NumericExpression              &lhs,
+                  const NumericExpression::ConstantType rhs) noexcept {
+            return (NumericExpression(lhs) /= rhs);
+        }
+        const NumericExpression operator/(const NumericExpression::ConstantType lhs,
+                                          const NumericExpression &rhs) noexcept {
+            return (NumericExpression(rhs) /= lhs);
+        }
+
+        bool operator==(const NumericExpression &lhs,
+                        const NumericExpression &rhs) noexcept {
+            if (&lhs == &rhs)
+                return true;
+            return Details::isEqual(lhs.m_root, rhs.m_root);
+        }
+        bool operator!=(const NumericExpression &lhs,
+                        const NumericExpression &rhs) noexcept {
+            if (&lhs == &rhs)
+                return false;
+            return !Details::isEqual(lhs.m_root, rhs.m_root);
         }
 
     } // namespace Maths
@@ -1375,16 +1576,27 @@ namespace tnrw {
         inline namespace AlgebraicExpression_literals {
 
             Maths::AlgebraicExpression
-            operator""_cexpr(const unsigned long long constant) noexcept {
+            operator""_cAlgeExpr(const unsigned long long constant) noexcept {
                 return Maths::AlgebraicExpression(
                     static_cast<Maths::AlgebraicExpression::ConstantType>(constant));
             }
-            Maths::AlgebraicExpression operator""_vexpr(const char variable) noexcept {
+            Maths::AlgebraicExpression
+            operator""_vAlgeExpr(const char variable) noexcept {
                 return Maths::AlgebraicExpression(
                     static_cast<Maths::AlgebraicExpression::VariableType>(variable));
             }
 
         } // namespace AlgebraicExpression_literals
+
+        inline namespace NumericExpression_literals {
+
+            Maths::NumericExpression
+            operator""_cNumExpr(const unsigned long long constant) noexcept {
+                return Maths::NumericExpression(
+                    static_cast<Maths::NumericExpression::ConstantType>(constant));
+            }
+
+        } // namespace NumericExpression_literals
 
     } // namespace literals
 
