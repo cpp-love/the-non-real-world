@@ -5,12 +5,12 @@
  * @version 0.1.0-1
  * @date 2025-07-05
  * 
- * @copyright Copyright 2025 cpp-love
+ * @copyright cpp-love
  * 
  */
 
 #include "Maths/AlgebraicExpression.hpp"
-#include "Maths/Maths_base.hpp"
+#include "Maths/Expressions_base.hpp"
 #include "Maths/NumericExpression.hpp"
 #include "Maths/functions.hpp"
 #include <bitset>
@@ -85,7 +85,7 @@ namespace tnrw {
                 /// @brief 运算符值
                 struct OperatorValue {
                     /// @brief 运算符类型枚举
-                    enum class OperatorType {
+                    enum class OperatorType : std::uint8_t {
                         Addition, ///< 加法
                         // Subtraction,    ///< 减法
                         //< 它可以被移除
@@ -705,7 +705,7 @@ namespace tnrw {
                                 return;
                             }
                             // 根是+，检索是否有常量子节点，若有则加上，无则添加其为子节点
-                            auto &last_child = val.m_children[val.m_children.size() - 1];
+                            auto &last_child = val.m_children.back();
                             if (last_child
                                     ->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
                                 if (root->m_type[Node::toSize(
@@ -781,7 +781,7 @@ namespace tnrw {
                         }
                         val.m_children.push_back(std::make_unique<Node>(
                             rhs, root->m_type[Node::toSize(Node::TypeIndex::Negative)]));
-                        swap(val.m_children[val.m_children.size() - 1],
+                        swap(val.m_children.back(),
                              val.m_children[val.m_children.size() - 2]);
                         return;
                     }
@@ -836,7 +836,7 @@ namespace tnrw {
                         }
                         val.m_children.push_back(std::make_unique<Node>(
                             rhs, !root->m_type[Node::toSize(Node::TypeIndex::Negative)]));
-                        swap(val.m_children[val.m_children.size() - 1],
+                        swap(val.m_children.back(),
                              val.m_children[val.m_children.size() - 2]);
                         return;
                     }
@@ -904,7 +904,7 @@ namespace tnrw {
                                 } else {
                                     val.m_children.push_back(std::make_unique<Node>(rhs));
                                     swap(val.m_children[val.m_children.size() - 2],
-                                         val.m_children[val.m_children.size() - 1]);
+                                         val.m_children.back());
                                 }
                             } else if (val.m_op_type
                                        == Node::OperatorValue::OperatorType::Division) {
@@ -981,8 +981,7 @@ namespace tnrw {
                                 auto &child = val.m_children[val.m_children.size() - 2];
                                 if (child->m_type[Node::toSize(
                                         Node::TypeIndex::Constant)]) {
-                                    swap(child,
-                                         val.m_children[val.m_children.size() - 1]);
+                                    swap(child, val.m_children.back());
                                 }
                             } else if (val.m_op_type
                                        == Node::OperatorValue::OperatorType::Division) {
@@ -1078,9 +1077,7 @@ namespace tnrw {
                                 }
                             } else {
                                 // 根是加法运算符，将常量分别除到其子节点里
-                                for (auto &child : val.m_children) {
-                                    devide(child, rhs);
-                                }
+                                for (auto &child : val.m_children) { devide(child, rhs); }
                             }
                         }
                     },
@@ -1155,9 +1152,7 @@ namespace tnrw {
                                 multiply(val.m_children[1], rhs);
                             } else {
                                 // 根是加法运算符，将变量分别除到其子节点里
-                                for (auto &child : val.m_children) {
-                                    devide(child, rhs);
-                                }
+                                for (auto &child : val.m_children) { devide(child, rhs); }
                             }
                         }
                     },

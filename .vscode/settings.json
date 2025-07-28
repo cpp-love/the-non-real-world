@@ -20,17 +20,18 @@
         "-Wall",
         "-Wextra",
         "-std=c++17"
+        // 明确文件格式
         // /*
         ,
         "-finput-charset=UTF-8",
         "-fexec-charset=UTF-8"
         // */
         // 转换文件格式(至Win系统(GBK)格式)
-        // /*
+        /*
         ,
         "-finput-charset=UTF-8",
         "-fexec-charset=GBK"
-        // */
+        */
         // 转换文件格式(至UTF-8格式)
         /*
         ,
@@ -44,18 +45,18 @@
         "${workspaceFolder}/include"
         // */
         // 第三方库头文件路径
-        /*
+        // /*
         ,
         "-I",
-        "C:/msys64/ucrt64/include",
-        */
+        "C:/msys64/ucrt64/include"
+        // */
     ],
     "compile-runner.BackCompilerArgs": [
         // 第三方库库文件路径
-        /*
+        // /*
         "-L",
         "C:/msys64/ucrt64/lib"
-        */
+        // */
         // SFML配置
         /*
         // 按依赖顺序链接
@@ -70,10 +71,10 @@
         "-ltgui"
         */
         // spdlog配置
-        /*
+        // /*
         ,
         "-lspdlog"
-        */
+        // */
     ],
     "files.associations": {
         ".clang-format": "yaml",

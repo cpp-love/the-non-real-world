@@ -1,11 +1,11 @@
 /**
  * @file testAlgeExpr.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
- * @brief 用来测试 `Maths::AlgebraicExpression` 类的源文件
+ * @brief `Maths::AlgebraicExpression` 类的测试用例或使用示例
  * @version 0.1.0-1
  * @date 2025-07-13
  * 
- * @copyright Copyright 2025 cpp-love
+ * @copyright cpp-love
  * 
  */
 
@@ -19,13 +19,13 @@
 #include <vector>
 #ifdef _WIN32
 #include <windows.h>
-#endif
+#endif // _WIN32
 
-constexpr std::size_t cmd_size = 10;
+constexpr std::size_t cmd_size = 10; ///< 命令的个数
 
 const std::array<std::string, cmd_size> commands{
     "help",     "new",    "delete",     "operator", "clear",
-    "getValue", "isZero", "toOpposite", "compare",  "quit"};
+    "getValue", "isZero", "toOpposite", "compare",  "quit"}; ///< 命令列表
 const std::array<std::string, cmd_size> briefs{u8"提供帮助",
                                                u8"添加代数式",
                                                u8"删除代数式",
@@ -35,7 +35,7 @@ const std::array<std::string, cmd_size> briefs{u8"提供帮助",
                                                u8"判断一个代数式是否为0",
                                                u8"对一个代数式取相反数",
                                                u8"比较两个代数式",
-                                               u8"退出程序"};
+                                               u8"退出程序"}; ///< 命令的简要描述列表
 const std::array<std::string, cmd_size> details{u8"\
 - help\n\
   用于快速获取命令列表\n\
@@ -69,29 +69,49 @@ const std::array<std::string, cmd_size> details{u8"\
 - compare [index1] [index2]\n\
   用于比较第index1(从0开始)个代数式和第index2(从0开始)个代数式是否相等", u8"\
 - quit\n\
-  用于退出程序"};
+  用于退出程序"}; ///< 命令的详细描述列表
 
-std::vector<tnrw::Maths::AlgebraicExpression> algevec(1);
+std::vector<tnrw::Maths::AlgebraicExpression> algevec(1); ///< 代数式列表
 
+/**
+ * @brief 处理大小不合适的参数
+ * @param [in] cmd 主命令
+ */
 void processUnsuitedArgs(std::string cmd) {
     std::cout << u8"错误：命令 \"" << cmd
               << u8"\" 的参数过少或过多，请键入 \"help\" 获取帮助\n";
 }
 
+/**
+ * @brief 处理非法命令
+ * @param [in] cmd 主命令
+ */
 void processInvalidCmds(std::string cmd) {
     std::cout << u8"错误：不存在命令 \"" << cmd << u8"\"，请键入 \"help\" 获取帮助\n";
 }
 
+/**
+ * @brief 处理非法参数
+ * @param [in] cmd 主命令
+ */
 void processInvalidArgs(std::string cmd) {
     std::cout << u8"错误：命令 \"" << cmd
               << u8"\" 有非法的参数，请键入 \"help\" 获取帮助\n";
 }
 
+/**
+ * @brief 处理超限参数
+ * @param [in] cmd 主命令
+ */
 void processOverLimitArgs(std::string cmd) {
     std::cout << u8"错误：命令 \"" << cmd
               << u8"\" 的参数过大或过小，请键入 \"help\" 获取帮助\n";
 }
 
+/**
+ * @brief 获取命令行参数
+ * @return std::vector<std::string> 命令行参数
+ */
 std::vector<std::string> getArgs() {
     std::vector<std::string> args;
     bool                     not_finished = true;
@@ -99,8 +119,7 @@ std::vector<std::string> getArgs() {
     for (int i = 0; not_finished; ++i) {
         char ch;
         // 忽略前导空格
-        while ((ch = getchar()) == ' ')
-            ;
+        while ((ch = getchar()) == ' ');
         if (ch == '\n') {
             break;
         } else {
@@ -123,8 +142,16 @@ std::vector<std::string> getArgs() {
     return args;
 }
 
+/// @brief 作为String转为任意类型(Type)的结果
 enum class StrToTypeResult { Invalid, OverLimit, Normal };
 
+/**
+ * @brief 尝试将 `std::string` 转为 `long long`
+ * @param [in] str 字符串
+ * @param [out] result 指向转换结果的指针，默认为 `nullptr`
+ * @return StrToTypeResult 转换结果
+ * @note 当 `result` 参数为 `nullptr` 时，忽略该参数，不存储转换结果
+ */
 StrToTypeResult tryStrToLL(const std::string &str, long long *result = nullptr) {
     try {
         size_t    pos;
@@ -138,11 +165,16 @@ StrToTypeResult tryStrToLL(const std::string &str, long long *result = nullptr) 
         return StrToTypeResult::Normal;
     } catch (const std::invalid_argument &) {
         return StrToTypeResult::Invalid;
-    } catch (const std::out_of_range &) {
-        return StrToTypeResult::OverLimit;
-    }
+    } catch (const std::out_of_range &) { return StrToTypeResult::OverLimit; }
 }
 
+/**
+ * @brief 尝试将 `std::string` 转为 `unsigned long long`
+ * @param [in] str 字符串
+ * @param [out] result 指向转换结果的指针，默认为 `nullptr`
+ * @return StrToTypeResult 转换结果
+ * @note 当 `result` 参数为 `nullptr` 时，忽略该参数，不存储转换结果
+ */
 StrToTypeResult tryStrToULL(const std::string &str, unsigned long long *result) {
     try {
         size_t             pos;
@@ -156,9 +188,7 @@ StrToTypeResult tryStrToULL(const std::string &str, unsigned long long *result) 
         return StrToTypeResult::Normal;
     } catch (const std::invalid_argument &) {
         return StrToTypeResult::Invalid;
-    } catch (const std::out_of_range &) {
-        return StrToTypeResult::OverLimit;
-    }
+    } catch (const std::out_of_range &) { return StrToTypeResult::OverLimit; }
 }
 
 int main() {
@@ -166,7 +196,7 @@ int main() {
 #ifdef _WIN32
     // 让Windows支持UTF-8
     SetConsoleOutputCP(CP_UTF8);
-#endif
+#endif // _WIN32
 
     std::cout << u8"想查看帮助，请键入 help 获取\n";
 
@@ -215,12 +245,8 @@ int main() {
             // 新建代数式
             std::unique_ptr<std::size_t> res = std::make_unique<std::size_t>(0);
             switch (tryStrToULL(args[1], res.get())) {
-                case StrToTypeResult::Invalid:
-                    processInvalidArgs(args[0]);
-                    break;
-                case StrToTypeResult::OverLimit:
-                    processOverLimitArgs(args[0]);
-                    break;
+                case StrToTypeResult::Invalid: processInvalidArgs(args[0]); break;
+                case StrToTypeResult::OverLimit: processOverLimitArgs(args[0]); break;
                 case StrToTypeResult::Normal:
                     if (*res > algevec.size()) {
                         processOverLimitArgs(args[0]);
@@ -238,12 +264,8 @@ int main() {
             // 删除代数式
             std::unique_ptr<std::size_t> res = std::make_unique<std::size_t>(0);
             switch (tryStrToULL(args[1], res.get())) {
-                case StrToTypeResult::Invalid:
-                    processInvalidArgs(args[0]);
-                    break;
-                case StrToTypeResult::OverLimit:
-                    processOverLimitArgs(args[0]);
-                    break;
+                case StrToTypeResult::Invalid: processInvalidArgs(args[0]); break;
+                case StrToTypeResult::OverLimit: processOverLimitArgs(args[0]); break;
                 case StrToTypeResult::Normal:
                     if (*res >= algevec.size()) {
                         processOverLimitArgs(args[0]);
@@ -300,13 +322,11 @@ int main() {
             } else {
                 if (args[2] == "+") {
                     if (args.size() == 3) {
-                        std::cout << u8"结果：" << (+algevec[index]).toString()
-                                  << '\n';
+                        std::cout << u8"结果：" << (+algevec[index]).toString() << '\n';
                     }
                 } else if (args[2] == "-") {
                     if (args.size() == 3) {
-                        std::cout << u8"结果：" << (-algevec[index]).toString()
-                                  << '\n';
+                        std::cout << u8"结果：" << (-algevec[index]).toString() << '\n';
                     }
                 }
                 if (args.size() == 3) {
@@ -414,12 +434,8 @@ int main() {
             // 清空代数式
             std::unique_ptr<std::size_t> res = std::make_unique<std::size_t>(0);
             switch (tryStrToULL(args[1], res.get())) {
-                case StrToTypeResult::Invalid:
-                    processInvalidArgs(args[0]);
-                    break;
-                case StrToTypeResult::OverLimit:
-                    processOverLimitArgs(args[0]);
-                    break;
+                case StrToTypeResult::Invalid: processInvalidArgs(args[0]); break;
+                case StrToTypeResult::OverLimit: processOverLimitArgs(args[0]); break;
                 case StrToTypeResult::Normal:
                     if (*res >= algevec.size()) {
                         processOverLimitArgs(args[0]);
@@ -443,12 +459,8 @@ int main() {
             // 使代数式取相反数
             std::unique_ptr<std::size_t> res = std::make_unique<std::size_t>(0);
             switch (tryStrToULL(args[1], res.get())) {
-                case StrToTypeResult::Invalid:
-                    processInvalidArgs(args[0]);
-                    break;
-                case StrToTypeResult::OverLimit:
-                    processOverLimitArgs(args[0]);
-                    break;
+                case StrToTypeResult::Invalid: processInvalidArgs(args[0]); break;
+                case StrToTypeResult::OverLimit: processOverLimitArgs(args[0]); break;
                 case StrToTypeResult::Normal:
                     if (*res >= algevec.size()) {
                         processOverLimitArgs(args[0]);
@@ -480,12 +492,8 @@ int main() {
             }
             std::unique_ptr<std::size_t> res2 = std::make_unique<std::size_t>(0);
             switch (tryStrToULL(args[2], res2.get())) {
-                case StrToTypeResult::Invalid:
-                    processInvalidArgs(args[0]);
-                    break;
-                case StrToTypeResult::OverLimit:
-                    processOverLimitArgs(args[0]);
-                    break;
+                case StrToTypeResult::Invalid: processInvalidArgs(args[0]); break;
+                case StrToTypeResult::OverLimit: processOverLimitArgs(args[0]); break;
                 case StrToTypeResult::Normal:
                     if (*res2 >= algevec.size()) {
                         processOverLimitArgs(args[0]);

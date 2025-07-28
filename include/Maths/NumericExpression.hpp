@@ -5,7 +5,7 @@
  * @version 0.1.0-1
  * @date 2025-07-26
  * 
- * @copyright Copyright 2025 cpp-love
+ * @copyright cpp-love
  * 
  * @details
  * - 使用 **树** 这一数据结构来表示无字母的代数式
@@ -18,7 +18,7 @@
 #ifndef __MATHS_NUMERIC_EXPRESSION_HPP__
 #define __MATHS_NUMERIC_EXPRESSION_HPP__
 
-#include "Maths/Maths_base.hpp"
+#include "Maths/Expressions_base.hpp"
 #include <map>
 #include <memory>
 

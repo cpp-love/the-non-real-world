@@ -7,19 +7,25 @@ TabWidth: 4                                       # Tab 宽度（与空格对齐
 
 NamespaceIndentation: All                         # 控制命名空间缩进(None/Inner/All)
 
-ColumnLimit: 90
+ColumnLimit: 90                                   # 列数量限制
 
 BreakBeforeBraces: Attach                         # 大括号与声明同行，不换行
 
 BreakBeforeBinaryOperators: NonAssignment         # 运算符换行到下一行行首
 BinPackParameters: true                           # 参数紧凑成行
-AllowAllArgumentsOnNextLine: false
-AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllArgumentsOnNextLine: false                # 不允许所有参数在下一行
+AllowAllParametersOfDeclarationOnNextLine: false  # 不允许所有声明参数在下一行
 
 AlwaysBreakTemplateDeclarations: Yes              # 模板声明换行
 AlignAfterOpenBracket: Align                      # 对齐模板参数
 
-AllowShortFunctionsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true                # 允许短枚举在只一行内定义
+AllowShortBlocksOnASingleLine: true               # 允许短块在只一行内定义
+AllowShortCaseLabelsOnASingleLine: true           # 允许短case标签在只一行内定义
+AllowShortFunctionsOnASingleLine: All             # 允许短函数在只一行内定义
+AllowShortLambdasOnASingleLine: All               # 允许短lambda函数在只一行内定义
+AllowShortLoopsOnASingleLine: true                # 允许短循环在只一行内定义
+AllowShortIfStatementsOnASingleLine: false        # 不允许短if语句在只一行内定义
 
 CommentPragmas: '^\\\\(brief|param|return|file)'  # 匹配 Doxygen 标签
 ReflowComments: false                             # 禁止重新换行注释

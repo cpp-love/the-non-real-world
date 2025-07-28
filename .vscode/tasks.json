@@ -78,13 +78,26 @@
             "detail": "编译自定义项目的任务"
         },
         {
-            "label": "清理构建",
+            "label": "C/C++: 清理构建",
             "type": "shell",
             "command": "rm -rf ${workspaceFolder}\\bin",
             "windows": {
                 "command": "rmdir /s /q bin"
             },
-            "problemMatcher": []
+            "problemMatcher": [],
+            "detail": "清理构建的任务"
+        },
+        {
+            "label": "C/C++: 生成文件版本文件",
+            "type": "shell",
+            "command": "${workspaceFolder}\\bin\\exes\\generate_file_version",
+            "args": [
+                "${workspaceFolder}",
+                "${file}",
+                "\"[cpp-love(15865418+cpp-love@user.noreply.gitee.com)](15865418+cpp-love@user.noreply.gitee.com)\""
+            ],
+            "problemMatcher": [],
+            "detail": "输出文件版本文件的任务"
         },
         {
             "label": "C/C++: doxygen 生成文档",

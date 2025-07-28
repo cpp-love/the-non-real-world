@@ -5,7 +5,7 @@
  * @version 0.1.0-1
  * @date 2025-07-18
  * 
- * @copyright Copyright 2025 cpp-love
+ * @copyright cpp-love
  * 
  * @details
  * - 声明了最大公约数和最小公倍数的函数模板，适用于非负整数类型
