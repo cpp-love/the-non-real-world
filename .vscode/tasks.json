@@ -94,7 +94,7 @@
             "args": [
                 "${workspaceFolder}",
                 "${file}",
-                "\"[cpp-love(15865418+cpp-love@user.noreply.gitee.com)](15865418+cpp-love@user.noreply.gitee.com)\""
+                "'cpp-love(15865418+cpp-love@user.noreply.gitee.com)'"
             ],
             "problemMatcher": [],
             "detail": "输出文件版本文件的任务"

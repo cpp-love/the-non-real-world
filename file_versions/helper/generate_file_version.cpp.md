@@ -9,7 +9,26 @@
 
 ***
 
-## [0.1.0-2] - 2025-07-06 - [cpp-love(15865418+cpp-love@user.noreply.gitee.com)](15865418+cpp-love@user.noreply.gitee.com)
+## [0.1.0-3] - 2025-07-27 - cpp-love(15865418+cpp-love@user.noreply.gitee.com)
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 将模板文件改名为`helper/file_version.template.md`
+2. 重构了整个文件
+3. 将原有的命令行参数使用方法 `.\bin\generate_file_version <file_directory> <file_name> [additional_content]` 
+   修改为 `.\bin\exes\generate_file_version <workspace_folder> <file> <authors>`
+   - `<workspace_folder>` 是工作区目录
+   - `<file>` 是文件路径
+   - `<authors>` 是作者名称
+   - `<file_relative>` 是文件相对工作区的路径（运行时根据 `<workspace_folder>` 和 `<file>` 推导出来的）
+   - 生成的文件将保存在 `file_versions/<file_relative>`
+   - 生成的文件内容将基于 `<workspace_folder>/helper/file_version.template.md` 模板文件
+
+### Fixed(bug修复)
+
+***
+
+## [0.1.0-2] - 2025-07-06 - cpp-love(15865418+cpp-love@user.noreply.gitee.com)
 
 ### Added(新增)
 
@@ -21,7 +40,7 @@
 
 ***
 
-## [0.1.0-1] - 2025-07-05 - [cpp-love(15865418+cpp-love@user.noreply.gitee.com)](15865418+cpp-love@user.noreply.gitee.com)
+## [0.1.0-1] - 2025-07-05 - cpp-love(15865418+cpp-love@user.noreply.gitee.com)
 
 ### Added(新增)
 

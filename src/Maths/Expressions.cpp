@@ -207,7 +207,7 @@ namespace tnrw {
              * @param [in] root 根节点
              */
             inline void clearNode(Node::Ptr &root) noexcept {
-                using namespace tnrw::literals::Maths_base_literals;
+                using namespace tnrw::literals::Expressions_base_literals;
                 root = std::make_unique<Node>(0_c);
             }
             /**
@@ -641,7 +641,7 @@ namespace tnrw {
                             // 根是变量，如果根与值相同，返回 `true` 并将根设为1，否则返回 `true`
                             if (val != rhs)
                                 return false;
-                            using namespace tnrw::literals::Maths_base_literals;
+                            using namespace tnrw::literals::Expressions_base_literals;
                             root = std::make_unique<Node>(1_c);
                             return true;
                         } else {
@@ -1253,24 +1253,24 @@ namespace tnrw {
         }
 
         AlgebraicExpression &AlgebraicExpression::operator++() noexcept {
-            using namespace tnrw::literals::Maths_base_literals;
+            using namespace tnrw::literals::Expressions_base_literals;
             Details::plus(m_root, 1_c);
             return *this;
         }
         AlgebraicExpression &AlgebraicExpression::operator--() noexcept {
-            using namespace tnrw::literals::Maths_base_literals;
+            using namespace tnrw::literals::Expressions_base_literals;
             Details::plus(m_root, -1_c);
             return *this;
         }
 
         const AlgebraicExpression AlgebraicExpression::operator++(int) noexcept {
-            using namespace tnrw::literals::Maths_base_literals;
+            using namespace tnrw::literals::Expressions_base_literals;
             AlgebraicExpression copy_of_old(*this);
             Details::plus(m_root, 1_c);
             return copy_of_old;
         }
         const AlgebraicExpression AlgebraicExpression::operator--(int) noexcept {
-            using namespace tnrw::literals::Maths_base_literals;
+            using namespace tnrw::literals::Expressions_base_literals;
             AlgebraicExpression copy_of_old(*this);
             Details::plus(m_root, -1_c);
             return copy_of_old;
@@ -1456,24 +1456,24 @@ namespace tnrw {
         }
 
         NumericExpression &NumericExpression::operator++() noexcept {
-            using namespace tnrw::literals::Maths_base_literals;
+            using namespace tnrw::literals::Expressions_base_literals;
             Details::plus(m_root, 1_c);
             return *this;
         }
         NumericExpression &NumericExpression::operator--() noexcept {
-            using namespace tnrw::literals::Maths_base_literals;
+            using namespace tnrw::literals::Expressions_base_literals;
             Details::plus(m_root, -1_c);
             return *this;
         }
 
         const NumericExpression NumericExpression::operator++(int) noexcept {
-            using namespace tnrw::literals::Maths_base_literals;
+            using namespace tnrw::literals::Expressions_base_literals;
             NumericExpression copy_of_old(*this);
             Details::plus(m_root, 1_c);
             return copy_of_old;
         }
         const NumericExpression NumericExpression::operator--(int) noexcept {
-            using namespace tnrw::literals::Maths_base_literals;
+            using namespace tnrw::literals::Expressions_base_literals;
             NumericExpression copy_of_old(*this);
             Details::plus(m_root, -1_c);
             return copy_of_old;
@@ -1559,14 +1559,14 @@ namespace tnrw {
 
     namespace literals {
 
-        inline namespace Maths_base_literals {
+        inline namespace Expressions_base_literals {
             Maths::ConstantType operator""_c(const unsigned long long constant) noexcept {
                 return static_cast<Maths::ConstantType>(constant);
             }
             Maths::VariableType operator""_v(const char variable) noexcept {
                 return static_cast<Maths::VariableType>(variable);
             }
-        } // namespace Maths_base_literals
+        } // namespace Expressions_base_literals
 
         inline namespace AlgebraicExpression_literals {
 

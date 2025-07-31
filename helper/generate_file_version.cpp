@@ -21,10 +21,10 @@
 #include <chrono>
 #include <ctime>
 #include <filesystem>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
 #include <fstream>
 #include <iostream>
-#include <spdlog/fmt/bundled/format.h>
-#include <spdlog/fmt/bundled/ostream.h>
 #include <string>
 #include <vector>
 #ifdef _WIN32
@@ -37,8 +37,7 @@ using namespace std::literals::string_literals; //< 使用字符串字面量
 void processUnsuitedArgs() {
     fmt::println(u8":: "
                  u8"错误：参数过多或过少，请输入正确数量的参数，参数的正确顺序为"
-                 u8"<workspace_folder> <file> <authors>"
-                 u8"，最后一个参数可选");
+                 u8"<workspace_folder> <file> <authors>");
 }
 
 int main(int argc, char *argv[]) {
@@ -99,7 +98,7 @@ int main(int argc, char *argv[]) {
 
     std::filesystem::path output_file(workspace_folder / "file_versions"s
                                       / std::filesystem::relative(file, workspace_folder)
-                                            .append(".md"s)); //< 输出文件目录
+                                            .concat(".md"s)); //< 输出文件目录
     std::filesystem::path template_file(workspace_folder / "helper"s
                                         / "file_version.template.md"s); //< 模板文件目录
 
@@ -119,7 +118,7 @@ int main(int argc, char *argv[]) {
                      template_file.generic_string());
         return 0;
     }
-    std::ofstream output(output_file); //< 输出文件输出流
+    std::ofstream output(output_file, std::ios::binary); //< 输出文件输出流
     if (!output) {
         fmt::println(stderr, u8":: 错误：打开输出文件（位置：{}）失败",
                      output_file.generic_string());

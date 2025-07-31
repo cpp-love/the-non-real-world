@@ -70,11 +70,16 @@
         ,
         "-ltgui"
         */
-        // spdlog配置
+        // fmt配置
         // /*
         ,
-        "-lspdlog"
+        "-lfmt"
         // */
+        // spdlog配置
+        /*
+        ,
+        "-lspdlog"
+        */
     ],
     "files.associations": {
         ".clang-format": "yaml",

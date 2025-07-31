@@ -10,7 +10,7 @@
  */
 
 #include "Maths/AlgebraicExpression.hpp"
-#include "Maths/Maths_base.hpp"
+#include "Maths/Expressions_base.hpp"
 #include <array>
 #include <cstdio>
 #include <iostream>
