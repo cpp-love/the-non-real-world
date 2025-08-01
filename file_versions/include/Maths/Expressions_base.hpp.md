@@ -13,16 +13,6 @@
 
 ### Added(新增)
 
-### Changed(修改)
-
-1. **BREAKING(不向下兼容):**
-
-### Deprecated(废弃)
-
-### Removed(移除)
-
-### Fixed(bug修复)
-
-### Security(安全漏洞修复)
+1. 添加了为代数式服务的常量类型和变量类型及其自定义字面量
 
 ***

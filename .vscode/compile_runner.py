@@ -35,7 +35,7 @@ def get_vscode_config():
     try:
         # 尝试从 VSCode 环境变量获取设置
         config_path = os.path.join(
-            os.getenv("WORKSPACE_FOLDER", ""), ".vscode", "settings.json"
+            os.getenv("workspaceFolder", ""), ".vscode", "settings.json"
         )
         if os.path.exists(config_path):
             with open(config_path, "r", encoding="utf-8") as f:

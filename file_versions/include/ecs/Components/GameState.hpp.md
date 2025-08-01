@@ -13,16 +13,6 @@
 
 ### Added(新增)
 
-### Changed(修改)
-
-1. **BREAKING(不向下兼容):**
-
-### Deprecated(废弃)
-
-### Removed(移除)
-
-### Fixed(bug修复)
-
-### Security(安全漏洞修复)
+1. 添加的游戏状态组件 `tnrw::ecs::GameState` ，采用 `std::vector` 存储
 
 ***

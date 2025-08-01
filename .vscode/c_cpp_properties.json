@@ -20,6 +20,16 @@
             ],
             "windowsSdkVersion": "10.0.22621.0",
             "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+            "compilerArgs": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "-O2",
+                "-Wall",
+                "-Wextra",
+                "-std=c++17" ,
+                "-finput-charset=UTF-8",
+                "-fexec-charset=UTF-8"
+            ]
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-gcc-x64"

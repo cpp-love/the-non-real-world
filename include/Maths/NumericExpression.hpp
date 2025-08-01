@@ -128,6 +128,7 @@ namespace tnrw {
              * @brief 除法赋值运算符
              * @param [in] rhs 常量
              * @return NumericExpression& 当前对象的引用( `*this` )
+             * @warning 除以0行为未定义
              */
             NumericExpression &operator/=(const ConstantType rhs) noexcept;
             /**
@@ -256,6 +257,7 @@ namespace tnrw {
          * @param [in] lhs 无字母的代数式对象
          * @param [in] rhs 常量
          * @return const NumericExpression 两项相除后的副本
+         * @warning 除以0行为未定义
          */
         const NumericExpression
         operator/(const NumericExpression              &lhs,
@@ -265,6 +267,7 @@ namespace tnrw {
          * @param [in] lhs 常量
          * @param [in] rhs 无字母的代数式对象
          * @return const NumericExpression 两项相除后的副本
+         * @warning 除以0行为未定义
          */
         const NumericExpression operator/(const NumericExpression::ConstantType lhs,
                                           const NumericExpression &rhs) noexcept;

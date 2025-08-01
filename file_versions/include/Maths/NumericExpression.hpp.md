@@ -13,16 +13,8 @@
 
 ### Added(新增)
 
-### Changed(修改)
-
-1. **BREAKING(不向下兼容):**
-
-### Deprecated(废弃)
-
-### Removed(移除)
-
-### Fixed(bug修复)
-
-### Security(安全漏洞修复)
+1. 添加了代数式类型 `tnrw::Maths::NumericExpression`
+   和基本的无字母的代数式与常量和变量类型的操作
+   和无字母的代数式类型的自定义字面量
 
 ***

@@ -154,6 +154,7 @@ namespace tnrw {
              * @brief 除法赋值运算符
              * @param [in] rhs 常量
              * @return AlgebraicExpression& 当前对象的引用( `*this` )
+             * @warning 除以0行为未定义
              */
             AlgebraicExpression &operator/=(const ConstantType rhs) noexcept;
             /**
@@ -345,6 +346,7 @@ namespace tnrw {
          * @param [in] lhs 代数式对象
          * @param [in] rhs 常量
          * @return const AlgebraicExpression 两项相除后的副本
+         * @warning 除以0行为未定义
          */
         const AlgebraicExpression
         operator/(const AlgebraicExpression              &lhs,
@@ -354,6 +356,7 @@ namespace tnrw {
          * @param [in] lhs 常量
          * @param [in] rhs 代数式对象
          * @return const AlgebraicExpression 两项相除后的副本
+         * @warning 除以0行为未定义
          */
         const AlgebraicExpression operator/(const AlgebraicExpression::ConstantType lhs,
                                             const AlgebraicExpression &rhs) noexcept;

@@ -316,11 +316,23 @@ namespace tnrw {
                             }
                             if (val.m_op_type
                                 == Node::OperatorValue::OperatorType::Division) {
-                                s += '(';
+                                bool flag0 = (val.m_children[0]->m_type[Node::toSize(Node::TypeIndex::Operator)]);
+                                bool flag1 = (val.m_children[1]->m_type[Node::toSize(Node::TypeIndex::Operator)]);
+                                if (flag0) {
+                                    s += '(';
+                                }
                                 s += toStringFromNode(val.m_children[0]);
-                                s += ") / (";
+                                if (flag0) {
+                                    s += ')';
+                                }
+                                s += " / ";
+                                if (flag1) {
+                                    s += '(';
+                                }
                                 s += toStringFromNode(val.m_children[1]);
-                                s += ')';
+                                if (flag1) {
+                                    s += ')';
+                                }
                             } else {
                                 std::string op;
                                 switch (val.m_op_type) {
@@ -377,11 +389,23 @@ namespace tnrw {
                             }
                             if (val.m_op_type
                                 == Node::OperatorValue::OperatorType::Division) {
-                                s += L'(';
+                                bool flag0 = (val.m_children[0]->m_type[Node::toSize(Node::TypeIndex::Operator)]);
+                                bool flag1 = (val.m_children[1]->m_type[Node::toSize(Node::TypeIndex::Operator)]);
+                                if (flag0) {
+                                    s += L'(';
+                                }
                                 s += toWStringFromNode(val.m_children[0]);
-                                s += L") / (";
+                                if (flag0) {
+                                    s += L')';
+                                }
+                                s += L" / ";
+                                if (flag1) {
+                                    s += L'(';
+                                }
                                 s += toWStringFromNode(val.m_children[1]);
-                                s += L')';
+                                if (flag1) {
+                                    s += L')';
+                                }
                             } else {
                                 std::wstring op;
                                 switch (val.m_op_type) {
@@ -596,7 +620,7 @@ namespace tnrw {
                                 != Node::OperatorValue::OperatorType::Multiplication)
                                 return rhs;
                             // 根是乘法运算符，尽量除掉其常量
-                            auto &last_child = val.m_children[val.m_children.size() - 1];
+                            auto &last_child = val.m_children.back();
                             if (!last_child
                                      ->m_type[Node::toSize(Node::TypeIndex::Constant)])
                                 return rhs;
@@ -649,7 +673,7 @@ namespace tnrw {
                             if (val.m_op_type
                                 != Node::OperatorValue::OperatorType::Multiplication)
                                 return false;
-                            // 根是乘法运算符，查找子节点是否有与值相同，若有则返回 `true` 并删除此子节点，没有则 `false`
+                            // 根是乘法运算符，查找子节点是否有与值相同，若有则返回 `true` 并删除此子节点，没有则返回 `false`
                             for (auto &child : val.m_children) {
                                 if (child->m_type[Node::toSize(
                                         Node::TypeIndex::Variable)]) {
@@ -658,6 +682,10 @@ namespace tnrw {
                                         swap(child,
                                              val.m_children[val.m_children.size() - 2]);
                                         val.m_children.erase(val.m_children.end() - 2);
+                                        // 如果除后仅有一个孩子，退化类型
+                                        if (val.m_children.size() == 1) {
+                                            moveChildToRoot(root, val.m_children.front());
+                                        }
                                         return true;
                                     }
                                 }
@@ -897,7 +925,7 @@ namespace tnrw {
                             if (val.m_op_type
                                 == Node::OperatorValue::OperatorType::Multiplication) {
                                 // 根是乘法运算符，将其加入子节点或乘到最后的常量节点
-                                auto &child = val.m_children[val.m_children.size() - 1];
+                                auto &child = val.m_children.back();
                                 if (child->m_type[Node::toSize(
                                         Node::TypeIndex::Constant)]) {
                                     std::get<Node::ConstantValue>(child->m_value) *= rhs;
@@ -911,7 +939,7 @@ namespace tnrw {
                                 // 根是除法运算符，尝试与分母相除，剩余的乘到分子
                                 ConstantType rest = canDivided(val.m_children[1], rhs);
                                 if (rest != 1) {
-                                    multiply(val.m_children[0], rhs);
+                                    multiply(val.m_children[0], rest);
                                 }
                                 if (rest != rhs) {
                                     auto &den = val.m_children[1];
@@ -998,9 +1026,16 @@ namespace tnrw {
                                 }
                                 multiply(val.m_children[0], rhs);
                             } else {
-                                // 根是加法运算符，将变量分别乘到其子节点里
+                                // 根是加法运算符，将变量分别乘到其子节点里，将乘后的常量移到尾部
+                                Node::Ptr *constantChild = nullptr;
                                 for (auto &child : val.m_children) {
                                     multiply(child, rhs);
+                                    if (child->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
+                                        constantChild = &child;
+                                    }
+                                }
+                                if (constantChild != nullptr) {
+                                    swap(*constantChild, val.m_children.back());
                                 }
                             }
                         }
@@ -1012,6 +1047,7 @@ namespace tnrw {
              * @param [in] root 代数式
              * @param [in] rhs 常量
              * @warning 当根节点为 `nullptr` 时不会报错！
+             * @warning 除以0行为未定义
              * @warning 此函数仅为一个辅助函数，完备的函数见
              * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator/=(Maths::AlgebraicExpression::ConstantType rhs)
              * @ref const Maths::AlgebraicExpression Maths::operator/(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
@@ -1073,7 +1109,7 @@ namespace tnrw {
                                 // 根是除法运算符，尝试与分子相除，剩余的乘到分母
                                 ConstantType rest = canDivided(val.m_children[0], rhs);
                                 if (rest != 1) {
-                                    multiply(val.m_children[1], rhs);
+                                    multiply(val.m_children[1], rest);
                                 }
                             } else {
                                 // 根是加法运算符，将常量分别除到其子节点里
@@ -1151,8 +1187,17 @@ namespace tnrw {
                                     return;
                                 multiply(val.m_children[1], rhs);
                             } else {
-                                // 根是加法运算符，将变量分别除到其子节点里
-                                for (auto &child : val.m_children) { devide(child, rhs); }
+                                // 根是加法运算符，将变量分别除到其子节点里，将除后的常量移到尾部
+                                Node::Ptr *constantChild = nullptr;
+                                for (auto &child : val.m_children) {
+                                    devide(child, rhs);
+                                    if (child->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
+                                        constantChild = &child;
+                                    }
+                                }
+                                if (constantChild != nullptr) {
+                                    swap(*constantChild, val.m_children.back());
+                                }
                             }
                         }
                     },

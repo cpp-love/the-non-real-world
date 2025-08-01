@@ -13,16 +13,8 @@
 
 ### Added(新增)
 
-### Changed(修改)
+1. 添加了 `tnrw::Maths::NumericExpression` 的使用样例和测试用例，
+   具体使用方式请使用此程序键入 `help` 来获取帮助
 
-1. **BREAKING(不向下兼容):**
-
-### Deprecated(废弃)
-
-### Removed(移除)
-
-### Fixed(bug修复)
-
-### Security(安全漏洞修复)
 
 ***
