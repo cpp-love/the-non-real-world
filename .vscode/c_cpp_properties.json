@@ -29,7 +29,7 @@
                 "-std=c++17" ,
                 "-finput-charset=UTF-8",
                 "-fexec-charset=UTF-8"
-            ]
+            ],
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-gcc-x64"

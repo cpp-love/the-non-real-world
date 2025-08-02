@@ -316,8 +316,10 @@ namespace tnrw {
                             }
                             if (val.m_op_type
                                 == Node::OperatorValue::OperatorType::Division) {
-                                bool flag0 = (val.m_children[0]->m_type[Node::toSize(Node::TypeIndex::Operator)]);
-                                bool flag1 = (val.m_children[1]->m_type[Node::toSize(Node::TypeIndex::Operator)]);
+                                bool flag0 = (val.m_children[0]->m_type[Node::toSize(
+                                    Node::TypeIndex::Operator)]);
+                                bool flag1 = (val.m_children[1]->m_type[Node::toSize(
+                                    Node::TypeIndex::Operator)]);
                                 if (flag0) {
                                     s += '(';
                                 }
@@ -389,8 +391,10 @@ namespace tnrw {
                             }
                             if (val.m_op_type
                                 == Node::OperatorValue::OperatorType::Division) {
-                                bool flag0 = (val.m_children[0]->m_type[Node::toSize(Node::TypeIndex::Operator)]);
-                                bool flag1 = (val.m_children[1]->m_type[Node::toSize(Node::TypeIndex::Operator)]);
+                                bool flag0 = (val.m_children[0]->m_type[Node::toSize(
+                                    Node::TypeIndex::Operator)]);
+                                bool flag1 = (val.m_children[1]->m_type[Node::toSize(
+                                    Node::TypeIndex::Operator)]);
                                 if (flag0) {
                                     s += L'(';
                                 }
@@ -596,6 +600,7 @@ namespace tnrw {
 
                         if constexpr (std::is_same_v<T, Node::ConstantValue>) {
                             // 根是常量，尽量除掉
+
                             // 解决负数
                             if (rhs < 0) {
                                 val = -val;
@@ -634,7 +639,28 @@ namespace tnrw {
                             // 返回加速
                             if (gcdnum == 1)
                                 return rhs;
-                            child_val /= gcdnum;
+                            if (child_val == gcdnum) {
+                                // 如果孩子值与要与之相除的数相等，删除孩子
+                                val.m_children.pop_back();
+
+                                // 如果除后仅有一个孩子，退化类型
+                                if (val.m_children.size() == 1) {
+                                    moveChildToRoot(root, val.m_children[0]);
+                                }
+                            } else if (child_val == -gcdnum) {
+                                // 如果孩子值与要与之相除的数相反，删除孩子并将值设为相反数
+                                val.m_children.pop_back();
+
+                                // 如果除后仅有一个孩子，退化类型
+                                if (val.m_children.size() == 1) {
+                                    moveChildToRoot(root, val.m_children[0]);
+                                }
+                                root->m_type[Node::toSize(Node::TypeIndex::Negative)] =
+                                    root->m_type[Node::toSize(Node::TypeIndex::Negative)]
+                                    ^ true;
+                            } else {
+                                child_val /= gcdnum;
+                            }
                             return rhs / gcdnum;
                         }
                     },
@@ -684,7 +710,7 @@ namespace tnrw {
                                         val.m_children.erase(val.m_children.end() - 2);
                                         // 如果除后仅有一个孩子，退化类型
                                         if (val.m_children.size() == 1) {
-                                            moveChildToRoot(root, val.m_children.front());
+                                            moveChildToRoot(root, val.m_children[0]);
                                         }
                                         return true;
                                     }
@@ -931,8 +957,6 @@ namespace tnrw {
                                     std::get<Node::ConstantValue>(child->m_value) *= rhs;
                                 } else {
                                     val.m_children.push_back(std::make_unique<Node>(rhs));
-                                    swap(val.m_children[val.m_children.size() - 2],
-                                         val.m_children.back());
                                 }
                             } else if (val.m_op_type
                                        == Node::OperatorValue::OperatorType::Division) {
@@ -976,8 +1000,12 @@ namespace tnrw {
                         using T = std::decay_t<decltype(val)>;
 
                         if constexpr (std::is_same_v<T, Node::ConstantValue>) {
-                            // 根是常量，如果值是 `0` 跳过，否则创建新节点
+                            // 根是常量，如果值是 `0` 跳过，如果值是 `1` 覆盖原节点，否则创建新节点
                             if (val == 0) {
+                                return;
+                            }
+                            if (val == 1) {
+                                root = std::make_unique<Node>(rhs);
                                 return;
                             }
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
@@ -1030,7 +1058,8 @@ namespace tnrw {
                                 Node::Ptr *constantChild = nullptr;
                                 for (auto &child : val.m_children) {
                                     multiply(child, rhs);
-                                    if (child->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
+                                    if (child->m_type[Node::toSize(
+                                            Node::TypeIndex::Constant)]) {
                                         constantChild = &child;
                                     }
                                 }
@@ -1191,7 +1220,8 @@ namespace tnrw {
                                 Node::Ptr *constantChild = nullptr;
                                 for (auto &child : val.m_children) {
                                     devide(child, rhs);
-                                    if (child->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
+                                    if (child->m_type[Node::toSize(
+                                            Node::TypeIndex::Constant)]) {
                                         constantChild = &child;
                                     }
                                 }

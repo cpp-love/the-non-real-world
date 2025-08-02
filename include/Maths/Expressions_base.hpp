@@ -7,8 +7,7 @@
  * 
  * @copyright cpp-love
  * 
- * @details
- * - 声明了 `ConstantType` 和 `VariableType` 来表示常量与变量类型
+ * @details 声明了 `ConstantType` 和 `VariableType` 来表示常量与变量类型
  * 
  */
 

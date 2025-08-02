@@ -2,7 +2,7 @@
 
 #### Description
 
-*The Non-"Real" World*（《不“真实”的世界》）: A game about non-"real" numbers, the plural, which explores the mysteries of this plural world through notes left behind by previous explorers.
+*The Non-"Real" World*（《不“真实”的世界》）: A game about the non-"real" numbers, the complex numbers, which explores the mysteries of this complex world through notes left behind by previous explorers.
 
 #### Software Architecture
 
