@@ -23,28 +23,28 @@
 
 constexpr std::size_t cmd_size = 10; ///< 命令的个数
 
-const std::array<std::string, cmd_size> commands{
-    "help",     "new",    "delete",     "operator", "clear",
-    "getValue", "isZero", "toOpposite", "compare",  "quit"}; ///< 命令列表
-const std::array<std::string, cmd_size> briefs{u8"提供帮助",
-                                               u8"添加代数式",
-                                               u8"删除代数式",
-                                               u8"对一个代数式使用运算符",
-                                               u8"清除一个代数式",
-                                               u8"获取一个代数式的值(暂未加入)",
-                                               u8"判断一个代数式是否为0",
-                                               u8"对一个代数式取相反数",
-                                               u8"比较两个代数式",
-                                               u8"退出程序"}; ///< 命令的简要描述列表
-const std::array<std::string, cmd_size> details{u8"\
+const std::array<std::string, cmd_size> commands{"help",    "new",      "delete", "operator",
+                                                 "clear",   "getValue", "isZero", "toOpposite",
+                                                 "compare", "quit"}; ///< 命令列表
+const std::array<std::string, cmd_size> briefs{"提供帮助",
+                                               "添加代数式",
+                                               "删除代数式",
+                                               "对一个代数式使用运算符",
+                                               "清除一个代数式",
+                                               "获取一个代数式的值(暂未加入)",
+                                               "判断一个代数式是否为0",
+                                               "对一个代数式取相反数",
+                                               "比较两个代数式",
+                                               "退出程序"}; ///< 命令的简要描述列表
+const std::array<std::string, cmd_size> details{"\
 - help\n\
   用于快速获取命令列表\n\
 - help [command]\n\
-  用于获取command命令的详细使用方式", u8"\
+  用于获取command命令的详细使用方式", "\
 - new [index]\n\
-  用于在第index(从0开始)个代数式前添加一个代数式\n", u8"\
+  用于在第index(从0开始)个代数式前添加一个代数式\n", "\
 - delete [index]\n\
-  用于删除第index(从0开始)个代数式\n", u8"\
+  用于删除第index(从0开始)个代数式\n", "\
 - operator [index] [+= | -= | *= | /= ] [constant | variable] [value]\n\
   用于对第index(从0开始)个代数式[+= | -= | *= | /=][常量 | 变量]的value\n\
 - operaotor [index] [+ | - | * | /] [constant | variable] [value]\n\
@@ -54,20 +54,20 @@ const std::array<std::string, cmd_size> details{u8"\
 - operator [index] [back++ | back--]\n\
   用于获取第index(从0开始)个代数式后置[++ | --]的结果\n\
 - operator [index] [+ | -]\n\
-  用于获取[+ | -]第index(从0开始)个代数式的结果", u8"\
+  用于获取[+ | -]第index(从0开始)个代数式的结果", "\
 - clear [index]\n\
   用于清空第index(从0开始)个代数式",
-                                                u8"\
+                                                "\
 - getValue [index] ??\n\
   本节未完成\n\
-  原因：未定义tnrw::Maths::AlgebraicExpression的getValue方法", u8"\
+  原因：未定义tnrw::Maths::AlgebraicExpression的getValue方法", "\
 - isZero [index] ??\n\
   本节未完成\n\
-  原因：未定义tnrw::Maths::AlgebraicExpression的isZero方法", u8"\
+  原因：未定义tnrw::Maths::AlgebraicExpression的isZero方法", "\
 - toOpposite [index]\n\
-  原因将第index(从0开始)个代数式改为相反数", u8"\
+  原因将第index(从0开始)个代数式改为相反数", "\
 - compare [index1] [index2]\n\
-  用于比较第index1(从0开始)个代数式和第index2(从0开始)个代数式是否相等", u8"\
+  用于比较第index1(从0开始)个代数式和第index2(从0开始)个代数式是否相等", "\
 - quit\n\
   用于退出程序"}; ///< 命令的详细描述列表
 
@@ -77,42 +77,39 @@ std::vector<tnrw::Maths::AlgebraicExpression> algevec(1); ///< 代数式列表
  * @brief 处理大小不合适的参数
  * @param [in] cmd 主命令
  */
-void processUnsuitedArgs(std::string cmd) {
-    std::cout << u8"错误：命令 \"" << cmd
-              << u8"\" 的参数过少或过多，请键入 \"help\" 获取帮助\n";
+void processUnsuitedArgs(std::string_view cmd) {
+    std::cout << "错误：命令 \"" << cmd << "\" 的参数过少或过多，请键入 \"help\" 获取帮助\n";
 }
 
 /**
  * @brief 处理非法命令
  * @param [in] cmd 主命令
  */
-void processInvalidCmds(std::string cmd) {
-    std::cout << u8"错误：不存在命令 \"" << cmd << u8"\"，请键入 \"help\" 获取帮助\n";
+void processInvalidCmds(std::string_view cmd) {
+    std::cout << "错误：不存在命令 \"" << cmd << "\"，请键入 \"help\" 获取帮助\n";
 }
 
 /**
  * @brief 处理非法参数
  * @param [in] cmd 主命令
  */
-void processInvalidArgs(std::string cmd) {
-    std::cout << u8"错误：命令 \"" << cmd
-              << u8"\" 有非法的参数，请键入 \"help\" 获取帮助\n";
+void processInvalidArgs(std::string_view cmd) {
+    std::cout << "错误：命令 \"" << cmd << "\" 有非法的参数，请键入 \"help\" 获取帮助\n";
 }
 
 /**
  * @brief 处理超限参数
  * @param [in] cmd 主命令
  */
-void processOverLimitArgs(std::string cmd) {
-    std::cout << u8"错误：命令 \"" << cmd
-              << u8"\" 的参数过大或过小，请键入 \"help\" 获取帮助\n";
+void processOverLimitArgs(std::string_view cmd) {
+    std::cout << "错误：命令 \"" << cmd << "\" 的参数过大或过小，请键入 \"help\" 获取帮助\n";
 }
 
 /**
  * @brief 获取命令行参数
  * @return std::vector<std::string> 命令行参数
  */
-std::vector<std::string> getArgs() {
+[[nodiscard]] std::vector<std::string> getArgs() {
     std::vector<std::string> args;
     bool                     not_finished = true;
     args.reserve(4); //< 提升性能
@@ -152,7 +149,7 @@ enum class StrToTypeResult { Invalid, OverLimit, Normal };
  * @return StrToTypeResult 转换结果
  * @note 当 `result` 参数为 `nullptr` 时，忽略该参数，不存储转换结果
  */
-StrToTypeResult tryStrToLL(const std::string &str, long long *result = nullptr) {
+[[nodiscard]] StrToTypeResult tryStrToLL(const std::string &str, long long *result = nullptr) {
     try {
         size_t    pos;
         long long value = std::stoll(str, &pos);
@@ -175,7 +172,7 @@ StrToTypeResult tryStrToLL(const std::string &str, long long *result = nullptr) 
  * @return StrToTypeResult 转换结果
  * @note 当 `result` 参数为 `nullptr` 时，忽略该参数，不存储转换结果
  */
-StrToTypeResult tryStrToULL(const std::string &str, unsigned long long *result) {
+[[nodiscard]] StrToTypeResult tryStrToULL(const std::string &str, unsigned long long *result) {
     try {
         size_t             pos;
         unsigned long long value = std::stoull(str, &pos);
@@ -198,14 +195,14 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
 #endif // _WIN32
 
-    std::cout << u8"想查看帮助，请键入 help 获取\n";
+    std::cout << "想查看帮助，请键入 help 获取\n";
 
     while (true) {
-        std::cout << u8"现在代数式数组为：\n";
+        std::cout << "现在代数式数组为：\n";
         for (std::size_t i = 0; i < algevec.size(); ++i) {
-            std::cout << i << ": " << algevec[i].toString() << '\n';
+            std::cout << i << ": " << algevec[i] << '\n';
         }
-        std::cout << u8">>> " << std::flush;
+        std::cout << ">>> " << std::flush;
         std::vector<std::string> args = getArgs();
         // 未键入
         if (args.empty())
@@ -218,8 +215,7 @@ int main() {
             }
             if (args.size() == 1) {
                 // 输出简要描述
-                std::cout
-                    << u8"如要详细查看某条命令的使用方式，请键入 help [command] 获取\n";
+                std::cout << "如要详细查看某条命令的使用方式，请键入 help [command] 获取\n";
                 for (std::size_t i = 0; i < cmd_size; ++i) {
                     std::cout << commands[i] << ' ' << briefs[i] << '\n';
                 }
@@ -294,39 +290,42 @@ int main() {
             const std::size_t index = *res1;
             if (index >= algevec.size()) {
                 processOverLimitArgs(args[0]);
+                continue;
             }
             if (args[2] == "front++") {
                 if (args.size() == 3) {
-                    std::cout << u8"结果：" << (++algevec[index]).toString() << '\n';
+                    std::cout << "结果：" << (++algevec[index]) << '\n';
                 } else {
                     processUnsuitedArgs(args[0]);
                 }
             } else if (args[2] == "front--") {
                 if (args.size() == 3) {
-                    std::cout << u8"结果：" << (--algevec[index]).toString() << '\n';
+                    std::cout << "结果：" << (--algevec[index]) << '\n';
                 } else {
                     processUnsuitedArgs(args[0]);
                 }
             } else if (args[2] == "back++") {
                 if (args.size() == 3) {
-                    std::cout << u8"结果：" << (algevec[index]++).toString() << '\n';
+                    std::cout << "结果：" << (algevec[index]++) << '\n';
                 } else {
                     processUnsuitedArgs(args[0]);
                 }
             } else if (args[2] == "back--") {
                 if (args.size() == 3) {
-                    std::cout << u8"结果：" << (algevec[index]--).toString() << '\n';
+                    std::cout << "结果：" << (algevec[index]--) << '\n';
                 } else {
                     processUnsuitedArgs(args[0]);
                 }
             } else {
                 if (args[2] == "+") {
                     if (args.size() == 3) {
-                        std::cout << u8"结果：" << (+algevec[index]).toString() << '\n';
+                        std::cout << "结果：" << (+algevec[index]) << '\n';
+                        continue;
                     }
                 } else if (args[2] == "-") {
                     if (args.size() == 3) {
-                        std::cout << u8"结果：" << (-algevec[index]).toString() << '\n';
+                        std::cout << "结果：" << (-algevec[index]) << '\n';
+                        continue;
                     }
                 }
                 if (args.size() == 3) {
@@ -346,28 +345,20 @@ int main() {
                     }
                     const long long val = *res2;
                     if (args[2] == "+") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      + static_cast<tnrw::Maths::ConstantType>(val))
-                                         .toString()
+                        std::cout << "结果："
+                                  << (algevec[index] + static_cast<tnrw::Maths::ConstantType>(val))
                                   << '\n';
                     } else if (args[2] == "-") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      - static_cast<tnrw::Maths::ConstantType>(val))
-                                         .toString()
+                        std::cout << "结果："
+                                  << (algevec[index] - static_cast<tnrw::Maths::ConstantType>(val))
                                   << '\n';
                     } else if (args[2] == "*") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      * static_cast<tnrw::Maths::ConstantType>(val))
-                                         .toString()
+                        std::cout << "结果："
+                                  << (algevec[index] * static_cast<tnrw::Maths::ConstantType>(val))
                                   << '\n';
                     } else if (args[2] == "/") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      / static_cast<tnrw::Maths::ConstantType>(val))
-                                         .toString()
+                        std::cout << "结果："
+                                  << (algevec[index] / static_cast<tnrw::Maths::ConstantType>(val))
                                   << '\n';
                     } else if (args[2] == "+=") {
                         algevec[index] += static_cast<tnrw::Maths::ConstantType>(val);
@@ -387,28 +378,20 @@ int main() {
                     }
                     const char val = args[4][0];
                     if (args[2] == "+") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      + static_cast<tnrw::Maths::VariableType>(val))
-                                         .toString()
+                        std::cout << "结果："
+                                  << (algevec[index] + static_cast<tnrw::Maths::VariableType>(val))
                                   << '\n';
                     } else if (args[2] == "-") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      - static_cast<tnrw::Maths::VariableType>(val))
-                                         .toString()
+                        std::cout << "结果："
+                                  << (algevec[index] - static_cast<tnrw::Maths::VariableType>(val))
                                   << '\n';
                     } else if (args[2] == "*") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      * static_cast<tnrw::Maths::VariableType>(val))
-                                         .toString()
+                        std::cout << "结果："
+                                  << (algevec[index] * static_cast<tnrw::Maths::VariableType>(val))
                                   << '\n';
                     } else if (args[2] == "/") {
-                        std::cout << u8"结果："
-                                  << (algevec[index]
-                                      / static_cast<tnrw::Maths::VariableType>(val))
-                                         .toString()
+                        std::cout << "结果："
+                                  << (algevec[index] / static_cast<tnrw::Maths::VariableType>(val))
                                   << '\n';
                     } else if (args[2] == "+=") {
                         algevec[index] += static_cast<tnrw::Maths::VariableType>(val);
@@ -445,10 +428,10 @@ int main() {
                     break;
             }
         } else if (args[0] == commands[5]) {
-            std::cout << u8"本节未完成\n原因：未定义tnrw::Maths::"
+            std::cout << "本节未完成\n原因：未定义tnrw::Maths::"
                          "AlgebraicExpression的getValue方法\n";
         } else if (args[0] == commands[6]) {
-            std::cout << u8"本节未完成\n原因：未定义tnrw::Maths::"
+            std::cout << "本节未完成\n原因：未定义tnrw::Maths::"
                          "AlgebraicExpression的isZero方法\n";
         } else if (args[0] == commands[7]) {
             if (args.size() != 2) {
@@ -498,8 +481,8 @@ int main() {
                     if (*res2 >= algevec.size()) {
                         processOverLimitArgs(args[0]);
                     } else {
-                        std::cout << u8"结果：" << std::boolalpha
-                                  << (algevec[*res1] == algevec[*res2]) << '\n';
+                        std::cout << "结果：" << std::boolalpha << (algevec[*res1] == algevec[*res2])
+                                  << '\n';
                     }
                     break;
             }
@@ -510,7 +493,7 @@ int main() {
         }
     }
 
-    std::cout << u8"退出中..." << std::endl;
+    std::cout << "退出中..." << std::endl;
 
     return 0;
 }

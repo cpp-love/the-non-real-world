@@ -34,13 +34,14 @@ namespace tnrw {
              * @param [in] constant 常量值字面量
              * @return Maths::ConstantType 创建的常量类型
              */
-            Maths::ConstantType operator""_c(const unsigned long long constant) noexcept;
+            [[nodiscard]] constexpr Maths::ConstantType
+            operator""_c(const unsigned long long constant) noexcept;
             /**
              * @brief 创建变量
              * @param [in] variable 变量字符字面量
              * @return Maths::VariableType 创建的变量类型
              */
-            Maths::VariableType operator""_v(const char variable) noexcept;
+            [[nodiscard]] constexpr Maths::VariableType operator""_v(const char variable) noexcept;
 
         } // namespace Expressions_base_literals
 

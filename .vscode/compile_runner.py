@@ -119,8 +119,8 @@ def expand_patterns(patterns, base_path=None):
 
 def select_files_interactively():
     """交互式选择文件"""
-    print("请选择文件（输入多个文件路径，用空格分隔）:")
-    print("支持通配符（如：src/**/*.cpp），完成后按回车两次开始")
+    print(":: 请选择文件（输入多个文件路径，用空格分隔）:")
+    print(":: 注意：不支持通配符（如：src/**/*.cpp），完成后按回车两次开始")
 
     selected = []
     while True:

@@ -1,37 +1,33 @@
 {
     "version": 4,
     "env": {
-        "INCLUDEPATH": [
-            // 用MSYS2的头文件
-            "C:/msys64/ucrt64/include/**",
-            "C:/msys64/ucrt64/include/c++/15.1.0/**"
+        "DEFAULTINCLUDEPATH": [
+            "C:/msys64/ucrt64/include",
+            "C:/msys64/ucrt64/include/c++/15.1.0"
         ],
-        "DEFINES": []
+        "DEFAULTDEFINES": []
     },
     "configurations": [
         {
             "name": "Win32",
             "includePath": [
-                "${INCLUDEPATH}",
-                "${workspaceFolder}/include/**"
+                "${DEFAULTINCLUDEPATH}",
+                "${workspaceFolder}/include"
             ],
             "defines": [
-                "${DEFINES}"
+                "${DEFAULTDEFINES}"
             ],
             "windowsSdkVersion": "10.0.22621.0",
             "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
             "compilerArgs": [
-                "-fdiagnostics-color=always",
-                "-g",
-                "-O2",
                 "-Wall",
                 "-Wextra",
-                "-std=c++17" ,
-                "-finput-charset=UTF-8",
-                "-fexec-charset=UTF-8"
+                "-Wpedantic",
+                "-m64",
+                "-std=c++20"
             ],
             "cStandard": "c17",
-            "cppStandard": "c++17",
+            "cppStandard": "c++20",
             "intelliSenseMode": "windows-gcc-x64"
         }
     ],

@@ -13,10 +13,13 @@
 #include "Maths/Expressions_base.hpp"
 #include "Maths/NumericExpression.hpp"
 #include "Maths/functions.hpp"
+#include "base/assert_msg.hpp"
 #include <bitset>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <iostream>
+#include <locale>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -76,7 +79,7 @@ namespace tnrw {
                     Operator = 3  ///< 运算符
                 };
 
-                static inline std::size_t toSize(const TypeIndex t) noexcept {
+                [[nodiscard]] static inline std::size_t toSize(const TypeIndex t) noexcept {
                     return static_cast<std::size_t>(t);
                 }
 
@@ -110,8 +113,8 @@ namespace tnrw {
                      * @param [in] type 运算符类型
                      * @param [in] children 孩子节点
                      */
-                    explicit OperatorValue(OperatorType   type,
-                                           ChildrenType &&children) noexcept
+                    [[nodiscard]] explicit OperatorValue(OperatorType   type,
+                                                         ChildrenType &&children) noexcept
                         : m_op_type(type), m_children(std::move(children)) {}
                     /// @brief 析构函数
                     ~OperatorValue() = default;
@@ -119,7 +122,7 @@ namespace tnrw {
                      * @brief 深复制构造函数
                      * @param [in] rhs 另一个对象
                      */
-                    OperatorValue(const OperatorValue &rhs) noexcept
+                    [[nodiscard]] OperatorValue(const OperatorValue &rhs) noexcept
                         : m_op_type(rhs.m_op_type) {
                         m_children.reserve(rhs.m_children.size());
                         for (const auto &child : rhs.m_children) {
@@ -129,8 +132,7 @@ namespace tnrw {
                 };
 
                 // using别名
-                using ValueType =
-                    std::variant<ConstantValue, VariableValue, OperatorValue>;
+                using ValueType = std::variant<ConstantValue, VariableValue, OperatorValue>;
 
                 ValueType m_value; // 节点值
 
@@ -143,7 +145,7 @@ namespace tnrw {
                  * @param [in] value 常量值
                  * @param [in] is_negative 是否为负
                  */
-                explicit Node(const ConstantValue value) noexcept
+                [[nodiscard]] explicit Node(const ConstantValue value) noexcept
                     : m_type(), m_value(value) {
                     m_type.set(Node::toSize(TypeIndex::Constant));
                 }
@@ -152,8 +154,8 @@ namespace tnrw {
                  * @param [in] value 变量字符
                  * @param [in] is_negative 是否为负
                  */
-                explicit Node(const VariableValue value,
-                              const bool          is_negative = false) noexcept
+                [[nodiscard]] explicit Node(const VariableValue value,
+                                            const bool          is_negative = false) noexcept
                     : m_type(), m_value(value) {
                     m_type.set(Node::toSize(TypeIndex::Variable));
                     if (is_negative) {
@@ -165,8 +167,8 @@ namespace tnrw {
                  * @param [in] value 运算符
                  * @param [in] is_negative 是否为负
                  */
-                explicit Node(const OperatorValue &value,
-                              const bool           is_negative = false) noexcept
+                [[nodiscard]] explicit Node(const OperatorValue &value,
+                                            const bool           is_negative = false) noexcept
                     : m_type(), m_value(value) {
                     m_type.set(Node::toSize(TypeIndex::Operator));
                     if (is_negative) {
@@ -178,7 +180,7 @@ namespace tnrw {
                  * @param [in] value 另一个 `Node` 对象
                  * @param [in] is_negative 是否为负
                  */
-                explicit Node(const Node &value, const bool is_negative) noexcept
+                [[nodiscard]] explicit Node(const Node &value, const bool is_negative) noexcept
                     : m_type(value.m_type), m_value(value.m_value) {
                     if (is_negative) {
                         m_type.set(Node::toSize(TypeIndex::Negative));
@@ -189,7 +191,7 @@ namespace tnrw {
                  * @param [in] value 另一个 `Node` 对象
                  * @param [in] is_negative 是否为负
                  */
-                explicit Node(const Node &&value, const bool is_negative) noexcept
+                [[nodiscard]] explicit Node(const Node &&value, const bool is_negative) noexcept
                     : m_type(std::move(value.m_type)), m_value(std::move(value.m_value)) {
                     if (is_negative) {
                         m_type.set(Node::toSize(TypeIndex::Negative));
@@ -205,24 +207,28 @@ namespace tnrw {
             /**
              * @brief 清空节点
              * @param [in] root 根节点
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              */
             inline void clearNode(Node::Ptr &root) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 using namespace tnrw::literals::Expressions_base_literals;
                 root = std::make_unique<Node>(0_c);
             }
+
+            template <typename T>
+            concept IsNodePtr = requires(const T &v) { std::is_same_v<std::decay_t<T>, Node::Ptr>; };
+
             /**
              * @brief 构建加法运算符节点
-             * @tparam Args 孩子类型（必须均为 `Node::Ptr &&` ）
+             * @tparam Args 孩子类型（必须均为 `Node::Ptr`类型的 ）
              * @param [in] is_negative 是否为负
              * @param [in] args 孩子
              * @return Node::Ptr 新建的节点
-             * @warning 孩子类型必须均为 `Node::Ptr &&` ，否则无效！
-             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
+             * @warning 孩子类型必须均为 `Node::Ptr` ，否则将报错！
              */
-            template <typename... Args>
-            inline std::enable_if_t<
-                (std::is_same_v<std::decay_t<Args>, Node::Ptr> && ...), Node::Ptr>
-            createAdditionNode(bool is_negative, Args... args) noexcept {
+            template <IsNodePtr... Args>
+            [[nodiscard]] inline Node::Ptr createAdditionNode(bool is_negative, Args... args) noexcept {
                 Node::OperatorValue::ChildrenType children;
                 children.reserve(sizeof...(args));
                 (children.push_back(std::move(args)), ...);
@@ -233,17 +239,15 @@ namespace tnrw {
             }
             /**
              * @brief 构建乘法运算符节点
-             * @tparam Args 孩子类型（必须均为 `Node::Ptr &&` ）
+             * @tparam Args 孩子类型（必须均为 `Node::Ptr`类型的 ）
              * @param [in] is_negative 是否为负
              * @param [in] args 孩子
              * @return Node::Ptr 新建的节点
-             * @warning 孩子类型必须均为 `Node::Ptr &&` ，否则无效！
-             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
+             * @warning 孩子类型必须均为 `Node::Ptr` ，否则将报错！
              */
-            template <typename... Args>
-            inline std::enable_if_t<
-                (std::is_same_v<std::decay_t<Args>, Node::Ptr> && ...), Node::Ptr>
-            createMultiplicationNode(bool is_negative, Args... args) noexcept {
+            template <IsNodePtr... Args>
+            [[nodiscard]] inline Node::Ptr createMultiplicationNode(bool is_negative,
+                                                                    Args... args) noexcept {
                 Node::OperatorValue::ChildrenType children;
                 children.reserve(sizeof...(args));
                 (children.push_back(std::move(args)), ...);
@@ -254,17 +258,14 @@ namespace tnrw {
             }
             /**
              * @brief 构建除法运算符节点
-             * @tparam Args 孩子类型（必须均为 `Node::Ptr &&` ）
+             * @tparam Args 孩子类型（必须均为 `Node::Ptr`类型的 ）
              * @param [in] is_negative 是否为负
              * @param [in] args 孩子
              * @return Node::Ptr 新建的节点
-             * @warning 孩子类型必须均为 `Node::Ptr &&` ，否则无效！
-             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
+             * @warning 孩子类型必须均为 `Node::Ptr` ，否则将报错！
              */
-            template <typename... Args>
-            inline std::enable_if_t<
-                (std::is_same_v<std::decay_t<Args>, Node::Ptr> && ...), Node::Ptr>
-            createDivisionNode(bool is_negative, Args... args) noexcept {
+            template <IsNodePtr... Args>
+            [[nodiscard]] inline Node::Ptr createDivisionNode(bool is_negative, Args... args) noexcept {
                 Node::OperatorValue::ChildrenType children;
                 children.reserve(sizeof...(args));
                 (children.push_back(std::move(args)), ...);
@@ -280,9 +281,11 @@ namespace tnrw {
              * @details 
              * - 将孩子节点移动到临时变量，再移动到根节点，避免了移动到根节点时根节点释放掉子节点导致的悬垂指针问题
              * - 此函数保留原来的负属性并叠加到孩子节点
-             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              */
             inline void moveChildToRoot(Node::Ptr &root, Node::Ptr &child) {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 bool is_nega = root->m_type[Node::toSize(Node::TypeIndex::Negative)];
                 auto new_child = std::move(child);
                 root = std::move(new_child);
@@ -291,66 +294,93 @@ namespace tnrw {
                     root->m_type[Node::toSize(Node::TypeIndex::Negative)] ^ is_nega;
             }
             /**
-             * @brief 将代数式转为 `std::string`
+             * @brief 将代数式转为 `std::basic_string`
+             * @tparam CharT `std::basic_string` 的模板参数1
+             * @tparam Traits `std::basic_string` 的模板参数2
              * @param [in] root 根节点
-             * @return std::string 人类可读的字符串
-             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
+             * @param [in] loc 可能的 `std::locale` 配置
+             * @return std::basic_string<CharT, Traits> 人类可读的字符串
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              */
-            inline std::string toStringFromNode(const Node::Ptr &root) noexcept {
+            template <typename CharT, typename Traits>
+            [[nodiscard]] inline std::basic_string<CharT, Traits>
+            toBasicStringFromNode(const Node::Ptr &root, const std::locale &loc) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 // 分类处理
                 return std::visit(
-                    [&root](auto &val) -> std::string {
+                    [&root, &loc](auto &val) -> std::basic_string<CharT, Traits> {
                         using T = std::decay_t<decltype(val)>;
 
+                        const auto &conv = std::use_facet<std::ctype<CharT>>(loc);
+
                         if constexpr (std::is_same_v<T, Node::ConstantValue>) {
-                            return std::to_string(val);
+                            // 避免重复赋值
+                            if constexpr (std::is_same_v<std::basic_string<CharT, Traits>,
+                                                         std::string>) {
+                                return std::to_string(val);
+                            } else if constexpr (std::is_same_v<std::basic_string<CharT, Traits>,
+                                                                std::wstring>) {
+                                return std::to_wstring(val);
+                            } else {
+                                std::string                      tmp = std::to_string(val);
+                                std::basic_string<CharT, Traits> res;
+                                res.reserve(tmp.size());
+                                for (const char ch : tmp) { res += conv.widen(ch); }
+                                return res;
+                            }
                         } else if constexpr (std::is_same_v<T, Node::VariableValue>) {
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)])
-                                return '-' + std::string(1, val);
+                                return conv.widen('-') + std::basic_string<CharT, Traits>(1, val);
                             else
-                                return std::string(1, val);
+                                return std::basic_string<CharT, Traits>(1, val);
                         } else {
-                            std::string s;
+                            std::basic_string<CharT, Traits> s;
+                            s.reserve(10);
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                s += "- (";
+                                s += conv.widen('-');
+                                s += conv.widen('(');
                             }
-                            if (val.m_op_type
-                                == Node::OperatorValue::OperatorType::Division) {
-                                bool flag0 = (val.m_children[0]->m_type[Node::toSize(
-                                    Node::TypeIndex::Operator)]);
-                                bool flag1 = (val.m_children[1]->m_type[Node::toSize(
-                                    Node::TypeIndex::Operator)]);
+                            if (val.m_op_type == Node::OperatorValue::OperatorType::Division) {
+                                bool flag0 =
+                                    (val.m_children[0]->m_type[Node::toSize(Node::TypeIndex::Operator)]);
+                                bool flag1 =
+                                    (val.m_children[1]->m_type[Node::toSize(Node::TypeIndex::Operator)]);
                                 if (flag0) {
-                                    s += '(';
+                                    s += conv.widen('(');
                                 }
-                                s += toStringFromNode(val.m_children[0]);
+                                s += toBasicStringFromNode<CharT, Traits>(val.m_children[0], loc);
                                 if (flag0) {
-                                    s += ')';
+                                    s += conv.widen(')');
                                 }
-                                s += " / ";
+                                s += conv.widen(' ');
+                                s += conv.widen('/');
+                                s += conv.widen(' ');
                                 if (flag1) {
-                                    s += '(';
+                                    s += conv.widen('(');
                                 }
-                                s += toStringFromNode(val.m_children[1]);
+                                s += toBasicStringFromNode<CharT, Traits>(val.m_children[1], loc);
                                 if (flag1) {
-                                    s += ')';
+                                    s += conv.widen(')');
                                 }
                             } else {
-                                std::string op;
+                                std::basic_string<CharT, Traits> op;
+                                op.reserve(3);
                                 switch (val.m_op_type) {
                                     case Node::OperatorValue::OperatorType::Addition:
-                                        op = " + ";
+                                        op = conv.widen(' ');
+                                        op += conv.widen('+');
+                                        op += conv.widen(' ');
                                         break;
-                                    case Node::OperatorValue::OperatorType::
-                                        Multiplication:
-                                        op = " * ";
+                                    case Node::OperatorValue::OperatorType::Multiplication:
+                                        op = conv.widen(' ');
+                                        op += conv.widen('*');
+                                        op += conv.widen(' ');
                                         break;
-                                    case Node::OperatorValue::OperatorType::Division:
-                                        break;
+                                    case Node::OperatorValue::OperatorType::Division: break;
                                 }
-                                for (std::size_t i = val.m_children.size() - 1; true;
-                                     --i) {
-                                    s += toStringFromNode(val.m_children[i]);
+                                for (std::size_t i = val.m_children.size() - 1; true; --i) {
+                                    s += toBasicStringFromNode<CharT, Traits>(val.m_children[i], loc);
                                     if (i == 0) {
                                         break;
                                     }
@@ -358,82 +388,7 @@ namespace tnrw {
                                 }
                             }
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                s += ')';
-                            }
-                            return s;
-                        }
-                    },
-                    root->m_value);
-            }
-            /**
-             * @brief 将代数式转为 `std::wstring`
-             * @param [in] root 根节点
-             * @return std::wstring 人类可读的字符串
-             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
-             */
-            inline std::wstring toWStringFromNode(const Node::Ptr &root) noexcept {
-                // 分类处理
-                return std::visit(
-                    [&root](auto &val) -> std::wstring {
-                        using T = std::decay_t<decltype(val)>;
-
-                        if constexpr (std::is_same_v<T, Node::ConstantValue>) {
-                            return std::to_wstring(val);
-                        } else if constexpr (std::is_same_v<T, Node::VariableValue>) {
-                            if (root->m_type[Node::toSize(Node::TypeIndex::Negative)])
-                                return L'-' + std::wstring(1, val);
-                            else
-                                return std::wstring(1, val);
-                        } else {
-                            std::wstring s;
-                            if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                s += L"- (";
-                            }
-                            if (val.m_op_type
-                                == Node::OperatorValue::OperatorType::Division) {
-                                bool flag0 = (val.m_children[0]->m_type[Node::toSize(
-                                    Node::TypeIndex::Operator)]);
-                                bool flag1 = (val.m_children[1]->m_type[Node::toSize(
-                                    Node::TypeIndex::Operator)]);
-                                if (flag0) {
-                                    s += L'(';
-                                }
-                                s += toWStringFromNode(val.m_children[0]);
-                                if (flag0) {
-                                    s += L')';
-                                }
-                                s += L" / ";
-                                if (flag1) {
-                                    s += L'(';
-                                }
-                                s += toWStringFromNode(val.m_children[1]);
-                                if (flag1) {
-                                    s += L')';
-                                }
-                            } else {
-                                std::wstring op;
-                                switch (val.m_op_type) {
-                                    case Node::OperatorValue::OperatorType::Addition:
-                                        op = L" + ";
-                                        break;
-                                    case Node::OperatorValue::OperatorType::
-                                        Multiplication:
-                                        op = L" * ";
-                                        break;
-                                    case Node::OperatorValue::OperatorType::Division:
-                                        break;
-                                }
-                                for (std::size_t i = val.m_children.size() - 1; true;
-                                     --i) {
-                                    s += toWStringFromNode(val.m_children[i]);
-                                    if (i == 0) {
-                                        break;
-                                    }
-                                    s += op;
-                                }
-                            }
-                            if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                s += L')';
+                                s += conv.widen(')');
                             }
                             return s;
                         }
@@ -446,17 +401,18 @@ namespace tnrw {
              * @param [in] root2 代数式2
              * @return true 两个代数式相同
              * @return false 两个代数式不相同
-             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              */
-            inline bool isEqual(const Node::Ptr &root1, const Node::Ptr &root2) {
+            [[nodiscard]] inline bool isEqual(const Node::Ptr &root1, const Node::Ptr &root2) {
+                assert_msg(root1 != nullptr || root2 != nullptr,
+                           "tnrw::Maths::Details::Node类指针错误地为 `nullptr`，请将其反馈到项目的 "
+                           "`Issue` 中。");
                 // 比较类型是否相等
                 if (root1->m_type != root2->m_type)
                     return false;
                 if (root1->m_type[Node::toSize(Node::TypeIndex::Operator)]) {
-                    const auto &children1 =
-                        std::get<Node::OperatorValue>(root1->m_value).m_children;
-                    const auto &children2 =
-                        std::get<Node::OperatorValue>(root2->m_value).m_children;
+                    const auto &children1 = std::get<Node::OperatorValue>(root1->m_value).m_children;
+                    const auto &children2 = std::get<Node::OperatorValue>(root2->m_value).m_children;
                     if (children1.size() != children2.size())
                         return false;
                     for (std::size_t i = 0; i < children1.size(); ++i) {
@@ -473,16 +429,64 @@ namespace tnrw {
                 }
             }
             /**
+             * @brief 判断一个代数式是否为常量（包含分数）
+             * @param [in] root 代数式
+             * @return true 代数式为常量
+             * @return false 代数式不为常量
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
+             */
+            [[nodiscard]] inline bool isConstant(const Node::Ptr &root) {
+                assert_msg(root != nullptr,
+                           "tnrw::Maths::Details::Node类指针错误地为 `nullptr`，请将其反馈到项目的 "
+                           "`Issue` 中。");
+                if (root->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
+                    return true;
+                }
+                if (root->m_type[Node::toSize(Node::TypeIndex::Operator)]) {
+                    const auto &val = std::get<Node::OperatorValue>(root->m_value);
+                    if (val.m_op_type != Node::OperatorValue::OperatorType::Division)
+                        return false;
+                    if (val.m_children[0]->m_type[Node::toSize(Node::TypeIndex::Constant)]
+                        && val.m_children[1]->m_type[Node::toSize(Node::TypeIndex::Constant)])
+                        return true;
+                }
+                return false;
+            }
+            [[nodiscard]] inline bool tryPlusToConstant(Node::Ptr &root, ConstantType rhs) {
+                assert_msg(root != nullptr,
+                           "tnrw::Maths::Details::Node类指针错误地为 `nullptr`，请将其反馈到项目的 "
+                           "`Issue` 中。");
+                if (!isConstant(root))
+                    return false;
+                std::visit(
+                    [&root, &rhs](auto &val) -> void {
+                        using T = std::decay_t<decltype(val)>;
+                        if constexpr (std::is_same_v<T, Node::ConstantValue>) {
+                            val += rhs;
+                        } else if constexpr (std::is_same_v<T, Node::OperatorValue>) {
+                            if (root->m_type[Node::toSize(Node::TypeIndex::Negative)])
+                                rhs = -rhs;
+                            auto       &num = std::get<Node::ConstantValue>(val.m_children[0]->m_value);
+                            const auto &den = std::get<Node::ConstantValue>(val.m_children[1]->m_value);
+                            num += rhs * den;
+                        }
+                    },
+                    root->m_value);
+                return true;
+            }
+            /**
              * @brief 尝试合并代数式与变量
              * @param [in] root 根节点
              * @param [in] var 变量
              * @param [in] offset 变量系数
              * @return true 合并成功
              * @return false 合并失败
-             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              */
-            inline bool tryToMerge(Node::Ptr &root, const VariableType var,
-                                   const ConstantType offset) noexcept {
+            [[nodiscard]] inline bool tryToMerge(Node::Ptr &root, const VariableType var,
+                                                 const ConstantType offset) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 // 分类处理
                 return std::visit(
                     [&root, &var, &offset](auto &val) -> bool {
@@ -503,11 +507,9 @@ namespace tnrw {
                                     clearNode(root);
                                 } else {
                                     // 根与值相加不为0，创建新节点
-                                    root->m_type.reset(
-                                        Node::toSize(Node::TypeIndex::Negative));
+                                    root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
                                     root = std::move(createMultiplicationNode(
-                                        false, std::move(root),
-                                        std::make_unique<Node>(offset - 1)));
+                                        false, std::move(root), std::make_unique<Node>(offset - 1)));
                                 }
                             } else {
                                 if (offset == -1) {
@@ -516,48 +518,40 @@ namespace tnrw {
                                 } else {
                                     // 根与值相加不为0，创建新节点
                                     root = std::move(createMultiplicationNode(
-                                        false, std::move(root),
-                                        std::make_unique<Node>(offset + 1)));
+                                        false, std::move(root), std::make_unique<Node>(offset + 1)));
                                 }
                             }
                             return true;
 
                         } else {
                             // 根是运算符，继续分类处理
-                            if (val.m_op_type
-                                == Node::OperatorValue::OperatorType::Addition) {
+                            if (val.m_op_type == Node::OperatorValue::OperatorType::Addition) {
                                 // 根是加法运算符，无法合并
                                 return false;
                             }
-                            if (val.m_op_type
-                                == Node::OperatorValue::OperatorType::Multiplication) {
+                            if (val.m_op_type == Node::OperatorValue::OperatorType::Multiplication) {
                                 // 根是乘法运算符，继续分类处理
                                 if (val.m_children.size() != 2)
                                     return false;
-                                if (!val.m_children[1]
-                                         ->m_type[Node::toSize(Node::TypeIndex::Constant)]
-                                    || !val.m_children[0]->m_type[Node::toSize(
-                                        Node::TypeIndex::Variable)])
+                                if (!val.m_children[1]->m_type[Node::toSize(Node::TypeIndex::Constant)]
+                                    || !val.m_children[0]
+                                            ->m_type[Node::toSize(Node::TypeIndex::Variable)])
                                     return false;
-                                if (std::get<Node::VariableValue>(
-                                        val.m_children[0]->m_value)
-                                    != var)
+                                if (std::get<Node::VariableValue>(val.m_children[0]->m_value) != var)
                                     return false;
                                 // 根与值匹配，合并
-                                if (root->m_type[Node::toSize(
-                                        Node::TypeIndex::Negative)]) {
-                                    auto &factor = std::get<Node::ConstantValue>(
-                                        val.m_children[1]->m_value);
+                                if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
+                                    auto &factor =
+                                        std::get<Node::ConstantValue>(val.m_children[1]->m_value);
                                     if (factor == offset) {
                                         clearNode(root);
                                     } else {
-                                        root->m_type.reset(
-                                            Node::toSize(Node::TypeIndex::Negative));
+                                        root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
                                         factor = offset - factor;
                                     }
                                 } else {
-                                    auto &factor = std::get<Node::ConstantValue>(
-                                        val.m_children[1]->m_value);
+                                    auto &factor =
+                                        std::get<Node::ConstantValue>(val.m_children[1]->m_value);
                                     if (factor == -offset) {
                                         clearNode(root);
                                     } else {
@@ -567,17 +561,13 @@ namespace tnrw {
                                 return true;
                             }
                             // 根是除法运算符，继续分类处理
-                            if (!val.m_children[1]
-                                     ->m_type[Node::toSize(Node::TypeIndex::Constant)])
+                            if (!val.m_children[1]->m_type[Node::toSize(Node::TypeIndex::Constant)])
                                 return false;
-                            auto &factor =
-                                std::get<Node::ConstantValue>(val.m_children[1]->m_value);
+                            auto &factor = std::get<Node::ConstantValue>(val.m_children[1]->m_value);
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                return tryToMerge(val.m_children[0], var,
-                                                  -factor * offset);
+                                return tryToMerge(val.m_children[0], var, -factor * offset);
                             } else {
-                                return tryToMerge(val.m_children[0], var,
-                                                  factor * offset);
+                                return tryToMerge(val.m_children[0], var, factor * offset);
                             }
                         }
                     },
@@ -590,9 +580,11 @@ namespace tnrw {
              * @param [in] rhs 常量除数
              * @return ConstantType 没被根节点除掉的剩余数
              * @warning 根节点为除法运算符时直接返回原数，不判断！
-             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              */
-            inline ConstantType canDivided(Node::Ptr &root, ConstantType rhs) noexcept {
+            [[nodiscard]] inline ConstantType canDivided(Node::Ptr &root, ConstantType rhs) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 // 分类处理
                 return std::visit(
                     [&root, &rhs](auto &val) -> ConstantType {
@@ -610,7 +602,7 @@ namespace tnrw {
                             if (val == 0) {
                                 return 1;
                             }
-                            Node::ConstantValue gcdnum = gcd(std::abs(val), rhs);
+                            Node::ConstantValue gcdnum = gcd(val, rhs);
                             // 返回加速
                             if (gcdnum == 1)
                                 return rhs;
@@ -621,21 +613,23 @@ namespace tnrw {
                             return rhs;
                         } else {
                             // 根是其他运算符，返回原数
-                            if (val.m_op_type
-                                != Node::OperatorValue::OperatorType::Multiplication)
+                            if (val.m_op_type != Node::OperatorValue::OperatorType::Multiplication)
                                 return rhs;
                             // 根是乘法运算符，尽量除掉其常量
                             auto &last_child = val.m_children.back();
-                            if (!last_child
-                                     ->m_type[Node::toSize(Node::TypeIndex::Constant)])
+                            if (!last_child->m_type[Node::toSize(Node::TypeIndex::Constant)])
                                 return rhs;
-                            auto &child_val =
-                                std::get<Node::ConstantValue>(last_child->m_value);
+                            auto &child_val = std::get<Node::ConstantValue>(last_child->m_value);
                             if (rhs < 0) {
-                                child_val = -child_val;
+                                auto is_nega = root->m_type[Node::toSize(Node::TypeIndex::Negative)];
+                                if (child_val < 0 || !is_nega) {
+                                    child_val = -child_val;
+                                } else {
+                                    is_nega = !is_nega;
+                                }
                                 rhs = -rhs;
                             }
-                            Node::ConstantValue gcdnum = gcd(std::abs(child_val), rhs);
+                            Node::ConstantValue gcdnum = gcd(child_val, rhs);
                             // 返回加速
                             if (gcdnum == 1)
                                 return rhs;
@@ -656,8 +650,7 @@ namespace tnrw {
                                     moveChildToRoot(root, val.m_children[0]);
                                 }
                                 root->m_type[Node::toSize(Node::TypeIndex::Negative)] =
-                                    root->m_type[Node::toSize(Node::TypeIndex::Negative)]
-                                    ^ true;
+                                    root->m_type[Node::toSize(Node::TypeIndex::Negative)] ^ true;
                             } else {
                                 child_val /= gcdnum;
                             }
@@ -673,9 +666,11 @@ namespace tnrw {
              * @return true 根节点能被除数整除
              * @return false 根节点不能被除数整除
              * @warning 根节点为除法运算符时直接返回 `false` ，不判断！
-             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              */
-            inline bool canDivided(Node::Ptr &root, VariableType rhs) noexcept {
+            [[nodiscard]] inline bool canDivided(Node::Ptr &root, VariableType rhs) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 // 分类处理
                 return std::visit(
                     [&root, &rhs](auto &val) -> bool {
@@ -696,17 +691,13 @@ namespace tnrw {
                             return true;
                         } else {
                             // 根是其他运算符，返回 `false`
-                            if (val.m_op_type
-                                != Node::OperatorValue::OperatorType::Multiplication)
+                            if (val.m_op_type != Node::OperatorValue::OperatorType::Multiplication)
                                 return false;
                             // 根是乘法运算符，查找子节点是否有与值相同，若有则返回 `true` 并删除此子节点，没有则返回 `false`
                             for (auto &child : val.m_children) {
-                                if (child->m_type[Node::toSize(
-                                        Node::TypeIndex::Variable)]) {
-                                    if (std::get<Node::VariableValue>(child->m_value)
-                                        == rhs) {
-                                        swap(child,
-                                             val.m_children[val.m_children.size() - 2]);
+                                if (child->m_type[Node::toSize(Node::TypeIndex::Variable)]) {
+                                    if (std::get<Node::VariableValue>(child->m_value) == rhs) {
+                                        swap(child, val.m_children[val.m_children.size() - 2]);
                                         val.m_children.erase(val.m_children.end() - 2);
                                         // 如果除后仅有一个孩子，退化类型
                                         if (val.m_children.size() == 1) {
@@ -726,7 +717,7 @@ namespace tnrw {
              * @brief 进行代数式和常量的加法
              * @param [in] root 根节点
              * @param [in] rhs 常量值
-             * @warning 当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
              * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator+=(Maths::AlgebraicExpression::ConstantType rhs)
              * @ref const Maths::AlgebraicExpression Maths::operator+(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
@@ -734,6 +725,8 @@ namespace tnrw {
              * @ref const Maths::AlgebraicExpression Maths::operator-(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
              */
             inline void plus(Node::Ptr &root, ConstantType rhs) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 // 处理特殊情况
                 if (rhs == 0)
                     return;
@@ -747,55 +740,47 @@ namespace tnrw {
                             val += rhs;
                         } else if constexpr (std::is_same_v<T, Node::VariableValue>) {
                             // 根是变量，创建新节点
-                            root = std::move(createAdditionNode(
-                                false, std::move(root), std::make_unique<Node>(rhs)));
+                            root = std::move(
+                                createAdditionNode(false, std::move(root), std::make_unique<Node>(rhs)));
                         } else {
                             // 根是运算符，继续分类处理
-                            if (val.m_op_type
-                                != Node::OperatorValue::OperatorType::Addition) {
-                                // 根是其他运算符，创建新节点
-                                root = std::move(createAdditionNode(
-                                    false, std::move(root), std::make_unique<Node>(rhs)));
-                                return;
-                            }
-                            // 根是+，检索是否有常量子节点，若有则加上，无则添加其为子节点
-                            auto &last_child = val.m_children.back();
-                            if (last_child
-                                    ->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
-                                if (root->m_type[Node::toSize(
-                                        Node::TypeIndex::Negative)]) {
-                                    auto &child_val = std::get<Node::ConstantValue>(
-                                        last_child->m_value);
-                                    if (child_val == rhs) {
+                            if (val.m_op_type == Node::OperatorValue::OperatorType::Addition) {
+                                // 根是+，检索是否有常量子节点，若有则加上，无则添加其为子节点
+                                auto &last_child = val.m_children.back();
+
+                                if (tryPlusToConstant(
+                                        last_child, root->m_type[Node::toSize(Node::TypeIndex::Negative)]
+                                                        ? -rhs
+                                                        : rhs)) {
+                                    if (last_child->m_type[Node::toSize(Node::TypeIndex::Constant)]
+                                        && std::get<Node::ConstantValue>(last_child->m_value) == 0) {
                                         if (val.m_children.size() == 2) {
                                             moveChildToRoot(root, val.m_children[0]);
                                         } else {
                                             val.m_children.pop_back();
                                         }
-                                    } else {
-                                        child_val -= rhs;
                                     }
-                                } else {
-                                    auto &child_val = std::get<Node::ConstantValue>(
-                                        last_child->m_value);
-                                    if (child_val == -rhs) {
-                                        if (val.m_children.size() == 2) {
-                                            moveChildToRoot(root, val.m_children[0]);
-                                        } else {
-                                            val.m_children.pop_back();
-                                        }
-                                    } else {
-                                        child_val += rhs;
-                                    }
+                                    return;
                                 }
-                            } else {
-                                if (root->m_type[Node::toSize(
-                                        Node::TypeIndex::Negative)]) {
-                                    val.m_children.push_back(
-                                        std::make_unique<Node>(-rhs));
+
+                                if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
+                                    val.m_children.push_back(std::make_unique<Node>(-rhs));
                                 } else {
                                     val.m_children.push_back(std::make_unique<Node>(rhs));
                                 }
+                            } else if (val.m_op_type == Node::OperatorValue::OperatorType::Division) {
+                                // 根是除法运算符，如果是常量则相加，否则创建新节点
+                                if (!tryPlusToConstant(
+                                        root, root->m_type[Node::toSize(Node::TypeIndex::Negative)]
+                                                  ? -rhs
+                                                  : rhs)) {
+                                    root = std::move(createAdditionNode(false, std::move(root),
+                                                                        std::make_unique<Node>(rhs)));
+                                }
+                            } else {
+                                // 根是乘法运算符，创建新节点
+                                root = std::move(createAdditionNode(false, std::move(root),
+                                                                    std::make_unique<Node>(rhs)));
                             }
                         }
                     },
@@ -805,12 +790,14 @@ namespace tnrw {
              * @brief 进行代数式和变量的加法
              * @param [in] root 根节点
              * @param [in] rhs 变量
-             * @warning 当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
              * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator+=(Maths::AlgebraicExpression::VariableType rhs)
              * @ref const Maths::AlgebraicExpression Maths::operator+(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::VariableType rhs)
              */
             inline void plus(Node::Ptr &root, VariableType rhs) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 // 分类处理
                 if (root->m_type[Node::toSize(Node::TypeIndex::Operator)]) {
                     auto &val = std::get<Node::OperatorValue>(root->m_value);
@@ -820,23 +807,22 @@ namespace tnrw {
                             auto &child = val.m_children[i];
                             if (tryToMerge(
                                     child, rhs,
-                                    (root->m_type[Node::toSize(Node::TypeIndex::Negative)]
-                                         ? -1
-                                         : 1))) {
+                                    (root->m_type[Node::toSize(Node::TypeIndex::Negative)] ? -1 : 1))) {
                                 if (child->m_type[Node::toSize(Node::TypeIndex::Constant)]
-                                    && std::get<Node::ConstantValue>(child->m_value)
-                                           == 0) {
-                                    swap(child,
-                                         val.m_children[val.m_children.size() - 2]);
+                                    && std::get<Node::ConstantValue>(child->m_value) == 0) {
+                                    swap(child, val.m_children[val.m_children.size() - 2]);
                                     val.m_children.erase(val.m_children.end() - 2);
+                                    // 如果加后仅有一个孩子，退化类型
+                                    if (val.m_children.size() == 1) {
+                                        moveChildToRoot(root, val.m_children[0]);
+                                    }
                                 }
                                 return;
                             }
                         }
                         val.m_children.push_back(std::make_unique<Node>(
                             rhs, root->m_type[Node::toSize(Node::TypeIndex::Negative)]));
-                        swap(val.m_children.back(),
-                             val.m_children[val.m_children.size() - 2]);
+                        swap(val.m_children.back(), val.m_children[val.m_children.size() - 2]);
                         return;
                     }
                 }
@@ -845,27 +831,29 @@ namespace tnrw {
                     if (std::get<Node::ConstantValue>(root->m_value) == 0) {
                         root = std::make_unique<Node>(rhs);
                     } else {
-                        root = std::move(createAdditionNode(
-                            false, std::make_unique<Node>(rhs), std::move(root)));
+                        root = std::move(
+                            createAdditionNode(false, std::make_unique<Node>(rhs), std::move(root)));
                     }
                     return;
                 }
                 // 根为其他，尝试与子节点合并，若成功则退出，失败则创建新节点
                 if (tryToMerge(root, rhs, 1))
                     return;
-                root = std::move(createAdditionNode(false, std::make_unique<Node>(rhs),
-                                                    std::move(root)));
+                root =
+                    std::move(createAdditionNode(false, std::make_unique<Node>(rhs), std::move(root)));
             }
             /**
              * @brief 进行代数式和变量的减法
              * @param [in] root 代数式
              * @param [in] rhs 变量
-             * @warning 当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
              * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator-=(Maths::AlgebraicExpression::VariableType rhs)
              * @ref const Maths::AlgebraicExpression Maths::operator-(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::VariableType rhs)
              */
             inline void minus(Node::Ptr &root, VariableType rhs) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 // 分类处理
                 if (root->m_type[Node::toSize(Node::TypeIndex::Operator)]) {
                     auto &val = std::get<Node::OperatorValue>(root->m_value);
@@ -875,23 +863,22 @@ namespace tnrw {
                             auto &child = val.m_children[i];
                             if (tryToMerge(
                                     child, rhs,
-                                    (root->m_type[Node::toSize(Node::TypeIndex::Negative)]
-                                         ? 1
-                                         : -1))) {
+                                    (root->m_type[Node::toSize(Node::TypeIndex::Negative)] ? 1 : -1))) {
                                 if (child->m_type[Node::toSize(Node::TypeIndex::Constant)]
-                                    && std::get<Node::ConstantValue>(child->m_value)
-                                           == 0) {
-                                    swap(child,
-                                         val.m_children[val.m_children.size() - 2]);
+                                    && std::get<Node::ConstantValue>(child->m_value) == 0) {
+                                    swap(child, val.m_children[val.m_children.size() - 2]);
                                     val.m_children.erase(val.m_children.end() - 2);
+                                }
+                                // 如果减后仅有一个孩子，退化类型
+                                if (val.m_children.size() == 1) {
+                                    moveChildToRoot(root, val.m_children[0]);
                                 }
                                 return;
                             }
                         }
                         val.m_children.push_back(std::make_unique<Node>(
                             rhs, !root->m_type[Node::toSize(Node::TypeIndex::Negative)]));
-                        swap(val.m_children.back(),
-                             val.m_children[val.m_children.size() - 2]);
+                        swap(val.m_children.back(), val.m_children[val.m_children.size() - 2]);
                         return;
                     }
                 }
@@ -900,33 +887,38 @@ namespace tnrw {
                     if (std::get<Node::ConstantValue>(root->m_value) == 0) {
                         root = std::make_unique<Node>(rhs, true);
                     } else {
-                        root = std::move(createAdditionNode(
-                            false, std::make_unique<Node>(rhs, true), std::move(root)));
+                        root = std::move(createAdditionNode(false, std::make_unique<Node>(rhs, true),
+                                                            std::move(root)));
                     }
                     return;
                 }
                 // 根为其他，尝试与子节点合并，若成功则退出，失败则创建新节点
                 if (tryToMerge(root, rhs, -1))
                     return;
-                root = std::move(createAdditionNode(
-                    false, std::make_unique<Node>(rhs, true), std::move(root)));
+                root = std::move(
+                    createAdditionNode(false, std::make_unique<Node>(rhs, true), std::move(root)));
             }
 
             /**
              * @brief 进行代数式和常量的乘法
              * @param [in] root 代数式
              * @param [in] rhs 常量
-             * @warning 当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
              * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator*=(Maths::AlgebraicExpression::ConstantType rhs)
              * @ref const Maths::AlgebraicExpression Maths::operator*(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
              */
             inline void multiply(Node::Ptr &root, ConstantType rhs) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 // 处理特殊情况
                 if (rhs == 0) {
                     clearNode(root);
                     return;
                 }
+                if (rhs == 1)
+                    return;
+
                 // 分类处理
                 std::visit(
                     [&root, &rhs](auto &val) -> void {
@@ -936,49 +928,74 @@ namespace tnrw {
                             // 根是常量，相乘
                             val *= rhs;
                         } else if constexpr (std::is_same_v<T, Node::VariableValue>) {
-                            // 根是变量，创建新节点
+                            // 根是变量，如果为-1，取相反数，否则创建新节点
+                            if (rhs == -1) {
+                                auto is_nega = root->m_type[Node::toSize(Node::TypeIndex::Negative)];
+                                is_nega = !is_nega;
+                                return;
+                            }
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                root->m_type.reset(
-                                    Node::toSize(Node::TypeIndex::Negative));
-                                root = std::move(createMultiplicationNode(
-                                    true, std::move(root), std::make_unique<Node>(rhs)));
+                                root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
+                                if (rhs < 0) {
+                                    root = std::move(createMultiplicationNode(
+                                        false, std::move(root), std::make_unique<Node>(-rhs)));
+                                } else {
+                                    root = std::move(createMultiplicationNode(
+                                        true, std::move(root), std::make_unique<Node>(rhs)));
+                                }
                             } else {
-                                root = std::move(createMultiplicationNode(
-                                    false, std::move(root), std::make_unique<Node>(rhs)));
+                                root = std::move(createMultiplicationNode(false, std::move(root),
+                                                                          std::make_unique<Node>(rhs)));
                             }
                         } else {
                             // 根是运算符，继续分类
-                            if (val.m_op_type
-                                == Node::OperatorValue::OperatorType::Multiplication) {
+                            if (val.m_op_type == Node::OperatorValue::OperatorType::Multiplication) {
                                 // 根是乘法运算符，将其加入子节点或乘到最后的常量节点
                                 auto &child = val.m_children.back();
-                                if (child->m_type[Node::toSize(
-                                        Node::TypeIndex::Constant)]) {
+                                if (child->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
                                     std::get<Node::ConstantValue>(child->m_value) *= rhs;
                                 } else {
+                                    if (rhs == -1) {
+                                        // 特殊情况，取相反数
+                                        auto is_nega =
+                                            root->m_type[Node::toSize(Node::TypeIndex::Negative)];
+                                        is_nega = !is_nega;
+                                        return;
+                                    }
+                                    {
+                                        auto is_nega =
+                                            root->m_type[Node::toSize(Node::TypeIndex::Negative)];
+                                        if (rhs < 0 && is_nega) {
+                                            // 消除无用的负号
+                                            is_nega = !is_nega;
+                                            rhs = -rhs;
+                                        }
+                                    }
                                     val.m_children.push_back(std::make_unique<Node>(rhs));
                                 }
-                            } else if (val.m_op_type
-                                       == Node::OperatorValue::OperatorType::Division) {
+                            } else if (val.m_op_type == Node::OperatorValue::OperatorType::Division) {
                                 // 根是除法运算符，尝试与分母相除，剩余的乘到分子
+                                bool is_nega = false;
+                                if (rhs < 0) {
+                                    rhs = -rhs;
+                                    is_nega = true;
+                                }
                                 ConstantType rest = canDivided(val.m_children[1], rhs);
                                 if (rest != 1) {
-                                    multiply(val.m_children[0], rest);
+                                    multiply(val.m_children[0], is_nega ? -rest : rest);
+                                } else if (is_nega) {
+                                    multiply(val.m_children[0], -rest);
                                 }
                                 if (rest != rhs) {
                                     auto &den = val.m_children[1];
-                                    if (den->m_type[Node::toSize(
-                                            Node::TypeIndex::Constant)]
-                                        && std::get<Node::ConstantValue>(den->m_value)
-                                               == 1) {
+                                    if (den->m_type[Node::toSize(Node::TypeIndex::Constant)]
+                                        && std::get<Node::ConstantValue>(den->m_value) == 1) {
                                         moveChildToRoot(root, val.m_children[0]);
                                     }
                                 }
                             } else {
                                 // 根是加法运算符，将常量分别乘到其子节点里
-                                for (auto &child : val.m_children) {
-                                    multiply(child, rhs);
-                                }
+                                for (auto &child : val.m_children) { multiply(child, rhs); }
                             }
                         }
                     },
@@ -988,19 +1005,21 @@ namespace tnrw {
              * @brief 进行代数式和变量的乘法
              * @param [in] root 代数式
              * @param [in] rhs 变量
-             * @warning 当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
              * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator*=(Maths::AlgebraicExpression::VariableType rhs)
              * @ref const Maths::AlgebraicExpression Maths::operator*(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::VariableType rhs)
              */
             inline void multiply(Node::Ptr &root, VariableType rhs) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 // 分类处理
                 std::visit(
                     [&root, &rhs](auto &val) -> void {
                         using T = std::decay_t<decltype(val)>;
 
                         if constexpr (std::is_same_v<T, Node::ConstantValue>) {
-                            // 根是常量，如果值是 `0` 跳过，如果值是 `1` 覆盖原节点，否则创建新节点
+                            // 根是常量，如果值是 `0` 跳过，如果值是 `1` 覆盖原节点，如果值是 `1` 覆盖原节点，否则创建新节点
                             if (val == 0) {
                                 return;
                             }
@@ -1008,9 +1027,12 @@ namespace tnrw {
                                 root = std::make_unique<Node>(rhs);
                                 return;
                             }
+                            if (val == -1) {
+                                root = std::make_unique<Node>(rhs, true);
+                                return;
+                            }
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                root->m_type.reset(
-                                    Node::toSize(Node::TypeIndex::Negative));
+                                root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
                                 root = std::move(createMultiplicationNode(
                                     true, std::make_unique<Node>(rhs), std::move(root)));
                             } else {
@@ -1020,34 +1042,28 @@ namespace tnrw {
                         } else if constexpr (std::is_same_v<T, Node::VariableValue>) {
                             // 根是变量，创建新节点
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                root->m_type.reset(
-                                    Node::toSize(Node::TypeIndex::Negative));
-                                root = std::move(createMultiplicationNode(
-                                    true, std::move(root), std::make_unique<Node>(rhs)));
+                                root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
+                                root = std::move(createMultiplicationNode(true, std::move(root),
+                                                                          std::make_unique<Node>(rhs)));
                             } else {
-                                root = std::move(createMultiplicationNode(
-                                    false, std::move(root), std::make_unique<Node>(rhs)));
+                                root = std::move(createMultiplicationNode(false, std::move(root),
+                                                                          std::make_unique<Node>(rhs)));
                             }
                         } else {
                             // 根是运算符，继续分类
-                            if (val.m_op_type
-                                == Node::OperatorValue::OperatorType::Multiplication) {
+                            if (val.m_op_type == Node::OperatorValue::OperatorType::Multiplication) {
                                 // 根是乘法运算符，将其加入子节点
                                 val.m_children.push_back(std::make_unique<Node>(rhs));
                                 auto &child = val.m_children[val.m_children.size() - 2];
-                                if (child->m_type[Node::toSize(
-                                        Node::TypeIndex::Constant)]) {
+                                if (child->m_type[Node::toSize(Node::TypeIndex::Constant)]) {
                                     swap(child, val.m_children.back());
                                 }
-                            } else if (val.m_op_type
-                                       == Node::OperatorValue::OperatorType::Division) {
+                            } else if (val.m_op_type == Node::OperatorValue::OperatorType::Division) {
                                 // 根是除法运算符，尝试与分母相除，不行则乘到分子
                                 if (canDivided(val.m_children[1], rhs)) {
                                     auto &den = val.m_children[1];
-                                    if (den->m_type[Node::toSize(
-                                            Node::TypeIndex::Constant)]
-                                        && std::get<Node::ConstantValue>(den->m_value)
-                                               == 1) {
+                                    if (den->m_type[Node::toSize(Node::TypeIndex::Constant)]
+                                        && std::get<Node::ConstantValue>(den->m_value) == 1) {
                                         moveChildToRoot(root, val.m_children[0]);
                                     }
                                     return;
@@ -1058,8 +1074,7 @@ namespace tnrw {
                                 Node::Ptr *constantChild = nullptr;
                                 for (auto &child : val.m_children) {
                                     multiply(child, rhs);
-                                    if (child->m_type[Node::toSize(
-                                            Node::TypeIndex::Constant)]) {
+                                    if (isConstant(child)) {
                                         constantChild = &child;
                                     }
                                 }
@@ -1075,13 +1090,18 @@ namespace tnrw {
              * @brief 进行代数式和常量的除法
              * @param [in] root 代数式
              * @param [in] rhs 常量
-             * @warning 当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 除以0行为未定义
              * @warning 此函数仅为一个辅助函数，完备的函数见
              * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator/=(Maths::AlgebraicExpression::ConstantType rhs)
              * @ref const Maths::AlgebraicExpression Maths::operator/(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
              */
             inline void devide(Node::Ptr &root, ConstantType rhs) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
+                // 特殊情况
+                if (rhs == 1)
+                    return;
                 // 分类处理
                 std::visit(
                     [&root, &rhs](auto &val) -> void {
@@ -1093,49 +1113,73 @@ namespace tnrw {
                             if (rest == 1)
                                 return;
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                root->m_type.reset(
-                                    Node::toSize(Node::TypeIndex::Negative));
-                                root = std::move(createDivisionNode(
-                                    true, std::move(root), std::make_unique<Node>(rest)));
+                                root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
+                                root = std::move(createDivisionNode(true, std::move(root),
+                                                                    std::make_unique<Node>(rest)));
                             } else {
-                                root = std::move(
-                                    createDivisionNode(false, std::move(root),
-                                                       std::make_unique<Node>(rest)));
+                                root = std::move(createDivisionNode(false, std::move(root),
+                                                                    std::make_unique<Node>(rest)));
                             }
                         } else if constexpr (std::is_same_v<T, Node::VariableValue>) {
-                            // 根是变量，创建新节点
+                            // 根是变量，如果为-1，取相反数，否则创建新节点
+                            if (rhs == -1) {
+                                auto is_nega = root->m_type[Node::toSize(Node::TypeIndex::Negative)];
+                                is_nega = !is_nega;
+                                return;
+                            }
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                root->m_type.reset(
-                                    Node::toSize(Node::TypeIndex::Negative));
-                                root = std::move(createDivisionNode(
-                                    true, std::move(root), std::make_unique<Node>(rhs)));
+                                root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
+                                if (rhs < 0) {
+                                    root = std::move(createDivisionNode(false, std::move(root),
+                                                                        std::make_unique<Node>(-rhs)));
+                                } else {
+                                    root = std::move(createDivisionNode(true, std::move(root),
+                                                                        std::make_unique<Node>(rhs)));
+                                }
                             } else {
-                                root = std::move(createDivisionNode(
-                                    false, std::move(root), std::make_unique<Node>(rhs)));
+                                root = std::move(createDivisionNode(false, std::move(root),
+                                                                    std::make_unique<Node>(rhs)));
                             }
                         } else {
                             // 根是运算符，继续分类
-                            if (val.m_op_type
-                                == Node::OperatorValue::OperatorType::Multiplication) {
+                            if (val.m_op_type == Node::OperatorValue::OperatorType::Multiplication) {
                                 // 根是乘法运算符，尝试相除，剩余的创建新节点
                                 ConstantType rest = canDivided(root, rhs);
                                 if (rest == 1)
                                     return;
-                                if (root->m_type[Node::toSize(
-                                        Node::TypeIndex::Negative)]) {
-                                    root->m_type.reset(
-                                        Node::toSize(Node::TypeIndex::Negative));
-                                    root = std::move(
-                                        createDivisionNode(true, std::move(root),
-                                                           std::make_unique<Node>(rest)));
+                                auto is_nega = root->m_type[Node::toSize(Node::TypeIndex::Negative)];
+
+                                if (is_nega) {
+                                    {
+                                        if (rhs < 0) {
+                                            // 消除无用的负号
+                                            is_nega = !is_nega;
+                                            rhs = -rhs;
+                                        }
+                                    }
+                                    root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
+                                    root = std::move(createDivisionNode(true, std::move(root),
+                                                                        std::make_unique<Node>(rest)));
                                 } else {
-                                    root = std::move(
-                                        createDivisionNode(false, std::move(root),
-                                                           std::make_unique<Node>(rest)));
+                                    root = std::move(createDivisionNode(false, std::move(root),
+                                                                        std::make_unique<Node>(rest)));
                                 }
-                            } else if (val.m_op_type
-                                       == Node::OperatorValue::OperatorType::Division) {
+                            } else if (val.m_op_type == Node::OperatorValue::OperatorType::Division) {
                                 // 根是除法运算符，尝试与分子相除，剩余的乘到分母
+                                auto is_nega = root->m_type[Node::toSize(Node::TypeIndex::Negative)];
+                                {
+                                    if (rhs < 0) {
+                                        if (is_nega) {
+                                            // 消除无用的负号
+                                            is_nega = !is_nega;
+                                            rhs = -rhs;
+                                        } else {
+                                            using namespace tnrw::literals::Expressions_base_literals;
+                                            multiply(val.m_children[0], -1_c);
+                                            rhs = -rhs;
+                                        }
+                                    }
+                                }
                                 ConstantType rest = canDivided(val.m_children[0], rhs);
                                 if (rest != 1) {
                                     multiply(val.m_children[1], rest);
@@ -1152,12 +1196,14 @@ namespace tnrw {
              * @brief 进行代数式和变量的除法
              * @param [in] root 代数式
              * @param [in] rhs 变量
-             * @warning 当根节点为 `nullptr` 时不会报错！
+             * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
              * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator/=(Maths::AlgebraicExpression::VariableType rhs)
              * @ref const Maths::AlgebraicExpression Maths::operator/(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::VariableType rhs)
              */
             inline void devide(Node::Ptr &root, VariableType rhs) noexcept {
+                assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
+                                            "`nullptr`，请将其反馈到项目的 `Issue` 中。");
                 // 分类处理
                 std::visit(
                     [&root, &rhs](auto &val) -> void {
@@ -1169,48 +1215,40 @@ namespace tnrw {
                                 return;
                             }
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                root->m_type.reset(
-                                    Node::toSize(Node::TypeIndex::Negative));
-                                root = std::move(createDivisionNode(
-                                    true, std::move(root), std::make_unique<Node>(rhs)));
+                                root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
+                                root = std::move(createDivisionNode(true, std::move(root),
+                                                                    std::make_unique<Node>(rhs)));
                             } else {
-                                root = std::move(createDivisionNode(
-                                    false, std::move(root), std::make_unique<Node>(rhs)));
+                                root = std::move(createDivisionNode(false, std::move(root),
+                                                                    std::make_unique<Node>(rhs)));
                             }
                         } else if constexpr (std::is_same_v<T, Node::VariableValue>) {
                             // 根是变量，尝试相除，不行创建新节点
                             if (canDivided(root, rhs))
                                 return;
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                root->m_type.reset(
-                                    Node::toSize(Node::TypeIndex::Negative));
-                                root = std::move(createDivisionNode(
-                                    true, std::move(root), std::make_unique<Node>(rhs)));
+                                root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
+                                root = std::move(createDivisionNode(true, std::move(root),
+                                                                    std::make_unique<Node>(rhs)));
                             } else {
-                                root = std::move(createDivisionNode(
-                                    false, std::move(root), std::make_unique<Node>(rhs)));
+                                root = std::move(createDivisionNode(false, std::move(root),
+                                                                    std::make_unique<Node>(rhs)));
                             }
                         } else {
                             // 根是运算符，继续分类
-                            if (val.m_op_type
-                                == Node::OperatorValue::OperatorType::Multiplication) {
+                            if (val.m_op_type == Node::OperatorValue::OperatorType::Multiplication) {
                                 // 根是乘法运算符，尝试相除，不行创建新节点
                                 if (canDivided(root, rhs))
                                     return;
-                                if (root->m_type[Node::toSize(
-                                        Node::TypeIndex::Negative)]) {
-                                    root->m_type.reset(
-                                        Node::toSize(Node::TypeIndex::Negative));
-                                    root = std::move(
-                                        createDivisionNode(true, std::move(root),
-                                                           std::make_unique<Node>(rhs)));
+                                if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
+                                    root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
+                                    root = std::move(createDivisionNode(true, std::move(root),
+                                                                        std::make_unique<Node>(rhs)));
                                 } else {
-                                    root = std::move(
-                                        createDivisionNode(false, std::move(root),
-                                                           std::make_unique<Node>(rhs)));
+                                    root = std::move(createDivisionNode(false, std::move(root),
+                                                                        std::make_unique<Node>(rhs)));
                                 }
-                            } else if (val.m_op_type
-                                       == Node::OperatorValue::OperatorType::Division) {
+                            } else if (val.m_op_type == Node::OperatorValue::OperatorType::Division) {
                                 // 根是除法运算符，尝试与分子相除，剩余的乘到分母
                                 if (canDivided(val.m_children[0], rhs))
                                     return;
@@ -1220,8 +1258,7 @@ namespace tnrw {
                                 Node::Ptr *constantChild = nullptr;
                                 for (auto &child : val.m_children) {
                                     devide(child, rhs);
-                                    if (child->m_type[Node::toSize(
-                                            Node::TypeIndex::Constant)]) {
+                                    if (isConstant(child)) {
                                         constantChild = &child;
                                     }
                                 }
@@ -1238,90 +1275,80 @@ namespace tnrw {
         /// @endcond
 
         // AlgebraicExpression类的成员定义
-        AlgebraicExpression::AlgebraicExpression() noexcept
+        [[nodiscard]] AlgebraicExpression::AlgebraicExpression() noexcept
             : m_root(std::make_unique<Details::Node>(static_cast<ConstantType>(0))) {}
 
-        AlgebraicExpression::AlgebraicExpression(const ConstantType constant) noexcept
+        [[nodiscard]] AlgebraicExpression::AlgebraicExpression(const ConstantType constant) noexcept
             : m_root(std::make_unique<Details::Node>(constant)) {}
 
-        AlgebraicExpression::AlgebraicExpression(const VariableType vairable) noexcept
+        [[nodiscard]] AlgebraicExpression::AlgebraicExpression(const VariableType vairable) noexcept
             : m_root(std::make_unique<Details::Node>(vairable)) {}
 
         AlgebraicExpression::~AlgebraicExpression() noexcept = default;
 
-        AlgebraicExpression::AlgebraicExpression(const AlgebraicExpression &rhs) noexcept
+        [[nodiscard]] AlgebraicExpression::AlgebraicExpression(const AlgebraicExpression &rhs) noexcept
             : m_root(std::make_unique<Details::Node>(*rhs.m_root)) {}
 
-        AlgebraicExpression::AlgebraicExpression(AlgebraicExpression &&rhs) noexcept
+        [[nodiscard]] AlgebraicExpression::AlgebraicExpression(AlgebraicExpression &&rhs) noexcept
             : m_root(std::move(rhs.m_root)) {}
 
-        AlgebraicExpression &
-        AlgebraicExpression::operator=(const AlgebraicExpression &rhs) noexcept {
+        AlgebraicExpression &AlgebraicExpression::operator=(const AlgebraicExpression &rhs) noexcept {
             if (this != &rhs) {
                 m_root = std::make_unique<Details::Node>(*rhs.m_root);
             }
             return *this;
         }
 
-        AlgebraicExpression &
-        AlgebraicExpression::operator=(AlgebraicExpression &&rhs) noexcept {
+        AlgebraicExpression &AlgebraicExpression::operator=(AlgebraicExpression &&rhs) noexcept {
             if (this != &rhs) {
                 m_root = std::move(rhs.m_root);
             }
             return *this;
         }
 
-        AlgebraicExpression &
-        AlgebraicExpression::operator+=(const ConstantType rhs) noexcept {
+        AlgebraicExpression &AlgebraicExpression::operator+=(const ConstantType rhs) noexcept {
             Details::plus(m_root, rhs);
             return *this;
         }
 
-        AlgebraicExpression &
-        AlgebraicExpression::operator+=(const VariableType rhs) noexcept {
+        AlgebraicExpression &AlgebraicExpression::operator+=(const VariableType rhs) noexcept {
             Details::plus(m_root, rhs);
             return *this;
         }
 
-        AlgebraicExpression &
-        AlgebraicExpression::operator-=(const ConstantType rhs) noexcept {
+        AlgebraicExpression &AlgebraicExpression::operator-=(const ConstantType rhs) noexcept {
             Details::plus(m_root, -rhs);
             return *this;
         }
 
-        AlgebraicExpression &
-        AlgebraicExpression::operator-=(const VariableType rhs) noexcept {
+        AlgebraicExpression &AlgebraicExpression::operator-=(const VariableType rhs) noexcept {
             Details::minus(m_root, rhs);
             return *this;
         }
 
-        AlgebraicExpression &
-        AlgebraicExpression::operator*=(const ConstantType rhs) noexcept {
+        AlgebraicExpression &AlgebraicExpression::operator*=(const ConstantType rhs) noexcept {
             Details::multiply(m_root, rhs);
             return *this;
         }
 
-        AlgebraicExpression &
-        AlgebraicExpression::operator*=(const VariableType rhs) noexcept {
+        AlgebraicExpression &AlgebraicExpression::operator*=(const VariableType rhs) noexcept {
             Details::multiply(m_root, rhs);
             return *this;
         }
 
-        AlgebraicExpression &
-        AlgebraicExpression::operator/=(const ConstantType rhs) noexcept {
+        AlgebraicExpression &AlgebraicExpression::operator/=(const ConstantType rhs) noexcept {
             Details::devide(m_root, rhs);
             return *this;
         }
 
-        AlgebraicExpression &
-        AlgebraicExpression::operator/=(const VariableType rhs) noexcept {
+        AlgebraicExpression &AlgebraicExpression::operator/=(const VariableType rhs) noexcept {
             Details::devide(m_root, rhs);
             return *this;
         }
 
-        AlgebraicExpression AlgebraicExpression::operator+() noexcept { return *this; }
+        [[nodiscard]] AlgebraicExpression AlgebraicExpression::operator+() noexcept { return *this; }
 
-        AlgebraicExpression AlgebraicExpression::operator-() noexcept {
+        [[nodiscard]] AlgebraicExpression AlgebraicExpression::operator-() noexcept {
             AlgebraicExpression copy_of_this(*this);
             copy_of_this.changeToOpposite();
             return copy_of_this;
@@ -1338,13 +1365,13 @@ namespace tnrw {
             return *this;
         }
 
-        const AlgebraicExpression AlgebraicExpression::operator++(int) noexcept {
+        [[nodiscard]] const AlgebraicExpression AlgebraicExpression::operator++(int) noexcept {
             using namespace tnrw::literals::Expressions_base_literals;
             AlgebraicExpression copy_of_old(*this);
             Details::plus(m_root, 1_c);
             return copy_of_old;
         }
-        const AlgebraicExpression AlgebraicExpression::operator--(int) noexcept {
+        [[nodiscard]] const AlgebraicExpression AlgebraicExpression::operator--(int) noexcept {
             using namespace tnrw::literals::Expressions_base_literals;
             AlgebraicExpression copy_of_old(*this);
             Details::plus(m_root, -1_c);
@@ -1353,178 +1380,169 @@ namespace tnrw {
 
         void AlgebraicExpression::clear() noexcept { Details::clearNode(m_root); }
 
-        std::string AlgebraicExpression::toString() const noexcept {
-            return Details::toStringFromNode(m_root);
+        [[nodiscard]] std::string AlgebraicExpression::toString(const std::locale &loc) const noexcept {
+            return Details::toBasicStringFromNode<char, std::char_traits<char>>(m_root, loc);
         }
 
-        std::wstring AlgebraicExpression::toWString() const noexcept {
-            return Details::toWStringFromNode(m_root);
+        [[nodiscard]] std::wstring
+        AlgebraicExpression::toWString(const std::locale &loc) const noexcept {
+            return Details::toBasicStringFromNode<wchar_t, std::char_traits<wchar_t>>(m_root, loc);
+        }
+
+        template <typename CharT, typename Traits>
+        [[nodiscard]] std::basic_string<CharT, Traits>
+        AlgebraicExpression::toBasicString(const std::locale &loc) const noexcept {
+            return Details::toBasicStringFromNode<CharT, Traits>(m_root, loc);
         }
 
         void AlgebraicExpression::changeToOpposite() noexcept {
-            if (m_root
-                    ->m_type[Details::Node::toSize(Details::Node::TypeIndex::Constant)]) {
-                // 特殊情况
-                auto &val = std::get<Details::Node::ConstantValue>(m_root->m_value);
-                val = -val;
-            } else {
-                auto val = m_root->m_type[Details::Node::toSize(
-                    Details::Node::TypeIndex::Negative)];
-                val = !val;
-            }
+            using namespace tnrw::literals::Expressions_base_literals;
+            Details::multiply(m_root, -1_c);
         }
 
-        const AlgebraicExpression
-        operator+(const AlgebraicExpression              &lhs,
-                  const AlgebraicExpression::ConstantType rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression
+        operator+(const AlgebraicExpression &lhs, const AlgebraicExpression::ConstantType rhs) noexcept {
             return (AlgebraicExpression(lhs) += rhs);
         }
-        const AlgebraicExpression operator+(const AlgebraicExpression::ConstantType lhs,
-                                            const AlgebraicExpression &rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression operator+(const AlgebraicExpression::ConstantType lhs,
+                                                          const AlgebraicExpression &rhs) noexcept {
             return (AlgebraicExpression(rhs) += lhs);
         }
 
-        const AlgebraicExpression
-        operator+(const AlgebraicExpression              &lhs,
-                  const AlgebraicExpression::VariableType rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression
+        operator+(const AlgebraicExpression &lhs, const AlgebraicExpression::VariableType rhs) noexcept {
             return (AlgebraicExpression(lhs) += rhs);
         }
-        const AlgebraicExpression operator+(const AlgebraicExpression::VariableType lhs,
-                                            const AlgebraicExpression &rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression operator+(const AlgebraicExpression::VariableType lhs,
+                                                          const AlgebraicExpression &rhs) noexcept {
             return (AlgebraicExpression(rhs) += lhs);
         }
 
-        const AlgebraicExpression
-        operator-(const AlgebraicExpression              &lhs,
-                  const AlgebraicExpression::ConstantType rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression
+        operator-(const AlgebraicExpression &lhs, const AlgebraicExpression::ConstantType rhs) noexcept {
             return (AlgebraicExpression(lhs) -= rhs);
         }
-        const AlgebraicExpression operator-(const AlgebraicExpression::ConstantType lhs,
-                                            const AlgebraicExpression &rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression operator-(const AlgebraicExpression::ConstantType lhs,
+                                                          const AlgebraicExpression &rhs) noexcept {
             return (AlgebraicExpression(rhs) -= lhs);
         }
 
-        const AlgebraicExpression
-        operator-(const AlgebraicExpression              &lhs,
-                  const AlgebraicExpression::VariableType rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression
+        operator-(const AlgebraicExpression &lhs, const AlgebraicExpression::VariableType rhs) noexcept {
             return (AlgebraicExpression(lhs) -= rhs);
         }
-        const AlgebraicExpression operator-(const AlgebraicExpression::VariableType lhs,
-                                            const AlgebraicExpression &rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression operator-(const AlgebraicExpression::VariableType lhs,
+                                                          const AlgebraicExpression &rhs) noexcept {
             return (AlgebraicExpression(rhs) -= lhs);
         }
 
-        const AlgebraicExpression
-        operator*(const AlgebraicExpression              &lhs,
-                  const AlgebraicExpression::ConstantType rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression
+        operator*(const AlgebraicExpression &lhs, const AlgebraicExpression::ConstantType rhs) noexcept {
             return (AlgebraicExpression(lhs) *= rhs);
         }
-        const AlgebraicExpression operator*(const AlgebraicExpression::ConstantType lhs,
-                                            const AlgebraicExpression &rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression operator*(const AlgebraicExpression::ConstantType lhs,
+                                                          const AlgebraicExpression &rhs) noexcept {
             return (AlgebraicExpression(rhs) *= lhs);
         }
 
-        const AlgebraicExpression
-        operator*(const AlgebraicExpression              &lhs,
-                  const AlgebraicExpression::VariableType rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression
+        operator*(const AlgebraicExpression &lhs, const AlgebraicExpression::VariableType rhs) noexcept {
             return (AlgebraicExpression(lhs) *= rhs);
         }
-        const AlgebraicExpression operator*(const AlgebraicExpression::VariableType lhs,
-                                            const AlgebraicExpression &rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression operator*(const AlgebraicExpression::VariableType lhs,
+                                                          const AlgebraicExpression &rhs) noexcept {
             return (AlgebraicExpression(rhs) *= lhs);
         }
 
-        const AlgebraicExpression
-        operator/(const AlgebraicExpression              &lhs,
-                  const AlgebraicExpression::ConstantType rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression
+        operator/(const AlgebraicExpression &lhs, const AlgebraicExpression::ConstantType rhs) noexcept {
             return (AlgebraicExpression(lhs) /= rhs);
         }
-        const AlgebraicExpression operator/(const AlgebraicExpression::ConstantType lhs,
-                                            const AlgebraicExpression &rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression operator/(const AlgebraicExpression::ConstantType lhs,
+                                                          const AlgebraicExpression &rhs) noexcept {
             return (AlgebraicExpression(rhs) /= lhs);
         }
 
-        const AlgebraicExpression
-        operator/(const AlgebraicExpression              &lhs,
-                  const AlgebraicExpression::VariableType rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression
+        operator/(const AlgebraicExpression &lhs, const AlgebraicExpression::VariableType rhs) noexcept {
             return (AlgebraicExpression(lhs) /= rhs);
         }
-        const AlgebraicExpression operator/(const AlgebraicExpression::VariableType lhs,
-                                            const AlgebraicExpression &rhs) noexcept {
+        [[nodiscard]] const AlgebraicExpression operator/(const AlgebraicExpression::VariableType lhs,
+                                                          const AlgebraicExpression &rhs) noexcept {
             return (AlgebraicExpression(rhs) /= lhs);
         }
 
-        bool operator==(const AlgebraicExpression &lhs,
-                        const AlgebraicExpression &rhs) noexcept {
+        [[nodiscard]] bool operator==(const AlgebraicExpression &lhs,
+                                      const AlgebraicExpression &rhs) noexcept {
             if (&lhs == &rhs)
                 return true;
             return Details::isEqual(lhs.m_root, rhs.m_root);
         }
-        bool operator!=(const AlgebraicExpression &lhs,
-                        const AlgebraicExpression &rhs) noexcept {
+        [[nodiscard]] bool operator!=(const AlgebraicExpression &lhs,
+                                      const AlgebraicExpression &rhs) noexcept {
             if (&lhs == &rhs)
                 return false;
             return !Details::isEqual(lhs.m_root, rhs.m_root);
         }
 
+        template <typename CharT, typename Traits>
+        std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &out,
+                                                      const AlgebraicExpression         &rhs) noexcept {
+            return (out << rhs.toBasicString<CharT, Traits>(out.getloc()));
+        }
+
         // NumericExpression类的成员定义
-        NumericExpression::NumericExpression() noexcept
+        [[nodiscard]] NumericExpression::NumericExpression() noexcept
             : m_root(std::make_unique<Details::Node>(static_cast<ConstantType>(0))) {}
 
-        NumericExpression::NumericExpression(const ConstantType constant) noexcept
+        [[nodiscard]] NumericExpression::NumericExpression(const ConstantType constant) noexcept
             : m_root(std::make_unique<Details::Node>(constant)) {}
 
         NumericExpression::~NumericExpression() noexcept = default;
 
-        NumericExpression::NumericExpression(const NumericExpression &rhs) noexcept
+        [[nodiscard]] NumericExpression::NumericExpression(const NumericExpression &rhs) noexcept
             : m_root(std::make_unique<Details::Node>(*rhs.m_root)) {}
 
-        NumericExpression::NumericExpression(NumericExpression &&rhs) noexcept
+        [[nodiscard]] NumericExpression::NumericExpression(NumericExpression &&rhs) noexcept
             : m_root(std::move(rhs.m_root)) {}
 
-        NumericExpression &
-        NumericExpression::operator=(const NumericExpression &rhs) noexcept {
+        NumericExpression &NumericExpression::operator=(const NumericExpression &rhs) noexcept {
             if (this != &rhs) {
                 m_root = std::make_unique<Details::Node>(*rhs.m_root);
             }
             return *this;
         }
 
-        NumericExpression &
-        NumericExpression::operator=(NumericExpression &&rhs) noexcept {
+        NumericExpression &NumericExpression::operator=(NumericExpression &&rhs) noexcept {
             if (this != &rhs) {
                 m_root = std::move(rhs.m_root);
             }
             return *this;
         }
 
-        NumericExpression &
-        NumericExpression::operator+=(const ConstantType rhs) noexcept {
+        NumericExpression &NumericExpression::operator+=(const ConstantType rhs) noexcept {
             Details::plus(m_root, rhs);
             return *this;
         }
 
-        NumericExpression &
-        NumericExpression::operator-=(const ConstantType rhs) noexcept {
+        NumericExpression &NumericExpression::operator-=(const ConstantType rhs) noexcept {
             Details::plus(m_root, -rhs);
             return *this;
         }
 
-        NumericExpression &
-        NumericExpression::operator*=(const ConstantType rhs) noexcept {
+        NumericExpression &NumericExpression::operator*=(const ConstantType rhs) noexcept {
             Details::multiply(m_root, rhs);
             return *this;
         }
 
-        NumericExpression &
-        NumericExpression::operator/=(const ConstantType rhs) noexcept {
+        NumericExpression &NumericExpression::operator/=(const ConstantType rhs) noexcept {
             Details::devide(m_root, rhs);
             return *this;
         }
 
-        NumericExpression NumericExpression::operator+() noexcept { return *this; }
+        [[nodiscard]] NumericExpression NumericExpression::operator+() noexcept { return *this; }
 
-        NumericExpression NumericExpression::operator-() noexcept {
+        [[nodiscard]] NumericExpression NumericExpression::operator-() noexcept {
             NumericExpression copy_of_this(*this);
             copy_of_this.changeToOpposite();
             return copy_of_this;
@@ -1541,13 +1559,13 @@ namespace tnrw {
             return *this;
         }
 
-        const NumericExpression NumericExpression::operator++(int) noexcept {
+        [[nodiscard]] const NumericExpression NumericExpression::operator++(int) noexcept {
             using namespace tnrw::literals::Expressions_base_literals;
             NumericExpression copy_of_old(*this);
             Details::plus(m_root, 1_c);
             return copy_of_old;
         }
-        const NumericExpression NumericExpression::operator--(int) noexcept {
+        [[nodiscard]] const NumericExpression NumericExpression::operator--(int) noexcept {
             using namespace tnrw::literals::Expressions_base_literals;
             NumericExpression copy_of_old(*this);
             Details::plus(m_root, -1_c);
@@ -1556,102 +1574,117 @@ namespace tnrw {
 
         void NumericExpression::clear() noexcept { Details::clearNode(m_root); }
 
-        std::string NumericExpression::toString() const noexcept {
-            return Details::toStringFromNode(m_root);
+        [[nodiscard]] std::string NumericExpression::toString(const std::locale &loc) const noexcept {
+            return Details::toBasicStringFromNode<char, std::char_traits<char>>(m_root, loc);
         }
 
-        std::wstring NumericExpression::toWString() const noexcept {
-            return Details::toWStringFromNode(m_root);
+        [[nodiscard]] std::wstring NumericExpression::toWString(const std::locale &loc) const noexcept {
+            return Details::toBasicStringFromNode<wchar_t, std::char_traits<wchar_t>>(m_root, loc);
+        }
+
+        template <typename CharT, typename Traits>
+        [[nodiscard]] std::basic_string<CharT, Traits>
+        NumericExpression::toBasicString(const std::locale &loc) const noexcept {
+            return Details::toBasicStringFromNode<CharT, Traits>(m_root, loc);
         }
 
         void NumericExpression::changeToOpposite() noexcept {
-            if (m_root
-                    ->m_type[Details::Node::toSize(Details::Node::TypeIndex::Constant)]) {
-                // 特殊情况
+            if (m_root->m_type[Details::Node::toSize(Details::Node::TypeIndex::Constant)]) {
+                // 特殊情况1
                 auto &val = std::get<Details::Node::ConstantValue>(m_root->m_value);
                 val = -val;
             } else {
-                auto val = m_root->m_type[Details::Node::toSize(
-                    Details::Node::TypeIndex::Negative)];
-                val = !val;
+                // 特殊情况2
+                auto &val = std::get<Details::Node::ConstantValue>(
+                    std::get<Details::Node::OperatorValue>(m_root->m_value).m_children[0]->m_value);
+                val = -val;
             }
         }
 
-        const NumericExpression
-        operator+(const NumericExpression              &lhs,
-                  const NumericExpression::ConstantType rhs) noexcept {
+        [[nodiscard]] const NumericExpression
+        operator+(const NumericExpression &lhs, const NumericExpression::ConstantType rhs) noexcept {
             return (NumericExpression(lhs) += rhs);
         }
-        const NumericExpression operator+(const NumericExpression::ConstantType lhs,
-                                          const NumericExpression &rhs) noexcept {
+        [[nodiscard]] const NumericExpression operator+(const NumericExpression::ConstantType lhs,
+                                                        const NumericExpression &rhs) noexcept {
             return (NumericExpression(rhs) += lhs);
         }
 
-        const NumericExpression
-        operator-(const NumericExpression              &lhs,
-                  const NumericExpression::ConstantType rhs) noexcept {
+        [[nodiscard]] const NumericExpression
+        operator-(const NumericExpression &lhs, const NumericExpression::ConstantType rhs) noexcept {
             return (NumericExpression(lhs) -= rhs);
         }
-        const NumericExpression operator-(const NumericExpression::ConstantType lhs,
-                                          const NumericExpression &rhs) noexcept {
+        [[nodiscard]] const NumericExpression operator-(const NumericExpression::ConstantType lhs,
+                                                        const NumericExpression &rhs) noexcept {
             return (NumericExpression(rhs) -= lhs);
         }
 
-        const NumericExpression
-        operator*(const NumericExpression              &lhs,
-                  const NumericExpression::ConstantType rhs) noexcept {
+        [[nodiscard]] const NumericExpression
+        operator*(const NumericExpression &lhs, const NumericExpression::ConstantType rhs) noexcept {
             return (NumericExpression(lhs) *= rhs);
         }
-        const NumericExpression operator*(const NumericExpression::ConstantType lhs,
-                                          const NumericExpression &rhs) noexcept {
+        [[nodiscard]] const NumericExpression operator*(const NumericExpression::ConstantType lhs,
+                                                        const NumericExpression &rhs) noexcept {
             return (NumericExpression(rhs) *= lhs);
         }
 
-        const NumericExpression
-        operator/(const NumericExpression              &lhs,
-                  const NumericExpression::ConstantType rhs) noexcept {
+        [[nodiscard]] const NumericExpression
+        operator/(const NumericExpression &lhs, const NumericExpression::ConstantType rhs) noexcept {
             return (NumericExpression(lhs) /= rhs);
         }
-        const NumericExpression operator/(const NumericExpression::ConstantType lhs,
-                                          const NumericExpression &rhs) noexcept {
+        [[nodiscard]] const NumericExpression operator/(const NumericExpression::ConstantType lhs,
+                                                        const NumericExpression &rhs) noexcept {
             return (NumericExpression(rhs) /= lhs);
         }
 
-        bool operator==(const NumericExpression &lhs,
-                        const NumericExpression &rhs) noexcept {
+        [[nodiscard]] bool operator==(const NumericExpression &lhs,
+                                      const NumericExpression &rhs) noexcept {
             if (&lhs == &rhs)
                 return true;
             return Details::isEqual(lhs.m_root, rhs.m_root);
         }
-        bool operator!=(const NumericExpression &lhs,
-                        const NumericExpression &rhs) noexcept {
+        [[nodiscard]] bool operator!=(const NumericExpression &lhs,
+                                      const NumericExpression &rhs) noexcept {
             if (&lhs == &rhs)
                 return false;
             return !Details::isEqual(lhs.m_root, rhs.m_root);
         }
+
+        template <typename CharT, typename Traits>
+        std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &out,
+                                                      const NumericExpression           &rhs) noexcept {
+            return (out << rhs.toBasicString<CharT, Traits>(out.getloc()));
+        }
+
+        // 模板实例化
+
+        template std::basic_ostream<char> &operator<< <char>(std::basic_ostream<char>  &out,
+                                                             const AlgebraicExpression &rhs) noexcept;
+        template std::basic_ostream<char> &operator<< <char>(std::basic_ostream<char> &out,
+                                                             const NumericExpression  &rhs) noexcept;
 
     } // namespace Maths
 
     namespace literals {
 
         inline namespace Expressions_base_literals {
-            Maths::ConstantType operator""_c(const unsigned long long constant) noexcept {
+            [[nodiscard]] constexpr Maths::ConstantType
+            operator""_c(const unsigned long long constant) noexcept {
                 return static_cast<Maths::ConstantType>(constant);
             }
-            Maths::VariableType operator""_v(const char variable) noexcept {
+            [[nodiscard]] constexpr Maths::VariableType operator""_v(const char variable) noexcept {
                 return static_cast<Maths::VariableType>(variable);
             }
         } // namespace Expressions_base_literals
 
         inline namespace AlgebraicExpression_literals {
 
-            Maths::AlgebraicExpression
+            [[nodiscard]] Maths::AlgebraicExpression
             operator""_cAlgeExpr(const unsigned long long constant) noexcept {
                 return Maths::AlgebraicExpression(
                     static_cast<Maths::AlgebraicExpression::ConstantType>(constant));
             }
-            Maths::AlgebraicExpression
-            operator""_vAlgeExpr(const char variable) noexcept {
+            [[nodiscard]] Maths::AlgebraicExpression operator""_vAlgeExpr(const char variable) noexcept {
                 return Maths::AlgebraicExpression(
                     static_cast<Maths::AlgebraicExpression::VariableType>(variable));
             }
@@ -1660,7 +1693,7 @@ namespace tnrw {
 
         inline namespace NumericExpression_literals {
 
-            Maths::NumericExpression
+            [[nodiscard]] Maths::NumericExpression
             operator""_cNumExpr(const unsigned long long constant) noexcept {
                 return Maths::NumericExpression(
                     static_cast<Maths::NumericExpression::ConstantType>(constant));

@@ -7,7 +7,7 @@ TabWidth: 4                                       # Tab 宽度（与空格对齐
 
 NamespaceIndentation: All                         # 控制命名空间缩进(None/Inner/All)
 
-ColumnLimit: 90                                   # 列数量限制
+ColumnLimit: 105                                  # 列数量限制
 
 BreakBeforeBraces: Attach                         # 大括号与声明同行，不换行
 

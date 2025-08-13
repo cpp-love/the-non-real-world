@@ -8,7 +8,9 @@
             "options": [
                 "测试AlgebraicExpression类",
                 "测试NumericExpression类",
-                "文件版本生成器"
+                "文件版本生成器",
+                "测试字符串转换",
+                "测试assert_msg"
             ],
             "default": "核心模块"
         }
@@ -59,6 +61,13 @@
                 "--interactive"
             ],
             "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "workspaceFolder": "${workspaceFolder}",
+                    "file": "${file}"
+                }
+            },
             "problemMatcher": {
                 "owner": "cpp",
                 "fileLocation": "absolute",

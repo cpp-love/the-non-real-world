@@ -12,6 +12,8 @@
 #ifndef __MATHS_FWD_HPP__
 #define __MATHS_FWD_HPP__
 
+#include <concepts>
+
 /**@defgroup Maths description
  * @brief 
  * @details 
@@ -41,10 +43,10 @@ namespace tnrw {
         class NumericExpression final;
 
         // functions.hpp
-        template <typename UnsignedIntegerType>
-        UnsignedIntegerType gcd(UnsignedIntegerType a, UnsignedIntegerType b) noexcept;
-        template <typename UnsignedIntegerType>
-        UnsignedIntegerType lcm(UnsignedIntegerType a, UnsignedIntegerType b) noexcept;
+        template <std::unsigned_integral UnsignedIntegerType>
+        [[nodiscard]] UnsignedIntegerType gcd(UnsignedIntegerType a, UnsignedIntegerType b) noexcept;
+        template <std::unsigned_integral UnsignedIntegerType>
+        [[nodiscard]] UnsignedIntegerType lcm(UnsignedIntegerType a, UnsignedIntegerType b) noexcept;
 
     } // namespace Maths
 
@@ -53,24 +55,25 @@ namespace tnrw {
         // Expressions_base.hpp
         inline namespace Expressions_base_literals {
 
-            Maths::ConstantType operator""_c(const unsigned long long constant) noexcept;
-            Maths::VariableType operator""_v(const char variable) noexcept;
+            [[nodiscard]] constexpr Maths::ConstantType
+            operator""_c(const unsigned long long constant) noexcept;
+            [[nodiscard]] constexpr Maths::VariableType operator""_v(const char variable) noexcept;
 
         } // namespace Expressions_base_literals
 
         // Algebraicexpression.hpp
         inline namespace AlgebraicExpression_literals {
 
-            Maths::AlgebraicExpression
+            [[nodiscard]] Maths::AlgebraicExpression
             operator""_cAlgeExpr(const unsigned long long constant) noexcept;
-            Maths::AlgebraicExpression operator""_vAlgeExpr(const char variable) noexcept;
+            [[nodiscard]] Maths::AlgebraicExpression operator""_vAlgeExpr(const char variable) noexcept;
 
         } // namespace AlgebraicExpression_literals
 
         // NumericExpression.hpp
         inline namespace NumericExpression_literals {
 
-            Maths::NumericExpression
+            [[nodiscard]] Maths::NumericExpression
             operator""_cNumExpr(const unsigned long long constant) noexcept;
 
         } // namespace NumericExpression_literals

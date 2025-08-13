@@ -13,6 +13,7 @@
 #define __FWD_HPP__
 
 #include "Maths/fwd.hpp"
+#include "base/fwd.hpp"
 #include "ecs/fwd.hpp"
 
 /**

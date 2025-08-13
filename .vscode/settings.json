@@ -1,25 +1,32 @@
 {
     "compile-runner.fileGroups": {
         "测试AlgebraicExpression类": [
-            "${workspaceFolder}\\src\\Maths\\Expressions.cpp",
-            "${workspaceFolder}\\tests\\Maths\\testAlgeExpr.cpp"
+            "${workspaceFolder}/src/Maths/Expressions.cpp",
+            "${workspaceFolder}/tests/Maths/testAlgeExpr.cpp"
         ],
         "测试NumericExpression类": [
-            "${workspaceFolder}\\src\\Maths\\Expressions.cpp",
-            "${workspaceFolder}\\tests\\Maths\\testNumExpr.cpp"
+            "${workspaceFolder}/src/Maths/Expressions.cpp",
+            "${workspaceFolder}/tests/Maths/testNumExpr.cpp"
         ],
         "文件版本生成器": [
-            "${workspaceFolder}\\helper\\generate_file_version.cpp"
+            "${workspaceFolder}/helper/generate_file_version.cpp"
+        ],
+        "测试字符串转换": [
+            "${workspaceFolder}/tests/base/test_string_convert.cpp"
+        ],
+        "测试assert_msg": [
+            "${workspaceFolder}/tests/base/test_assert_msg.cpp"
         ]
     },
-    "compile-runner.outputPath": "${workspaceFolder}\\bin\\exes\\${fileBasenameNoExtension}.exe",
+    "compile-runner.outputPath": "${workspaceFolder}/bin/exes/${fileBasenameNoExtension}.exe",
     "compile-runner.FrontCompilerArgs": [
         "-fdiagnostics-color=always",
         "-g",
         "-O2",
         "-Wall",
         "-Wextra",
-        "-std=c++17"
+        "-Wpedantic",
+        "-std=c++20"
         // 明确文件格式
         // /*
         ,
@@ -85,6 +92,8 @@
         ".clang-format": "yaml",
         "Doxyfile": "doxyfile",
         "*.cpp": "cpp",
+        "*.tcc": "cpp",
+        "*.hpp": "cpp",
         "array": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
@@ -183,7 +192,23 @@
         "typeindex": "cpp",
         "valarray": "cpp",
         "filesystem": "cpp",
-        "cerrno": "cpp"
-    },
-    "markdown.validate.enabled": true
+        "cerrno": "cpp",
+        "ios": "cpp",
+        "queue": "cpp",
+        "xfacet": "cpp",
+        "xhash": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp",
+        "xlocbuf": "cpp",
+        "xlocinfo": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xlocnum": "cpp",
+        "xloctime": "cpp",
+        "xmemory": "cpp",
+        "xstring": "cpp",
+        "xtr1common": "cpp",
+        "xutility": "cpp",
+        "xtree": "cpp"
+    }
 }
