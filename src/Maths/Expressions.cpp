@@ -63,6 +63,7 @@ namespace tnrw {
              *       1. 应始终 **合并同类项** （部分变量相同、分子或分母相同的不用合并）
              *       2. 应始终 **将其常量孩子节点置于节点列表的末尾**
              *     - **常量应始终没有位标志 `TypeIndex::Negative`**
+             *     - **如果为分数常量，则符号应在分母上**
              * @warning 该结构体是私有的，用户不应直接访问
              */
             struct Node {
@@ -540,23 +541,19 @@ namespace tnrw {
                                 if (std::get<Node::VariableValue>(val.m_children[0]->m_value) != var)
                                     return false;
                                 // 根与值匹配，合并
+                                auto &factor = std::get<Node::ConstantValue>(val.m_children[1]->m_value);
                                 if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                    auto &factor =
-                                        std::get<Node::ConstantValue>(val.m_children[1]->m_value);
-                                    if (factor == offset) {
-                                        clearNode(root);
-                                    } else {
-                                        root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
-                                        factor = offset - factor;
-                                    }
+                                    factor = -factor;
+                                    root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
+                                }
+                                if (factor + offset == 0) {
+                                    clearNode(root);
+                                } else if (factor + offset == 1) {
+                                    root = std::make_unique<Node>(var);
+                                } else if (factor + offset == -1) {
+                                    root = std::make_unique<Node>(var, true);
                                 } else {
-                                    auto &factor =
-                                        std::get<Node::ConstantValue>(val.m_children[1]->m_value);
-                                    if (factor == -offset) {
-                                        clearNode(root);
-                                    } else {
-                                        factor += offset;
-                                    }
+                                    factor += offset;
                                 }
                                 return true;
                             }
@@ -687,7 +684,8 @@ namespace tnrw {
                             if (val != rhs)
                                 return false;
                             using namespace tnrw::literals::Expressions_base_literals;
-                            root = std::make_unique<Node>(1_c);
+                            bool is_nega = root->m_type[Node::toSize(Node::TypeIndex::Negative)];
+                            root = std::make_unique<Node>(is_nega ? -1_c : 1_c);
                             return true;
                         } else {
                             // 根是其他运算符，返回 `false`
@@ -936,13 +934,8 @@ namespace tnrw {
                             }
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
                                 root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
-                                if (rhs < 0) {
-                                    root = std::move(createMultiplicationNode(
-                                        false, std::move(root), std::make_unique<Node>(-rhs)));
-                                } else {
-                                    root = std::move(createMultiplicationNode(
-                                        true, std::move(root), std::make_unique<Node>(rhs)));
-                                }
+                                root = std::move(createMultiplicationNode(false, std::move(root),
+                                                                          std::make_unique<Node>(-rhs)));
                             } else {
                                 root = std::move(createMultiplicationNode(false, std::move(root),
                                                                           std::make_unique<Node>(rhs)));
@@ -965,7 +958,7 @@ namespace tnrw {
                                     {
                                         auto is_nega =
                                             root->m_type[Node::toSize(Node::TypeIndex::Negative)];
-                                        if (rhs < 0 && is_nega) {
+                                        if (is_nega) {
                                             // 消除无用的负号
                                             is_nega = !is_nega;
                                             rhs = -rhs;
@@ -1127,13 +1120,18 @@ namespace tnrw {
                                 is_nega = !is_nega;
                                 return;
                             }
+                            if (rhs < 0) {
+                                auto is_nega = root->m_type[Node::toSize(Node::TypeIndex::Negative)];
+                                is_nega = -is_nega;
+                                rhs = -rhs;
+                            }
                             if (root->m_type[Node::toSize(Node::TypeIndex::Negative)]) {
-                                root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
                                 if (rhs < 0) {
+                                    root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
                                     root = std::move(createDivisionNode(false, std::move(root),
                                                                         std::make_unique<Node>(-rhs)));
                                 } else {
-                                    root = std::move(createDivisionNode(true, std::move(root),
+                                    root = std::move(createDivisionNode(false, std::move(root),
                                                                         std::make_unique<Node>(rhs)));
                                 }
                             } else {
@@ -1149,17 +1147,13 @@ namespace tnrw {
                                     return;
                                 auto is_nega = root->m_type[Node::toSize(Node::TypeIndex::Negative)];
 
-                                if (is_nega) {
-                                    {
-                                        if (rhs < 0) {
-                                            // 消除无用的负号
-                                            is_nega = !is_nega;
-                                            rhs = -rhs;
-                                        }
-                                    }
-                                    root->m_type.reset(Node::toSize(Node::TypeIndex::Negative));
-                                    root = std::move(createDivisionNode(true, std::move(root),
-                                                                        std::make_unique<Node>(rest)));
+                                if (rhs < 0) {
+                                    // 消除无用的负号
+                                    is_nega = !is_nega;
+                                    if (-rest == 1)
+                                        return;
+                                    root = std::move(createDivisionNode(false, std::move(root),
+                                                                        std::make_unique<Node>(-rest)));
                                 } else {
                                     root = std::move(createDivisionNode(false, std::move(root),
                                                                         std::make_unique<Node>(rest)));
