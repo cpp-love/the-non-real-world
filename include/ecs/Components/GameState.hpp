@@ -1,0 +1,39 @@
+/**
+ * @file GameState.hpp
+ * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
+ * @brief 定义了游戏状态的组件
+ * @version 0.1.0-1
+ * @date 2025-07-26
+ * 
+ * @copyright cpp-love
+ * 
+ * @details 状态采用 `std::vector` 存储，支持不断加入状态
+ * 
+ */
+
+#ifndef __ECS_COMPONENTS_GAME_STATE_HPP__
+#define __ECS_COMPONENTS_GAME_STATE_HPP__
+
+#include <cstdint>
+#include <vector>
+
+namespace tnrw {
+
+    namespace ecs {
+
+        /// @brief 游戏状态的组件
+        struct GameState final {
+            /// @brief 游戏的状态枚举
+            enum class State : std::uint8_t {
+                Settings, ///< 设置
+                Mainpage, ///< 主页
+                Game      ///< 游戏界面
+            };
+            std::vector<State> states; ///< 游戏状态集
+        };
+
+    } // namespace ecs
+
+} // namespace tnrw
+
+#endif // __ECS_COMPONENTS_GAME_STATE_HPP__
