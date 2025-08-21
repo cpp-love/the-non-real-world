@@ -23,7 +23,7 @@ Software architecture description
 #### Contribution
 
 1. Fork the repository
-2. Create feature/xxx branch
+2. Create feature/brief_author branch
 3. Commit your code
 4. Create Pull Request
 

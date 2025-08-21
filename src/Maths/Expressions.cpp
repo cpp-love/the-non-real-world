@@ -717,10 +717,10 @@ namespace tnrw {
              * @param [in] rhs 常量值
              * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
-             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator+=(Maths::AlgebraicExpression::ConstantType rhs)
-             * @ref const Maths::AlgebraicExpression Maths::operator+(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
-             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator-=(Maths::AlgebraicExpression::ConstantType rhs)
-             * @ref const Maths::AlgebraicExpression Maths::operator-(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
+             * @ref tnrw::Maths::AlgebraicExpression::operator+=(tnrw::Maths::ConstantType rhs)
+             * @ref tnrw::Maths::operator+(const tnrw::Maths::AlgebraicExpression &lhs, tnrw::Maths::ConstantType rhs)
+             * @ref tnrw::Maths::AlgebraicExpression::operator+=(tnrw::Maths::ConstantType rhs)
+             * @ref tnrw::Maths::operator+(const tnrw::Maths::AlgebraicExpression &lhs, tnrw::Maths::ConstantType rhs)
              */
             inline void plus(Node::Ptr &root, ConstantType rhs) noexcept {
                 assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
@@ -790,8 +790,8 @@ namespace tnrw {
              * @param [in] rhs 变量
              * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
-             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator+=(Maths::AlgebraicExpression::VariableType rhs)
-             * @ref const Maths::AlgebraicExpression Maths::operator+(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::VariableType rhs)
+             * @ref tnrw::Maths::AlgebraicExpression::operator+=(tnrw::Maths::VariableType rhs)
+             * @ref tnrw::Maths::operator+(const tnrw::Maths::AlgebraicExpression &lhs, tnrw::Maths::VariableType rhs)
              */
             inline void plus(Node::Ptr &root, VariableType rhs) noexcept {
                 assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
@@ -846,8 +846,8 @@ namespace tnrw {
              * @param [in] rhs 变量
              * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
-             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator-=(Maths::AlgebraicExpression::VariableType rhs)
-             * @ref const Maths::AlgebraicExpression Maths::operator-(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::VariableType rhs)
+             * @ref tnrw::Maths::AlgebraicExpression::operator-=(tnrw::Maths::VariableType rhs)
+             * @ref tnrw::Maths::operator-(const tnrw::Maths::AlgebraicExpression &lhs, tnrw::Maths::VariableType rhs)
              */
             inline void minus(Node::Ptr &root, VariableType rhs) noexcept {
                 assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
@@ -903,8 +903,8 @@ namespace tnrw {
              * @param [in] rhs 常量
              * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
-             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator*=(Maths::AlgebraicExpression::ConstantType rhs)
-             * @ref const Maths::AlgebraicExpression Maths::operator*(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
+             * @ref tnrw::Maths::AlgebraicExpression::operator*=(tnrw::Maths::ConstantType rhs)
+             * @ref tnrw::Maths::operator*(const tnrw::Maths::AlgebraicExpression &lhs, tnrw::Maths::ConstantType rhs)
              */
             inline void multiply(Node::Ptr &root, ConstantType rhs) noexcept {
                 assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
@@ -1000,8 +1000,8 @@ namespace tnrw {
              * @param [in] rhs 变量
              * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
-             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator*=(Maths::AlgebraicExpression::VariableType rhs)
-             * @ref const Maths::AlgebraicExpression Maths::operator*(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::VariableType rhs)
+             * @ref tnrw::Maths::AlgebraicExpression::operator*=(tnrw::Maths::VariableType rhs)
+             * @ref tnrw::Maths::operator*(const tnrw::Maths::AlgebraicExpression &lhs, tnrw::Maths::VariableType rhs)
              */
             inline void multiply(Node::Ptr &root, VariableType rhs) noexcept {
                 assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
@@ -1086,8 +1086,8 @@ namespace tnrw {
              * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 除以0行为未定义
              * @warning 此函数仅为一个辅助函数，完备的函数见
-             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator/=(Maths::AlgebraicExpression::ConstantType rhs)
-             * @ref const Maths::AlgebraicExpression Maths::operator/(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::ConstantType rhs)
+             * @ref tnrw::Maths::AlgebraicExpression::operator/=(tnrw::Maths::ConstantType rhs)
+             * @ref tnrw::Maths::operator/(const tnrw::Maths::AlgebraicExpression &lhs, tnrw::Maths::ConstantType rhs)
              */
             inline void devide(Node::Ptr &root, ConstantType rhs) noexcept {
                 assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "
@@ -1192,8 +1192,8 @@ namespace tnrw {
              * @param [in] rhs 变量
              * @warning 此函数仅为一个辅助函数，当根节点为 `nullptr` 时会发生断言错误！
              * @warning 此函数仅为一个辅助函数，完备的函数见
-             * @ref Maths::AlgebraicExpression &Maths::AlgebraicExpression::operator/=(Maths::AlgebraicExpression::VariableType rhs)
-             * @ref const Maths::AlgebraicExpression Maths::operator/(const Maths::AlgebraicExpression &lhs, Maths::AlgebraicExpression::VariableType rhs)
+             * @ref tnrw::Maths::AlgebraicExpression::operator/=(tnrw::Maths::VariableType rhs)
+             * @ref tnrw::Maths::operator/(const tnrw::Maths::AlgebraicExpression &lhs, tnrw::Maths::VariableType rhs)
              */
             inline void devide(Node::Ptr &root, VariableType rhs) noexcept {
                 assert_msg(root != nullptr, "tnrw::Maths::Details::Node类指针错误地为 "

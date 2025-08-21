@@ -1,5 +1,5 @@
 /**
- * @file GameState.hpp
+ * @file GameStateComponents.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 定义了游戏状态的组件
  * @version 0.1.0-1
@@ -11,8 +11,8 @@
  * 
  */
 
-#ifndef __ECS_COMPONENTS_GAME_STATE_HPP__
-#define __ECS_COMPONENTS_GAME_STATE_HPP__
+#ifndef __ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__
+#define __ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__
 
 #include <cstdint>
 #include <vector>
@@ -22,18 +22,26 @@ namespace tnrw {
     namespace ecs {
 
         /// @brief 游戏状态的组件
-        struct GameState final {
+        class GameState final {
+          public: /// @publicsection
             /// @brief 游戏的状态枚举
             enum class State : std::uint8_t {
                 Settings, ///< 设置
                 Mainpage, ///< 主页
                 Game      ///< 游戏界面
             };
+            // 友元声明
+            friend class GameStateSystem; ///< 仅其对应系统才可访问其成员，防止篡改
+
+            /// @cond INTERNAL
+          private: /// @privatesection
+            // 成员
             std::vector<State> states; ///< 游戏状态集
+            /// @endcond
         };
 
     } // namespace ecs
 
 } // namespace tnrw
 
-#endif // __ECS_COMPONENTS_GAME_STATE_HPP__
+#endif // __ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__
