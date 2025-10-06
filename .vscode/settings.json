@@ -16,6 +16,14 @@
         ],
         "测试assert_msg": [
             "${workspaceFolder}/tests/base/test_assert_msg.cpp"
+        ],
+        "测试GameStateSystem类": [
+            "${workspaceFolder}/tests/ecs/Systems/testGameStateSystem.cpp",
+            "${workspaceFolder}/src/ecs/Systems/global/GameStateSystem.cpp"
+        ],
+        "测试SceneSystem类": [
+            "${workspaceFolder}/tests/ecs/Systems/testSceneSystem.cpp",
+            "${workspaceFolder}/src/ecs/Systems/global/SceneSystem.cpp"
         ]
     },
     "compile-runner.outputPath": "${workspaceFolder}/bin/exes/${fileBasenameNoExtension}.exe",
@@ -209,6 +217,8 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xutility": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "stack": "cpp",
+        "functexcept.h": "c"
     }
 }

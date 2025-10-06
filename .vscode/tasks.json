@@ -10,9 +10,15 @@
                 "测试NumericExpression类",
                 "文件版本生成器",
                 "测试字符串转换",
-                "测试assert_msg"
-            ],
-            "default": "核心模块"
+                "测试assert_msg",
+                "测试GameStateSystem类",
+                "测试SceneSystem类"
+            ]
+        },
+        {
+            "id": "generateFiles",
+            "type": "promptString",
+            "description": "选择相对当前工作区目录的要生成版本文档的文件（夹）"
         }
     ],
     "tasks": [
@@ -82,7 +88,8 @@
             },
             "presentation": {
                 "reveal": "always",
-                "panel": "dedicated"
+                "panel": "dedicated",
+                "showReuseMessage": false
             },
             "detail": "编译自定义项目的任务"
         },
@@ -103,6 +110,18 @@
             "args": [
                 "${workspaceFolder}",
                 "${file}",
+                "'cpp-love(15865418+cpp-love@user.noreply.gitee.com)'"
+            ],
+            "problemMatcher": [],
+            "detail": "输出文件版本文件的任务"
+        },
+        {
+            "label": "C/C++: 生成文件版本文件（选择版）",
+            "type": "shell",
+            "command": "${workspaceFolder}\\bin\\exes\\generate_file_version",
+            "args": [
+                "${workspaceFolder}",
+                "${workspaceFolder}\\${input:generateFiles}",
                 "'cpp-love(15865418+cpp-love@user.noreply.gitee.com)'"
             ],
             "problemMatcher": [],

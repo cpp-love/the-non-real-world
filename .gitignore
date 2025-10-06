@@ -32,4 +32,8 @@
 *.app
 
 # Documentation
-./docs
+docs/**
+
+# Build files
+build/**
+out/**

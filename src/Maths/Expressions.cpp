@@ -65,6 +65,8 @@ namespace tnrw {
              *     - **常量应始终没有位标志 `TypeIndex::Negative`**
              *     - **如果为分数常量，则符号应在分母上**
              * @warning 该结构体是私有的，用户不应直接访问
+             * 
+             * @todo 去除多余的节点类型，仅保留 `Negative` 属性，其余改用 `std::variant` 的相关函数
              */
             struct Node {
                 // using别名

@@ -1,0 +1,50 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "BuildAll",
+            "description": "构建所有程序",
+            "hidden": false,
+            "generator": "Ninja",
+            "cacheVariables": {
+                "TNRW_BUILD_HELPER": "ON",
+                "TNRW_BUILD_TESTS": "ON",
+                "TNRW_USE_FMT_OUTPUT": "ON"
+            }
+        },
+        {
+            "name": "BuildWithTasks",
+            "description": "构建主程序和测试程序",
+            "hidden": false,
+            "generator": "Ninja",
+            "cacheVariables": {
+                "TNRW_BUILD_TESTS": "ON",
+                "TNRW_USE_FMT_OUTPUT": "ON"
+            }
+        },
+        {
+            "name": "BuildOnly",
+            "description": "构建主程序",
+            "hidden": false,
+            "generator": "Ninja",
+            "cacheVariables": {
+                "TNRW_USE_FMT_OUTPUT": "ON"
+            }
+        },
+        {
+            "name": "BuildHelper",
+            "description": "构建主程序和帮助程序",
+            "hidden": false,
+            "generator": "Ninja",
+            "cacheVariables": {
+                "TNRW_BUILD_HELPER": "ON",
+                "TNRW_USE_FMT_OUTPUT": "ON"
+            }
+        }
+    ]
+}

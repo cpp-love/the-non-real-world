@@ -17,10 +17,14 @@
 #define __BASE_ASSERT_MSG_HPP__
 
 #include "base/string_convert.hpp"
-#include <cstdio>
 #include <cstdlib>
-#include <format>
 #include <source_location>
+#ifdef USE_FMT_OUTPUT
+#include <fmt/format.h>
+#else
+#include <cstdio>
+#include <format>
+#endif
 
 // 发布模式：完全消除
 #ifdef NDEBUG
@@ -32,19 +36,27 @@ namespace debug_assert {
     [[noreturn]] inline void assert_fail(const char *expr, const std::source_location &loc,
                                          const char *message = nullptr) {
         // 输出基本信息
-        std::fprintf(stderr, "Assertion failed at %s : %u : %u (%s):\n", loc.file_name(), loc.line(),
-                     loc.column(), loc.function_name());
+#ifdef USE_FMT_OUTPUT
+        fmt::println(stderr, "Assertion failed at {} : {} : {} (in function : {}):", loc.file_name(),
+                     loc.line(), loc.column(), loc.function_name());
+        fmt::println(stderr, ">> Expression: {}", expr);
+#else
+        std::fprintf(stderr, "Assertion failed at %s : %u : %u (in function : %s):\n", loc.file_name(),
+                     loc.line(), loc.column(), loc.function_name());
         std::fprintf(stderr, ">> Expression: %s\n", expr);
+#endif
 
         // 处理自定义消息
         if (message) {
-            std::fprintf(stderr, ">> Message: ");
-            std::fprintf(stderr, message);
-            std::fprintf(stderr, "\n");
+#ifdef USE_FMT_OUTPUT
+            fmt::println(stderr, ">> Message: {}", message);
+#else
+            std::fprintf(stderr, ">> Message: %s\n", message);
+#endif
         }
 
         // 终止程序
-        std::abort();
+        std::terminate();
     }
 
     // 断言检查函数（核心实现）
@@ -54,9 +66,15 @@ namespace debug_assert {
         if (condition)
             return;
         assert_fail(expr, loc,
+#ifdef USE_FMT_OUTPUT
+                    fmt::vformat(::tnrw::string_convert::to_utf8_string_view(fmt),
+                                 fmt::make_format_args(args...))
+                        .c_str());
+#else
                     std::vformat(::tnrw::string_convert::to_utf8_string_view(fmt),
                                  std::make_format_args(args...))
                         .c_str());
+#endif
     }
     inline void assert_check(bool condition, const char *expr, const std::source_location &loc) {
         if (condition)
@@ -67,7 +85,7 @@ namespace debug_assert {
 
 // 宏定义：捕获表达式和位置
 #define assert_msg(expr, ...)                                                                           \
-    ::debug_assert::assert_check(expr, #expr, std::source_location::current() __VA_OPT__(, ) __VA_ARGS__)
+    ::debug_assert::assert_check((expr), #expr, std::source_location::current() __VA_OPT__(, ) __VA_ARGS__)
 
 #endif // NDEBUG
 

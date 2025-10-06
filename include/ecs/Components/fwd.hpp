@@ -16,8 +16,13 @@ namespace tnrw {
 
     namespace ecs {
 
-        // GameState.hpp
-        struct GameState final;
+        // global/GameState.hpp
+        class GameState final;
+
+        // global/ScenesComponents.hpp
+        class GlobalScenes final;
+        class Scene        final;
+        class FatherScenes final;
 
     } // namespace ecs
 

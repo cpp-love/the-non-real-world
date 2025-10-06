@@ -20,7 +20,7 @@
 #define __ECS_SYSTEMS_GLOBAL_GAME_STATE_SYSTEM_HPP__
 
 #include "ecs/Components/global/GameState.hpp"
-#include <entt/entt.hpp>
+#include <entt/fwd.hpp>
 #include <optional>
 
 namespace tnrw {
@@ -58,9 +58,18 @@ namespace tnrw {
              * @brief 获取顶层状态
              * @param [in] registry 注册表
              * @warning 此函数不安全，如果注册表没有组件，可能会断言错误
-             * @note 安全版本见 @ref tnrw::ecs::GameStateSystem::trygetTopState(const entt::registry &registry)
+             * @note 安全版本见 @ref tnrw::ecs::GameStateSystem::tryGetTopState(const entt::registry &registry)
              */
-            [[notiscard]] static GameState::State getTopState(const entt::registry &registry) noexcept;
+            [[nodiscard]] static GameState::State getTopState(const entt::registry &registry) noexcept;
+            /**
+             * @brief 获取状态列表
+             * @param [in] registry 注册表
+             * @return const std::vector<GameState::State> & 状态列表
+             * @warning 此函数不安全，如果注册表没有组件，可能会断言错误
+             * @note 安全版本见 @ref tnrw::ecs::GameStateSystem::tryGetStates(const entt::registry &registry)
+             */
+            [[nodiscard]] static const std::vector<GameState::State> &
+            getStates(const entt::registry &registry) noexcept;
 
             /**
              * @brief 尝试加入状态到顶层
@@ -70,7 +79,7 @@ namespace tnrw {
              * @return false 加入失败
              * @note 失败不会影响原来的组件状态
              */
-            [[notiscard]] static bool tryPushTopState(entt::registry        &registry,
+            [[nodiscard]] static bool tryPushTopState(entt::registry        &registry,
                                                       const GameState::State state) noexcept;
 
             /**
@@ -81,15 +90,24 @@ namespace tnrw {
              * @note 如果组件没有状态，行为未定义
              * @note 失败不会影响原来的组件状态
              */
-            [[notiscard]] static bool tryPopTopState(entt::registry &registry) noexcept;
+            [[nodiscard]] static bool tryPopTopState(entt::registry &registry) noexcept;
             /**
              * @brief 尝试获取顶层状态
              * @param [in] registry 注册表
              * @return std::optional<GameState::State> 如果获取成功返回状态，失败返回 `std::nullopt`
              * @note 失败不会影响原来的组件状态
              */
-            [[notiscard]] static std::optional<GameState::State>
+            [[nodiscard]] static std::optional<GameState::State>
             tryGetTopState(const entt::registry &registry) noexcept;
+
+            /**
+             * @brief 尝试获取状态列表
+             * @param [in] registry 注册表
+             * @return const std::vector<GameState::State> * 如果成功返回指向状态列表指针，失败返回 `nullptr`
+             * @note 失败不会影响原来的组件状态
+             */
+            [[nodiscard]] static const std::vector<GameState::State> *
+            tryGetStates(const entt::registry &registry) noexcept;
         };
 
     } // namespace ecs

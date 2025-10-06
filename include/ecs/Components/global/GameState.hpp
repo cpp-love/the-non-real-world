@@ -26,9 +26,9 @@ namespace tnrw {
           public: /// @publicsection
             /// @brief 游戏的状态枚举
             enum class State : std::uint8_t {
-                Settings, ///< 设置
-                Mainpage, ///< 主页
-                Game      ///< 游戏界面
+                Settings = 0, ///< 设置
+                Mainpage = 1, ///< 主页
+                Game = 2      ///< 游戏界面
             };
             // 友元声明
             friend class GameStateSystem; ///< 仅其对应系统才可访问其成员，防止篡改

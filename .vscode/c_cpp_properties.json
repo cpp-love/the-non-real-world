@@ -3,9 +3,11 @@
     "env": {
         "DEFAULTINCLUDEPATH": [
             "C:/msys64/ucrt64/include",
-            "C:/msys64/ucrt64/include/c++/15.1.0"
+            "C:/msys64/ucrt64/include/c++/15.2.0"
         ],
-        "DEFAULTDEFINES": []
+        "DEFAULTDEFINES": [
+            "USE_FMT_OUTPUT"
+        ]
     },
     "configurations": [
         {

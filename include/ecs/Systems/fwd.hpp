@@ -12,11 +12,18 @@
 #ifndef __ECS_SYSTEMS_FWD_HPP__
 #define __ECS_SYSTEMS_FWD_HPP__
 
+#include "base/config.hpp"
+#include "global/SceneSystem.hpp"
+#include <algorithm>
+#include <entt/fwd.hpp>
+#include <memory>
+#include <utility>
+
 namespace tnrw {
 
     namespace ecs {
 
-        // GameStateSystem.hpp
+        // global/GameStateSystem.hpp
         class GameStateSystem final;
 
     } // namespace ecs

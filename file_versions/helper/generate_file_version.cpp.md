@@ -7,15 +7,25 @@
 
 # generate_file_version.cpp 版本历史
 
-***
+## [0.1.0-4] -2025-09-20 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
-## [0.1.0-3] - 2025-07-27 - cpp-love(15865418+cpp-love@user.noreply.gitee.com)
+### Added(新增)
+
+1. 添加了命令行参数 `<file>` 对文件夹的支持，若是文件夹，则递归生成里面的每一个文件
 
 ### Changed(修改)
 
-1. **BREAKING(不向下兼容):** 将模板文件改名为`helper/file_version.template.md`
+1. 将文件的默认日期从当前日期改为尝试使用文件 `Doxygen` 注释的日期，如果没有，则为默认日期
+
+***
+
+## [0.1.0-3] - 2025-07-27 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 将模板文件改名为 `helper/file_version.template.md`
 2. 重构了整个文件
-3. 将原有的命令行参数使用方法 `.\bin\generate_file_version <file_directory> <file_name> [additional_content]` 
+3. 将原有的命令行参数使用方法 `.\bin\generate_file_version <file_directory> <file_name> [additional_content]`
    修改为 `.\bin\exes\generate_file_version <workspace_folder> <file> <authors>`，其中
    - `<workspace_folder>` 是工作区目录
    - `<file>` 是文件路径
@@ -26,7 +36,7 @@
 
 ***
 
-## [0.1.0-2] - 2025-07-06 - cpp-love(15865418+cpp-love@user.noreply.gitee.com)
+## [0.1.0-2] - 2025-07-06 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)
 
@@ -38,7 +48,7 @@
 
 ***
 
-## [0.1.0-1] - 2025-07-05 - cpp-love(15865418+cpp-love@user.noreply.gitee.com)
+## [0.1.0-1] - 2025-07-05 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)
 

@@ -193,6 +193,7 @@ int main() {
 #ifdef _WIN32
     // 让Windows支持UTF-8
     SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
 #endif // _WIN32
 
     std::cout << "想查看帮助，请键入 help 获取\n";

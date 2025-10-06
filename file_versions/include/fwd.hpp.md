@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 添加了 `GameStateSystem.hpp` 和 `SceneSystem.hpp` 的系统的前向声明
+1. 添加了整个游戏（即 `tnrw` 命名空间）的前向声明
 
 ***

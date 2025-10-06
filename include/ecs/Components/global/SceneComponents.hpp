@@ -1,5 +1,5 @@
 /**
- * @file ScenesComponents.hpp
+ * @file SceneComponents.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 定义了全局登记场景的组件、场景组件和获取父场景实体的组件
  * @version 0.1.0-1
@@ -14,28 +14,33 @@
  * 
  */
 
-#ifndef __ECS_COMPONENTS_GLOBAL_SCENES_COMPONENTS_HPP__
-#define __ECS_COMPONENTS_GLOBAL_SCENES_COMPONENTS_HPP__
+#ifndef __ECS_COMPONENTS_GLOBAL_SCENE_COMPONENTS_HPP__
+#define __ECS_COMPONENTS_GLOBAL_SCENE_COMPONENTS_HPP__
 
-#include <entt/entt.hpp>
+#include <algorithm>
+#include <entt/fwd.hpp>
 #include <functional>
 #include <map>
+#include <set>
 
 namespace tnrw {
 
     namespace ecs {
 
+        template <typename Key, typename Compare, typename Allocator>
+        class BasicSceneSystem;
+
         /// @brief 全局获取场景的组件
         template <typename Key, typename Compare = std::less<Key>,
                   typename Allocator = std::allocator<std ::pair<const Key, entt::entity>>>
-        class GlobalScenes {
+        class GlobalScenes final {
           public: /// @publicsection
             // using 声明
             using key_type = Key;             //< 键类型
             using key_compare = Compare;      //< 键比较类型
             using allocator_type = Allocator; //< 分配器类型
             // 友元声明
-            friend class SceneSystem;
+            friend class BasicSceneSystem<Key, Compare, Allocator>;
 
             /// @cond INTERNAL
           private: /// @privatesection
@@ -45,10 +50,11 @@ namespace tnrw {
         };
 
         /// @brief 场景组件
-        class Scene {
+        class Scene final {
           public: /// @publicsection
             // 友元声明
-            friend class SceneSystem;
+            template <typename Key, typename Compare, typename Allocator>
+            friend class BasicSceneSystem;
             /// @cond INTERNAL
           private: /// @privatesection
             // 成员
@@ -57,10 +63,11 @@ namespace tnrw {
         };
 
         /// @brief 获取父场景实体的组件
-        class FatherScenes {
+        class FatherScenes final {
           public: /// @publicsection
             // 友元声明
-            friend class SceneSystem;
+            template <typename Key, typename Compare, typename Allocator>
+            friend class BasicSceneSystem;
             /// @cond INTERNAL
           private: /// @privatesection
             // 成员
@@ -72,4 +79,4 @@ namespace tnrw {
 
 } // namespace tnrw
 
-#endif // __ECS_COMPONENTS_GLOBAL_SCENES_COMPONENTS_HPP__
+#endif // __ECS_COMPONENTS_GLOBAL_SCENE_COMPONENTS_HPP__
