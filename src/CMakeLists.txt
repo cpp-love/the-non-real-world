@@ -7,43 +7,27 @@ file(GLOB_RECURSE SRC_FILES *.cpp)
 # 生成库
 add_library(tnrw ${SRC_FILES})
 
-option(TNRW_USE_FMT_OUTPUT "Use fmt third party as the output.\n
-This option is set in order to make it easier for others to use the base/assert_msg.hpp"    OFF)
-
 # 查找第三方库
-find_package(EnTT REQUIRED)
-if(TNRW_USE_FMT_OUTPUT)
-    find_package(fmt REQUIRED)
-endif()
-# find_package(spdlog REQUIRED)
-# find_package(SFML 3 COMPONENTS Graphics Window System REQUIRED)
-# find_package(TGUI REQUIRED)
-# find_package(nlohmann_json REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(SFML 3 COMPONENTS Graphics Window System CONFIG REQUIRED)
+# find_package(TGUI CONFIG REQUIRED)
+# find_package(nlohmann_json CONFIG REQUIRED)
 
 # 链接编译器标志
-if(TNRW_USE_FMT_OUTPUT)
-    target_link_libraries(tnrw
-        PUBLIC
-        tnrw_compiler_flags
-        EnTT::EnTT
-        fmt::fmt
-        # spdlog::spdlog
-        # SFML::Graphics
-        # SFML::Window
-        # SFML::System
-        # TGUI
-        # nlohmann_json::nlohmann_json
-    )
-else()
-    target_link_libraries(tnrw
-        PUBLIC
-        tnrw_compiler_flags
-        EnTT::EnTT
-        # spdlog::spdlog
-        # SFML::Graphics
-        # SFML::Window
-        # SFML::System
-        # TGUI
-        # nlohmann_json::nlohmann_json
-    )
-endif()
+target_link_libraries(tnrw
+    PUBLIC
+    tnrw_compiler_flags
+    EnTT::EnTT
+    fmt::fmt
+    spdlog::spdlog
+    SFML::Graphics
+    SFML::Window
+    SFML::System
+    # TGUI
+    # nlohmann_json::nlohmann_json
+)
+
+# 添加安装支持
+install(TARGETS tnrw DESTINATION lib)

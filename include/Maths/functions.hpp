@@ -16,12 +16,13 @@
  *   4. 有对其类对象和其类另一对象的 `operator%` 重载且行为正常
  *   5. 类满足概念 `std::unsigned_integral` 或 `std::signed_integral`（有符号整型还需支持调用 `std::abs` 函数）
  *   6. 以上提到的函数、操作符重载等最好标记为 `noexcept` ）
- * 
+ * @deprecated 因为与标准库中的std::gcd / std::lcm 重复，将要删除
  */
 
-#ifndef __MATHS_FUNCTIONS_HPP__
-#define __MATHS_FUNCTIONS_HPP__
+#ifndef __TNRW_MATHS_FUNCTIONS_HPP__
+#define __TNRW_MATHS_FUNCTIONS_HPP__
 
+#include <cmath>
 #include <concepts>
 
 namespace tnrw {
@@ -89,7 +90,8 @@ namespace tnrw {
          * @note 当 `a == 0 || b == 0` 时，函数返回 `0`
          */
         template <std::unsigned_integral UnsignedIntegerType>
-        [[nodiscard]] UnsignedIntegerType gcd(UnsignedIntegerType a, UnsignedIntegerType b) noexcept {
+        [[deprecated("与标准库重复，请使用 `std::gcd` 代替")]] [[nodiscard]] UnsignedIntegerType
+        gcd(UnsignedIntegerType a, UnsignedIntegerType b) noexcept {
             return FunctionsDetails::gcd(a, b);
         }
 
@@ -102,7 +104,8 @@ namespace tnrw {
          * @note 当 `a == 0 || b == 0` 时，函数返回 `0`
          */
         template <std::unsigned_integral UnsignedIntegerType>
-        [[nodiscard]] UnsignedIntegerType lcm(UnsignedIntegerType a, UnsignedIntegerType b) noexcept {
+        [[deprecated("与标准库重复，请使用 `std::lcm` 代替")]] [[nodiscard]] UnsignedIntegerType
+        lcm(UnsignedIntegerType a, UnsignedIntegerType b) noexcept {
             return FunctionsDetails::lcm(a, b);
         }
 
@@ -115,7 +118,8 @@ namespace tnrw {
          * @note 此函数将有符号类型取绝对值（ `std::abs` ）后转发给无符号整型的函数
          */
         template <std::signed_integral SignedIntegerType>
-        [[nodiscard]] SignedIntegerType gcd(SignedIntegerType a, SignedIntegerType b) noexcept {
+        [[deprecated("与标准库重复，请使用 `std::gcd` 代替")]] [[nodiscard]] SignedIntegerType
+        gcd(SignedIntegerType a, SignedIntegerType b) noexcept {
             return FunctionsDetails::gcd(std::abs(a), std::abs(b));
         }
 
@@ -128,7 +132,8 @@ namespace tnrw {
          * @note 此函数将有符号类型取绝对值（ `std::abs` ）后转发给无符号整型的函数
          */
         template <std::signed_integral SignedIntegerType>
-        [[nodiscard]] SignedIntegerType lcm(SignedIntegerType a, SignedIntegerType b) noexcept {
+        [[deprecated("与标准库重复，请使用 `std::lcm` 代替")]] [[nodiscard]] SignedIntegerType
+        lcm(SignedIntegerType a, SignedIntegerType b) noexcept {
             return FunctionsDetails::lcm(std::abs(a), std::abs(b));
         }
 
@@ -136,4 +141,4 @@ namespace tnrw {
 
 } // namespace tnrw
 
-#endif // __MATHS_FUNCTIONS_HPP__
+#endif // __TNRW_MATHS_FUNCTIONS_HPP__

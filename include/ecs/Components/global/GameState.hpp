@@ -11,37 +11,45 @@
  * 
  */
 
-#ifndef __ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__
-#define __ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__
+#ifndef __TNRW_ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__
+#define __TNRW_ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__
 
+#include "base/assert_msg.hpp"
 #include <cstdint>
+#include <string_view>
 #include <vector>
 
-namespace tnrw {
+namespace tnrw::ecs {
 
-    namespace ecs {
-
-        /// @brief 游戏状态的组件
-        class GameState final {
-          public: /// @publicsection
-            /// @brief 游戏的状态枚举
-            enum class State : std::uint8_t {
-                Settings = 0, ///< 设置
-                Mainpage = 1, ///< 主页
-                Game = 2      ///< 游戏界面
-            };
-            // 友元声明
-            friend class GameStateSystem; ///< 仅其对应系统才可访问其成员，防止篡改
-
-            /// @cond INTERNAL
-          private: /// @privatesection
-            // 成员
-            std::vector<State> states; ///< 游戏状态集
-            /// @endcond
+    /// @brief 游戏状态的组件
+    class [[nodiscard]] GameState final {
+      public: /// @publicsection
+        /// @brief 游戏的状态枚举
+        enum class State : std::uint8_t {
+            Settings = 0, ///< 设置
+            Mainpage = 1, ///< 主页
+            Game = 2      ///< 游戏界面
         };
+        // 友元声明
+        friend class GameStateSystem; ///< 仅其对应系统才可访问其成员，防止篡改
 
-    } // namespace ecs
+        static constexpr std::string_view toString(State state) {
+            switch (state) {
+                case State::Settings: return "Settings";
+                case State::Game: return "Game";
+                case State::Mainpage: return "Mainpage";
+                default: assert_msg(false, "非法的状态：{}（整数形式）", static_cast<int>(state));
+            }
+            return {};
+        }
 
-} // namespace tnrw
+        /// @cond INTERNAL
+      private: /// @privatesection
+        // 成员
+        std::vector<State> states; ///< 游戏状态集
+        /// @endcond
+    };
 
-#endif // __ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__
+} // namespace tnrw::ecs
+
+#endif // __TNRW_ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__

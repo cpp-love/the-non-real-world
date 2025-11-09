@@ -9,18 +9,10 @@
  * 
  */
 
-#ifndef __MATHS_FWD_HPP__
-#define __MATHS_FWD_HPP__
+#ifndef __TNRW_MATHS_FWD_HPP__
+#define __TNRW_MATHS_FWD_HPP__
 
 #include <concepts>
-
-/**@defgroup Maths description
- * @brief 
- * @details 
- * @{
-*/
-
-/** @} Maths*/
 
 namespace tnrw {
 
@@ -37,27 +29,29 @@ namespace tnrw {
         using VariableType = char;
 
         // Algebraicexpression.hpp
-        class AlgebraicExpression final;
+        class AlgebraicExpression;
 
         // NumericExpression.hpp
-        class NumericExpression final;
+        class NumericExpression;
 
         // functions.hpp
         template <std::unsigned_integral UnsignedIntegerType>
-        [[nodiscard]] UnsignedIntegerType gcd(UnsignedIntegerType a, UnsignedIntegerType b) noexcept;
+        [[deprecated("与标准库重复，请使用 `std::gcd` 代替")]] [[nodiscard]] UnsignedIntegerType
+        gcd(UnsignedIntegerType a, UnsignedIntegerType b) noexcept;
         template <std::unsigned_integral UnsignedIntegerType>
-        [[nodiscard]] UnsignedIntegerType lcm(UnsignedIntegerType a, UnsignedIntegerType b) noexcept;
+        [[deprecated("与标准库重复，请使用 `std::lcm` 代替")]] [[nodiscard]] UnsignedIntegerType
+        lcm(UnsignedIntegerType a, UnsignedIntegerType b) noexcept;
 
     } // namespace Maths
 
-    namespace literals {
+    inline namespace literals {
 
         // Expressions_base.hpp
         inline namespace Expressions_base_literals {
 
             [[nodiscard]] constexpr Maths::ConstantType
-            operator""_c(const unsigned long long constant) noexcept;
-            [[nodiscard]] constexpr Maths::VariableType operator""_v(const char variable) noexcept;
+            operator""_c(unsigned long long constant) noexcept;
+            [[nodiscard]] constexpr Maths::VariableType operator""_v(char variable) noexcept;
 
         } // namespace Expressions_base_literals
 
@@ -65,8 +59,8 @@ namespace tnrw {
         inline namespace AlgebraicExpression_literals {
 
             [[nodiscard]] Maths::AlgebraicExpression
-            operator""_cAlgeExpr(const unsigned long long constant) noexcept;
-            [[nodiscard]] Maths::AlgebraicExpression operator""_vAlgeExpr(const char variable) noexcept;
+            operator""_cAlgeExpr(unsigned long long constant) noexcept;
+            [[nodiscard]] Maths::AlgebraicExpression operator""_vAlgeExpr(char variable) noexcept;
 
         } // namespace AlgebraicExpression_literals
 
@@ -74,7 +68,7 @@ namespace tnrw {
         inline namespace NumericExpression_literals {
 
             [[nodiscard]] Maths::NumericExpression
-            operator""_cNumExpr(const unsigned long long constant) noexcept;
+            operator""_cNumExpr(unsigned long long constant) noexcept;
 
         } // namespace NumericExpression_literals
 
@@ -82,4 +76,4 @@ namespace tnrw {
 
 } // namespace tnrw
 
-#endif // __MATHS_FWD_HPP__
+#endif // __TNRW_MATHS_FWD_HPP__

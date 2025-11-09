@@ -7,6 +7,7 @@
  * 
  * @copyright cpp-love
  * 
+ * @todo 添加代码格式化
  */
 
 #include "Maths/AlgebraicExpression.hpp"
@@ -66,7 +67,7 @@ namespace tnrw {
              *     - **如果为分数常量，则符号应在分母上**
              * @warning 该结构体是私有的，用户不应直接访问
              * 
-             * @todo 去除多余的节点类型，仅保留 `Negative` 属性，其余改用 `std::variant` 的相关函数
+             * @todo 去除多余的节点属性，仅保留 `Negative` 属性，其余改用 `std::variant` 的相关函数
              */
             struct Node {
                 // using别名
@@ -1374,7 +1375,7 @@ namespace tnrw {
             return copy_of_old;
         }
 
-        void AlgebraicExpression::clear() noexcept { Details::clearNode(m_root); }
+        void                      AlgebraicExpression::clear() noexcept { Details::clearNode(m_root); }
 
         [[nodiscard]] std::string AlgebraicExpression::toString(const std::locale &loc) const noexcept {
             return Details::toBasicStringFromNode<char, std::char_traits<char>>(m_root, loc);
@@ -1568,7 +1569,7 @@ namespace tnrw {
             return copy_of_old;
         }
 
-        void NumericExpression::clear() noexcept { Details::clearNode(m_root); }
+        void                      NumericExpression::clear() noexcept { Details::clearNode(m_root); }
 
         [[nodiscard]] std::string NumericExpression::toString(const std::locale &loc) const noexcept {
             return Details::toBasicStringFromNode<char, std::char_traits<char>>(m_root, loc);

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 VSCode 集成编译运行控制器
 支持文件组选择、通配符扩展和跨平台编译
@@ -35,7 +36,7 @@ def get_vscode_config():
     try:
         # 尝试从 VSCode 环境变量获取设置
         config_path = os.path.join(
-            os.getenv("workspaceFolder", ""), ".vscode", "settings.json"
+            os.getenv("workspaceFolder", ""), ".vscode", "my_compile_settings.json"
         )
         if os.path.exists(config_path):
             with open(config_path, "r", encoding="utf-8") as f:

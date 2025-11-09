@@ -9,6 +9,14 @@
 
 ***
 
+## [0.1.0-2] - 2025-11-09 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 取消了对不同类型的格式化字符串的支持
+
+***
+
 ## [0.1.0-1] - 2025-08-08 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)

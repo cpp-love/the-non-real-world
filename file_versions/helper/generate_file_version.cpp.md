@@ -7,6 +7,16 @@
 
 # generate_file_version.cpp 版本历史
 
+***
+
+## [0.1.0-5] -2025-11-8 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. 修改了文件内部的一些代码，使其更加现代与安全
+
+***
+
 ## [0.1.0-4] -2025-09-20 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)
@@ -15,7 +25,7 @@
 
 ### Changed(修改)
 
-1. 将文件的默认日期从当前日期改为尝试使用文件 `Doxygen` 注释的日期，如果没有，则为默认日期
+1. 将文件的默认日期从当前日期改为尝试使用文件 `Doxygen` 注释的日期，如果没有找到，则为默认日期
 
 ***
 

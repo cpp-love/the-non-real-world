@@ -9,25 +9,19 @@
  * 
  */
 
-#ifndef __ECS_SYSTEMS_FWD_HPP__
-#define __ECS_SYSTEMS_FWD_HPP__
+#ifndef __TNRW_ECS_SYSTEMS_FWD_HPP__
+#define __TNRW_ECS_SYSTEMS_FWD_HPP__
 
-#include "base/config.hpp"
 #include "global/SceneSystem.hpp"
-#include <algorithm>
-#include <entt/fwd.hpp>
-#include <memory>
-#include <utility>
 
-namespace tnrw {
+namespace tnrw::ecs {
 
-    namespace ecs {
+    // global/GameStateSystem.hpp
+    class GameStateSystem;
 
-        // global/GameStateSystem.hpp
-        class GameStateSystem final;
+    // RenderSystem.hpp
+    class RenderSystem;
 
-    } // namespace ecs
+} // namespace tnrw::ecs
 
-} // namespace tnrw
-
-#endif // __ECS_SYSTEMS_FWD_HPP__
+#endif // __TNRW_ECS_SYSTEMS_FWD_HPP__

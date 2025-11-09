@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef __FWD_HPP__
-#define __FWD_HPP__
+#ifndef __TNRW_FWD_HPP__
+#define __TNRW_FWD_HPP__
 
 #include "Maths/fwd.hpp"
 #include "base/fwd.hpp"
@@ -23,8 +23,8 @@
 namespace tnrw {
 
     /// @brief tnrw命名空间内的自定义字面量命名空间
-    namespace literals {}
+    inline namespace literals {}
 
 } // namespace tnrw
 
-#endif // __FWD_HPP__
+#endif // __TNRW_FWD_HPP__

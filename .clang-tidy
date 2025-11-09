@@ -1,0 +1,25 @@
+Checks: >
+  -*,
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  readability-*,
+  -readability-uppercase-literal-suffix,
+  cppcoreguidelines-*,
+  hicpp-*,
+  -hicpp-uppercase-literal-suffix
+WarningsAsErrors: ""
+HeaderFilterRegex: ".*"
+FormatStyle: file
+
+CheckOptions:
+  - key: modernize-use-auto.MinTypeNameLength
+    value: "5"
+  - key: modernize-raw-string-literal.ShortStringLength
+    value: "10"
+  - key: cppcoreguidelines-pro-type-vararg.AllowedTypes
+    value: "printf scanf"
+  - key: readability-identifier-naming.VariableCase
+    value: "[a-z][a-zA-Z0-9]*"

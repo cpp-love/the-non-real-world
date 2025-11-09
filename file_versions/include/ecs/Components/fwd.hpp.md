@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 添加了 `GameState.hpp` 和 `ScenesComponents.hpp` 的组件的前向声明
+1. 添加了各种组件的前向声明
 
 ***

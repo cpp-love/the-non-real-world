@@ -15,13 +15,12 @@
  * 
  */
 
-#ifndef __MATHS_NUMERIC_EXPRESSION_HPP__
-#define __MATHS_NUMERIC_EXPRESSION_HPP__
+#ifndef __TNRW_MATHS_NUMERIC_EXPRESSION_HPP__
+#define __TNRW_MATHS_NUMERIC_EXPRESSION_HPP__
 
 #include "Maths/Expressions_base.hpp"
 #include <iosfwd>
 #include <locale>
-#include <map>
 #include <memory>
 #include <string>
 
@@ -73,7 +72,7 @@ namespace tnrw {
              * @brief 以常量为参数的构造函数
              * @param [in] constant 常量值
              */
-            [[nodiscard]] NumericExpression(const ConstantType constant) noexcept;
+            [[nodiscard]] explicit NumericExpression(ConstantType constant) noexcept;
             /**
              * @brief 析构函数
              * @details 释放无字母的代数式资源
@@ -97,14 +96,14 @@ namespace tnrw {
              * @return NumericExpression& 当前对象的引用( `*this` )
              * @details 用另一个对象的内容覆盖本对象的内容
              */
-            NumericExpression &operator=(const NumericExpression &rhs) noexcept;
+            NumericExpression                    &operator=(const NumericExpression &rhs) noexcept;
             /**
              * @brief 移动赋值运算符
              * @param [in] rhs 另一个无字母的代数式对象
              * @return NumericExpression& 当前对象的引用( `*this` )
              * @details 用另一个对象的内容覆盖本对象的内容，并置空另一个对象的内容
              */
-            NumericExpression &operator=(NumericExpression &&rhs) noexcept;
+            NumericExpression                    &operator=(NumericExpression &&rhs) noexcept;
 
             // 复合赋值与其他操作符
             /**
@@ -112,46 +111,46 @@ namespace tnrw {
              * @param [in] rhs 常量
              * @return NumericExpression& 当前对象的引用( `*this` )
              */
-            NumericExpression &operator+=(const ConstantType rhs) noexcept;
+            NumericExpression                    &operator+=(ConstantType rhs) noexcept;
             /**
              * @brief 减法赋值运算符
              * @param [in] rhs 常量
              * @return NumericExpression& 当前对象的引用( `*this` )
              */
-            NumericExpression &operator-=(const ConstantType rhs) noexcept;
+            NumericExpression                    &operator-=(ConstantType rhs) noexcept;
             /**
              * @brief 乘法赋值运算符
              * @param [in] rhs 常量
              * @return NumericExpression& 当前对象的引用( `*this` )
              */
-            NumericExpression &operator*=(const ConstantType rhs) noexcept;
+            NumericExpression                    &operator*=(ConstantType rhs) noexcept;
             /**
              * @brief 除法赋值运算符
              * @param [in] rhs 常量
              * @return NumericExpression& 当前对象的引用( `*this` )
              * @warning 除以0行为未定义
              */
-            NumericExpression &operator/=(const ConstantType rhs) noexcept;
+            NumericExpression                    &operator/=(ConstantType rhs) noexcept;
             /**
              * @brief 一元加法运算符
              * @return NumericExpression 当前对象的副本( `*this` )
              */
-            [[nodiscard]] NumericExpression operator+() noexcept;
+            [[nodiscard]] NumericExpression       operator+() noexcept;
             /**
              * @brief 一元减法运算符
              * @return NumericExpression 当前对象取反的副本( `*this` )
              */
-            [[nodiscard]] NumericExpression operator-() noexcept;
+            [[nodiscard]] NumericExpression       operator-() noexcept;
             /**
              * @brief 后缀自增运算符
              * @return const NumericExpression& 当前对象的引用( `*this` )
              */
-            NumericExpression &operator++() noexcept;
+            NumericExpression                    &operator++() noexcept;
             /**
              * @brief 后缀自减运算符
              * @return const NumericExpression& 当前对象的引用( `*this` )
              */
-            NumericExpression &operator--() noexcept;
+            NumericExpression                    &operator--() noexcept;
             /**
              * @brief 前缀自增运算符
              * @return NumericExpression 自增前的副本
@@ -170,25 +169,25 @@ namespace tnrw {
              * @return false 无字母的代数式不为0
              * @note 该方法会精准判断无字母的代数式是否为0
              */
-            [[nodiscard]] bool isZero() const noexcept;
+            [[nodiscard]] bool                    isZero() const noexcept;
             /**
              * @brief 计算并获取无字母的代数式的值
              * @tparam T 返回类型
              * @return T 无字母的代数式的值
              */
             template <typename T>
-            [[nodiscard]] T getValue() const noexcept;
+            [[nodiscard]] T            getValue() const noexcept;
             /**
              * @brief 清空无字母的代数式
              * @details 释放原无字母的代数式，重设为0
              */
-            void clear() noexcept;
+            void                       clear() noexcept;
             /**
              * @brief 将无字母的代数式转为人类可读的字符串
              * @param [in] loc 可能的 `std::locale` 配置，可省略
              * @return std::string 人类可读的字符串
              */
-            [[nodiscard]] std::string toString(const std::locale &loc = std::locale()) const noexcept;
+            [[nodiscard]] std::string  toString(const std::locale &loc = std::locale()) const noexcept;
             /**
              * @brief 将无字母的代数式转为人类可读的字符串
              * @param [in] loc 可能的 `std::locale` 配置，可省略
@@ -204,7 +203,7 @@ namespace tnrw {
              */
             template <typename CharT, typename Traits = std::char_traits<CharT>>
             [[nodiscard]] std::basic_string<CharT, Traits>
-            toBasicString(const std::locale &loc = std::locale()) const noexcept;
+                 toBasicString(const std::locale &loc = std::locale()) const noexcept;
             /**
              * @brief 将原无字母的代数式取相反数
              */
@@ -217,16 +216,16 @@ namespace tnrw {
          * @param [in] rhs 常量
          * @return const NumericExpression 两项相加后的副本
          */
-        [[nodiscard]] const NumericExpression
-        operator+(const NumericExpression &lhs, const NumericExpression::ConstantType rhs) noexcept;
+        [[nodiscard]] const NumericExpression operator+(const NumericExpression        &lhs,
+                                                        NumericExpression::ConstantType rhs) noexcept;
         /**
          * @brief 加法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 无字母的代数式对象
          * @return const NumericExpression 两项相加后的副本
          */
-        [[nodiscard]] const NumericExpression operator+(const NumericExpression::ConstantType lhs,
-                                                        const NumericExpression &rhs) noexcept;
+        [[nodiscard]] const NumericExpression operator+(NumericExpression::ConstantType lhs,
+                                                        const NumericExpression        &rhs) noexcept;
 
         /**
          * @brief 减法运算符
@@ -234,16 +233,16 @@ namespace tnrw {
          * @param [in] rhs 常量
          * @return const NumericExpression 两项相减后的副本
          */
-        [[nodiscard]] const NumericExpression
-        operator-(const NumericExpression &lhs, const NumericExpression::ConstantType rhs) noexcept;
+        [[nodiscard]] const NumericExpression operator-(const NumericExpression        &lhs,
+                                                        NumericExpression::ConstantType rhs) noexcept;
         /**
          * @brief 减法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 无字母的代数式对象
          * @return const NumericExpression 两项相减后的副本
          */
-        [[nodiscard]] const NumericExpression operator-(const NumericExpression::ConstantType lhs,
-                                                        const NumericExpression &rhs) noexcept;
+        [[nodiscard]] const NumericExpression operator-(NumericExpression::ConstantType lhs,
+                                                        const NumericExpression        &rhs) noexcept;
 
         /**
          * @brief 乘法运算符
@@ -251,16 +250,16 @@ namespace tnrw {
          * @param [in] rhs 常量
          * @return const NumericExpression 两项相乘后的副本
          */
-        [[nodiscard]] const NumericExpression
-        operator*(const NumericExpression &lhs, const NumericExpression::ConstantType rhs) noexcept;
+        [[nodiscard]] const NumericExpression operator*(const NumericExpression        &lhs,
+                                                        NumericExpression::ConstantType rhs) noexcept;
         /**
          * @brief 乘法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 无字母的代数式对象
          * @return const NumericExpression 两项相乘后的副本
          */
-        [[nodiscard]] const NumericExpression operator*(const NumericExpression::ConstantType lhs,
-                                                        const NumericExpression &rhs) noexcept;
+        [[nodiscard]] const NumericExpression operator*(NumericExpression::ConstantType lhs,
+                                                        const NumericExpression        &rhs) noexcept;
 
         /**
          * @brief 除法运算符
@@ -269,8 +268,8 @@ namespace tnrw {
          * @return const NumericExpression 两项相除后的副本
          * @warning 除以0行为未定义
          */
-        [[nodiscard]] const NumericExpression
-        operator/(const NumericExpression &lhs, const NumericExpression::ConstantType rhs) noexcept;
+        [[nodiscard]] const NumericExpression operator/(const NumericExpression        &lhs,
+                                                        NumericExpression::ConstantType rhs) noexcept;
         /**
          * @brief 除法运算符
          * @param [in] lhs 常量
@@ -278,8 +277,8 @@ namespace tnrw {
          * @return const NumericExpression 两项相除后的副本
          * @warning 除以0行为未定义
          */
-        [[nodiscard]] const NumericExpression operator/(const NumericExpression::ConstantType lhs,
-                                                        const NumericExpression &rhs) noexcept;
+        [[nodiscard]] const NumericExpression operator/(NumericExpression::ConstantType lhs,
+                                                        const NumericExpression        &rhs) noexcept;
 
         /**
          * @brief 比较运算符（等号）
@@ -288,7 +287,7 @@ namespace tnrw {
          * @return true 两无字母的代数式相等
          * @return false 两无字母的代数式不相等
          */
-        [[nodiscard]] bool operator==(const NumericExpression &lhs,
+        [[nodiscard]] bool                    operator==(const NumericExpression &lhs,
                                       const NumericExpression &rhs) noexcept;
         /**
          * @brief 比较运算符（不等号）
@@ -297,7 +296,7 @@ namespace tnrw {
          * @return true 两无字母的代数式不相等
          * @return false 两无字母的代数式相等
          */
-        [[nodiscard]] bool operator!=(const NumericExpression &lhs,
+        [[nodiscard]] bool                    operator!=(const NumericExpression &lhs,
                                       const NumericExpression &rhs) noexcept;
         /**
          * @brief 流输出操作符
@@ -313,7 +312,7 @@ namespace tnrw {
 
     } // namespace Maths
 
-    namespace literals {
+    inline namespace literals {
 
         /// @brief NumericExpression类的内联自定义字面量命名空间
         inline namespace NumericExpression_literals {
@@ -325,7 +324,7 @@ namespace tnrw {
              * @see @ref Maths::NumericExpression::NumericExpression(Maths::NumericExpression::ConstantType constant) "NumericExpression类的以常量为参数的构造函数"
              */
             [[nodiscard]] Maths::NumericExpression
-            operator""_cNumExpr(const unsigned long long constant) noexcept;
+            operator""_cNumExpr(unsigned long long constant) noexcept;
 
         } // namespace NumericExpression_literals
 
@@ -333,4 +332,4 @@ namespace tnrw {
 
 } // namespace tnrw
 
-#endif // __MATHS_NUMERIC_EXPRESSION_HPP__
+#endif // __TNRW_MATHS_NUMERIC_EXPRESSION_HPP__
