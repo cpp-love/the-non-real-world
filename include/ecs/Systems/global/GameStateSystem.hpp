@@ -19,7 +19,7 @@
 #ifndef __TNRW_ECS_SYSTEMS_GLOBAL_GAME_STATE_SYSTEM_HPP__
 #define __TNRW_ECS_SYSTEMS_GLOBAL_GAME_STATE_SYSTEM_HPP__
 
-#include "ecs/Components/global/GameState.hpp"
+#include "ecs/Components/global/GameStateComponents.hpp"
 #include <entt/fwd.hpp>
 #include <optional>
 

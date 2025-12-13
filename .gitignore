@@ -37,3 +37,7 @@ docs/**
 # Build files
 build/**
 out/**
+
+# log files
+*.log
+log/**

@@ -33,12 +33,13 @@ namespace tnrw::details {
                                             const char *message = nullptr) {
         // 输出信息
         if (message != nullptr) {
-            spdlog::error("Assertion failed at {} : {} : {} (in function : {}):\n>> Expression: "
-                          "{}\n>> Message: {}",
-                          loc.file_name(), loc.line(), loc.column(), loc.function_name(), expr, message);
+            spdlog::critical("Assertion failed at {} : {} : {} (in function : {}):\n>> Expression: "
+                             "{}\n>> Message: {}",
+                             loc.file_name(), loc.line(), loc.column(), loc.function_name(), expr,
+                             message);
         } else {
-            spdlog::error("Assertion failed at {} : {} : {} (in function : {}):\n>> Expression: {}",
-                          loc.file_name(), loc.line(), loc.column(), loc.function_name(), expr);
+            spdlog::critical("Assertion failed at {} : {} : {} (in function : {}):\n>> Expression: {}",
+                             loc.file_name(), loc.line(), loc.column(), loc.function_name(), expr);
         }
 
         // 终止程序

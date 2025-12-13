@@ -13,10 +13,8 @@
 #define __TNRW_ECS_SYSTEM_RENDER_SYSTEM_HPP__
 
 #include "ecs/Components/ShapeComponents.hpp"
-#include <SFML/Graphics/CircleShape.hpp>
-#include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
+#include <cstddef>
 #include <entt/fwd.hpp>
 #include <functional>
 
@@ -24,7 +22,9 @@ namespace tnrw::ecs {
 
     /// @brief 渲染系统
     class RenderSystem final {
-      private:
+        /// @cond INTERNAL
+      private: /// @privatesection
+        // 静态成员
         static std::size_t circle_point_count; ///< 绘制的圆会有的点数
 
         /**
@@ -32,31 +32,32 @@ namespace tnrw::ecs {
          * @param [in] render 需要绘制的地方
          * @param [in] line 线图形
          */
-        static void        drawer(sf::RenderTarget &render, const Shape::Line &line);
+        static void        drawer(sf::RenderTarget &render, const Shape::Line &line) noexcept;
         /**
          * @brief 绘制单个图形
          * @param [in] render 需要绘制的地方
          * @param [in] circle 圆图形
          */
-        static void        drawer(sf::RenderTarget &render, const Shape::Circle &circle);
+        static void        drawer(sf::RenderTarget &render, const Shape::Circle &circle) noexcept;
         /**
          * @brief 绘制单个图形
          * @param [in] render 需要绘制的地方
          * @param [in] rect 矩形图形
          */
-        static void        drawer(sf::RenderTarget &render, const Shape::Rectangle &rect);
+        static void        drawer(sf::RenderTarget &render, const Shape::Rectangle &rect) noexcept;
 
-      public:
+        /// @endcond
+      public: /// @publicsection
         /**
          * @brief 获取绘制的圆会有的点数
          * @return std::size_t 绘制的圆会有的点数
          */
-        [[nodiscard]] static std::size_t getCirclePointCount();
+        [[nodiscard]] static std::size_t getCirclePointCount() noexcept;
         /**
          * @brief 设置绘制的圆会有的点数
          * @param [in] new_cnt 新的绘制的圆会有的点数
          */
-        static void                      setCirclePointCount(std::size_t new_cnt);
+        static void                      setCirclePointCount(std::size_t new_cnt) noexcept;
 
         /**
          * @brief 绘制注册表里的内容
@@ -67,7 +68,7 @@ namespace tnrw::ecs {
          * @note 此函数不会调用 `render.clear()`，需要使用者手动调用
          */
         static void                      draw(const entt::registry &registry, sf::RenderTarget &render,
-                                              std::function<bool(entt::entity)> checkIfVaild);
+                                              std::function<bool(entt::entity)> checkIfVaild) noexcept;
     };
 
 } // namespace tnrw::ecs

@@ -1,5 +1,6 @@
 BasedOnStyle: LLVM
 Language: Cpp
+Standard: c++20
 
 IndentWidth: 4 # 缩进宽度为 4 个空格
 UseTab: Never # 禁止使用 Tab，强制用空格缩进

@@ -27,14 +27,14 @@ namespace tnrw::ecs {
 
     void GameStateSystem::pushTopState(entt::registry &registry, const GameState::State state) noexcept {
         assert_msg(registry.ctx().contains<GameState>(),
-                   "参数 `registry` 没有 `tnrw::ecs::GameState` 组件，请将本消息反馈到项目的 Issue 中");
+                   "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
         auto &val = registry.ctx().get<GameState>();
         spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(state));
         val.states.push_back(state);
     }
     void GameStateSystem::popTopState(entt::registry &registry) noexcept {
         assert_msg(registry.ctx().contains<GameState>(),
-                   "参数 `registry` 没有 `tnrw::ecs::GameState` 组件，请将本消息反馈到项目的 Issue 中");
+                   "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
         auto &val = registry.ctx().get<GameState>();
         spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(val.states.back()));
         val.states.pop_back();
@@ -42,14 +42,14 @@ namespace tnrw::ecs {
     [[nodiscard]] GameState::State
     GameStateSystem::getTopState(const entt::registry &registry) noexcept {
         assert_msg(registry.ctx().contains<GameState>(),
-                   "参数 `registry` 没有 `tnrw::ecs::GameState` 组件，请将本消息反馈到项目的 Issue 中");
+                   "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
         const auto &val = registry.ctx().get<GameState>();
         return val.states.back();
     }
     [[nodiscard]] const std::vector<GameState::State> &
     GameStateSystem::getStates(const entt::registry &registry) noexcept {
         assert_msg(registry.ctx().contains<GameState>(),
-                   "参数 `registry` 没有 `tnrw::ecs::GameState` 组件，请将本消息反馈到项目的 Issue 中");
+                   "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
         return registry.ctx().get<GameState>().states;
     }
 

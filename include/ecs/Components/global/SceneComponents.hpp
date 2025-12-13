@@ -42,7 +42,7 @@ namespace tnrw::ecs {
         /// @cond INTERNAL
       private: /// @privatesection
         // 成员
-        std::map<key_type, entt::entity, key_compare, allocator_type> scenes; //< 场景实体列表
+        std::map<key_type, entt::entity, key_compare, allocator_type> m_scenes; //< 场景实体列表
         /// @endcond
     };
 
@@ -55,7 +55,7 @@ namespace tnrw::ecs {
         /// @cond INTERNAL
       private: /// @privatesection
         // 成员
-        std::set<entt::entity> children; //< 子实体列表
+        std::set<entt::entity> m_children; //< 子实体列表
         /// @endcond
     };
 
@@ -68,7 +68,7 @@ namespace tnrw::ecs {
         /// @cond INTERNAL
       private: /// @privatesection
         // 成员
-        std::set<entt::entity> fathers; //< 父亲实体列表
+        std::set<entt::entity> m_fathers; //< 父亲实体列表
         /// @endcond
     };
 

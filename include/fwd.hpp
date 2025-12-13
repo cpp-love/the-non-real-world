@@ -12,9 +12,10 @@
 #ifndef __TNRW_FWD_HPP__
 #define __TNRW_FWD_HPP__
 
-#include "Maths/fwd.hpp"
 #include "base/fwd.hpp"
 #include "ecs/fwd.hpp"
+#include "maths/fwd.hpp"
+
 
 /**
  * @brief "The Non-real World" 游戏的命名空间

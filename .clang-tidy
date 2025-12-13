@@ -10,9 +10,11 @@ Checks: >
   cppcoreguidelines-*,
   hicpp-*,
   -hicpp-uppercase-literal-suffix
+
 WarningsAsErrors: ""
 HeaderFilterRegex: ".*"
 FormatStyle: file
+UseColor: true
 
 CheckOptions:
   - key: modernize-use-auto.MinTypeNameLength
@@ -21,5 +23,60 @@ CheckOptions:
     value: "10"
   - key: cppcoreguidelines-pro-type-vararg.AllowedTypes
     value: "printf scanf"
+  # 关于命名
+  - key: readability-identifier-naming.NamespaceCase
+    value: "lower_case"
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: "lower_case"
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: "lower_case"
+
+  - key: readability-identifier-naming.ClassCase
+    value: "CamelCase"
+  - key: readability-identifier-naming.StructCase
+    value: "CamelCase"
+  - key: readability-identifier-naming.UnionCase
+    value: "CamelCase"
+  - key: readability-identifier-naming.UnionCase
+    value: "CamelCase"
+  - key: readability-identifier-naming.EnumCase
+    value: "CamelCase"
+  - key: readability-identifier-naming.EnumConstantCase
+    value: "CamelCase"
+
+  - key: readability-identifier-naming.MemberCase
+    value: "lower_case"
+  - key: readability-identifier-naming.StaticMemberCase
+    value: "lower_case"
+  - key: readability-identifier-naming.ConstantMemberCase
+    value: "lower_case"
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: "m_"
+
+  - key: readability-identifier-naming.FunctionCase
+    value: "camelBack"
+  - key: readability-identifier-naming.MethodCase
+    value: "camelBack"
+  - key: readability-identifier-naming.ConstMethodCase
+    value: "camelBack"
+  - key: readability-identifier-naming.StaticMethodCase
+    value: "camelBack"
+
+  - key: readability-identifier-naming.ParameterCase
+    value: "lower_case"
+  - key: readability-identifier-naming.TemplateParameterCase
+    value: "camelCase"
   - key: readability-identifier-naming.VariableCase
-    value: "[a-z][a-zA-Z0-9]*"
+    value: "lower_case"
+  - key: readability-identifier-naming.ConstantCase
+    value: "lower_case"
+  - key: readability-identifier-naming.LocalConstantCase
+    value: "lower_case"
+
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: "UPPER_CASE"
+
+  - key: readability-identifier-naming.TypeAliasCase
+    value: "CamelCase"
+  - key: readability-identifier-naming.TypedefCase
+    value: "CamelCase"

@@ -1,10 +1,8 @@
 cmake_minimum_required(VERSION 3.28)
 project(TheNon-realWorld VERSION 0.1.0 DESCRIPTION "The Non-\"real\" World（《不“真实”的世界》）：一款关于不“现实”的数——复数的游戏，通过先前探索者遗留下来的纸条，探索这个复数世界的奥秘。" LANGUAGES CXX)
 
-# 全局设置标准
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# 取消编译器扩展
+set(CMAKE_CXX_EXTENSIONS OFF "Disable C++ compiler extensions")
 
 # 取消模块
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF "Disable CMake C++ modules support")
@@ -14,6 +12,7 @@ enable_testing()
 
 # 添加版本
 configure_file(${PROJECT_SOURCE_DIR}/include/base/config.hpp.in ${PROJECT_SOURCE_DIR}/include/base/config.hpp)
+configure_file(${PROJECT_SOURCE_DIR}/Doxyfile.internal.in ${PROJECT_SOURCE_DIR}/Doxyfile.internal)
 configure_file(${PROJECT_SOURCE_DIR}/Doxyfile.in ${PROJECT_SOURCE_DIR}/Doxyfile)
 
 # 添加编译器标志
@@ -27,15 +26,24 @@ set(gcc_like_cxx $<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>)
 set(msvc_cxx $<COMPILE_LANG_AND_ID:CXX,MSVC>)
 target_compile_options(tnrw_compiler_flags
     INTERFACE
-    $<${gcc_like_cxx}:$<BUILD_INTERFACE:-O2;-Wall;-Wextra;-Wpedantic>>
+    $<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wpedantic>>
     $<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>
+)
+
+# 添加优化
+target_compile_options(tnrw_compiler_flags
+    INTERFACE
+    $<${gcc_like_cxx}:$<BUILD_INTERFACE:-O2>>
 )
 
 # 添加gcc对c++23 `print` / `println` 函数的 `Windows` 版本的支持
 set(gcc_cxx $<COMPILE_LANG_AND_ID:CXX,GNU>)
-target_link_libraries(tnrw_compiler_flags
-    INTERFACE
-    $<BUILD_INTERFACE:-lstdc++exp>)
+if(gcc_cxx)
+    target_link_libraries(tnrw_compiler_flags
+        INTERFACE
+        $<BUILD_INTERFACE:-lstdc++exp>
+    )
+endif()
 
 # 包含头文件目录
 target_include_directories(tnrw_compiler_flags
@@ -49,13 +57,6 @@ target_compile_definitions(tnrw_compiler_flags
     $<BUILD_INTERFACE:$<$<CONFIG:Debug>:DEBUG=1>>
     $<BUILD_INTERFACE:$<$<CONFIG:Debug>:_DEBUG=1>>
     $<BUILD_INTERFACE:$<$<CONFIG:Release>:NDEBUG=1>>
-)
-
-# 添加调试支持
-target_compile_definitions(tnrw_compiler_flags
-    INTERFACE
-    $<${gcc_like_cxx}:$<BUILD_INTERFACE:$<$<CONFIG:Debug>:-g>>>
-    $<${msvc_cxx}:$<BUILD_INTERFACE:$<$<CONFIG:Debug>:-Z7>>>
 )
 
 # 添加子目录

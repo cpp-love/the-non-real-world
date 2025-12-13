@@ -1,12 +1,13 @@
 {
     "clangd.arguments": [
-        "--query-driver=clang++",
         "--background-index",
-        "--compile-commands-dir=${workspaceFolder}/out/build/BuildAll",
+        "--clang-tidy",
+        "--query-driver=clang++",
         "--completion-style=detailed",
         "--header-insertion=never",
-        "--clang-tidy"
+        "--compile-commands-dir=${workspaceFolder}/out/build/BuildAll",
     ],
+    "clangd.enable": true,
     "C_Cpp.intelliSenseEngine": "disabled",
     "C_Cpp.autocomplete": "disabled",
     "C_Cpp.formatting": "disabled",

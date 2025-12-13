@@ -10,38 +10,43 @@
  */
 
 #include "ecs/Systems/RenderSystem.hpp"
+#include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/PrimitiveType.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 #include <entt/entt.hpp>
 
 namespace tnrw::ecs {
 
     std::size_t RenderSystem::circle_point_count =
         30; // NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
-    void RenderSystem::drawer(sf::RenderTarget &render, const Shape::Line &line) {
+    void RenderSystem::drawer(sf::RenderTarget &render, const Shape::Line &line) noexcept {
         std::array<sf::Vertex, 2> draw_line{line.start, line.end};
         render.draw(draw_line.data(), draw_line.size(), sf::PrimitiveType::Lines);
     }
-    void RenderSystem::drawer(sf::RenderTarget &render, const Shape::Circle &circle) {
+    void RenderSystem::drawer(sf::RenderTarget &render, const Shape::Circle &circle) noexcept {
         sf::CircleShape draw_circle(circle.radius, circle_point_count);
-        draw_circle.setPosition(circle.center + sf::Vector2f(circle.radius, circle.radius));
+        draw_circle.setPosition(circle.center - sf::Vector2f{circle.radius, circle.radius});
         draw_circle.setFillColor(circle.fill_color);
         draw_circle.setOutlineThickness(circle.outline_thickness);
         draw_circle.setOutlineColor(circle.outline_color);
         render.draw(draw_circle);
     }
-    void RenderSystem::drawer(sf::RenderTarget &render, const Shape::Rectangle &rect) {
+    void RenderSystem::drawer(sf::RenderTarget &render, const Shape::Rectangle &rect) noexcept {
         sf::RectangleShape draw_rect(rect.size);
         draw_rect.setPosition(rect.position);
         draw_rect.setFillColor(rect.fill_color);
         draw_rect.setOutlineThickness(rect.outline_thickness);
         draw_rect.setOutlineColor(rect.outline_color);
-        draw_rect.rotate(rect.rotation);
+        draw_rect.setRotation(rect.rotation);
         render.draw(draw_rect);
     }
-    [[nodiscard]] std::size_t RenderSystem::getCirclePointCount() { return circle_point_count; }
-    void RenderSystem::setCirclePointCount(std::size_t new_cnt) { circle_point_count = new_cnt; }
-    void RenderSystem::draw(
-        const entt::registry &registry, sf::RenderTarget &render,
-        std::function<bool(entt::entity)> checkIfVaild) { // NOLINT(performance-unnecessary-value-param)
+    [[nodiscard]] std::size_t RenderSystem::getCirclePointCount() noexcept { return circle_point_count; }
+    void                      RenderSystem::setCirclePointCount(std::size_t new_cnt) noexcept {
+        circle_point_count = new_cnt;
+    }
+    void RenderSystem::draw(const entt::registry &registry, sf::RenderTarget &render,
+                            std::function<bool(entt::entity)>
+                                checkIfVaild) noexcept { // NOLINT(performance-unnecessary-value-param)
         auto should_render = registry.view<ShouldRender>();
         for (const auto &entity : should_render) {
             if (checkIfVaild(entity)) {

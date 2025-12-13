@@ -20,6 +20,10 @@
                     "type": "STR",
                     "value": "g++"
                 },
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STR",
+                    "value": "DEBUG"
+                },
                 "CMAKE_EXPORT_COMPILE_COMMANDS": {
                     "type": "BOOL",
                     "value": "ON"
@@ -39,6 +43,10 @@
                 "CMAKE_CXX_COMPILER": {
                     "type": "STR",
                     "value": "g++"
+                },
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STR",
+                    "value": "DEBUG"
                 },
                 "CMAKE_EXPORT_COMPILE_COMMANDS": {
                     "type": "BOOL",
@@ -60,6 +68,10 @@
                     "type": "STR",
                     "value": "g++"
                 },
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STR",
+                    "value": "DEBUG"
+                },
                 "CMAKE_EXPORT_COMPILE_COMMANDS": {
                     "type": "BOOL",
                     "value": "ON"
@@ -75,6 +87,10 @@
                 "CMAKE_CXX_COMPILER": {
                     "type": "STR",
                     "value": "g++"
+                },
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STR",
+                    "value": "DEBUG"
                 },
                 "CMAKE_EXPORT_COMPILE_COMMANDS": {
                     "type": "BOOL",
