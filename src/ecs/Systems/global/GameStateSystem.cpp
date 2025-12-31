@@ -30,27 +30,27 @@ namespace tnrw::ecs {
                    "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
         auto &val = registry.ctx().get<GameState>();
         spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(state));
-        val.states.push_back(state);
+        val.m_states.push_back(state);
     }
     void GameStateSystem::popTopState(entt::registry &registry) noexcept {
         assert_msg(registry.ctx().contains<GameState>(),
                    "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
         auto &val = registry.ctx().get<GameState>();
-        spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(val.states.back()));
-        val.states.pop_back();
+        spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(val.m_states.back()));
+        val.m_states.pop_back();
     }
     [[nodiscard]] GameState::State
     GameStateSystem::getTopState(const entt::registry &registry) noexcept {
         assert_msg(registry.ctx().contains<GameState>(),
                    "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
         const auto &val = registry.ctx().get<GameState>();
-        return val.states.back();
+        return val.m_states.back();
     }
     [[nodiscard]] const std::vector<GameState::State> &
     GameStateSystem::getStates(const entt::registry &registry) noexcept {
         assert_msg(registry.ctx().contains<GameState>(),
                    "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
-        return registry.ctx().get<GameState>().states;
+        return registry.ctx().get<GameState>().m_states;
     }
 
     [[nodiscard]] bool GameStateSystem::tryPushTopState(entt::registry        &registry,
@@ -60,7 +60,7 @@ namespace tnrw::ecs {
         }
         auto &val = registry.ctx().get<GameState>();
         spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(state));
-        val.states.push_back(state);
+        val.m_states.push_back(state);
         return true;
     }
     [[nodiscard]] bool GameStateSystem::tryPopTopState(entt::registry &registry) noexcept {
@@ -68,8 +68,8 @@ namespace tnrw::ecs {
             return false;
         }
         auto &val = registry.ctx().get<GameState>();
-        spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(val.states.back()));
-        val.states.pop_back();
+        spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(val.m_states.back()));
+        val.m_states.pop_back();
         return true;
     }
     [[nodiscard]] std::optional<GameState::State>
@@ -78,14 +78,14 @@ namespace tnrw::ecs {
             return std::nullopt;
         }
         const auto &val = registry.ctx().get<GameState>();
-        return val.states.back();
+        return val.m_states.back();
     }
     [[nodiscard]] const std::vector<GameState::State> *
     GameStateSystem::tryGetStates(const entt::registry &registry) noexcept {
         if (!registry.ctx().contains<GameState>()) {
             return nullptr;
         }
-        return &registry.ctx().get<GameState>().states;
+        return &registry.ctx().get<GameState>().m_states;
     }
 
 } // namespace tnrw::ecs

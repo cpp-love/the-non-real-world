@@ -11,8 +11,8 @@
  * 
  */
 
-#ifndef __TNRW_ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__
-#define __TNRW_ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__
+#ifndef TNRW_ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP
+#define TNRW_ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP
 
 #include "base/assert_msg.hpp"
 #include <cstdint>
@@ -22,7 +22,7 @@
 namespace tnrw::ecs {
 
     /// @brief 游戏状态的组件
-    class [[nodiscard]] GameState final {
+    class [[nodiscard]] GameState {
       public: /// @publicsection
         /// @brief 游戏的状态枚举
         enum class State : std::uint8_t {
@@ -48,10 +48,10 @@ namespace tnrw::ecs {
         /// @cond INTERNAL
       private: /// @privatesection
         // 成员
-        std::vector<State> states; ///< 游戏状态集
+        std::vector<State> m_states; ///< 游戏状态集
         /// @endcond
     };
 
 } // namespace tnrw::ecs
 
-#endif // __TNRW_ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP__
+#endif // TNRW_ECS_COMPONENTS_GLOBAL_GAME_STATE_COMPONENTS_HPP

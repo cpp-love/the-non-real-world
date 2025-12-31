@@ -14,7 +14,7 @@
 
 int main() {
 
-    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
     tnrw::FastFloatf value1{0.f};
     tnrw::FastFloatf value2{0.1f};
     tnrw::FastFloatf value3{-0.1f};
@@ -30,7 +30,7 @@ int main() {
     assert_msg(tnrw::SafeFloatf(value1) != value5);
     assert_msg(tnrw::SafeFloatf(value1) != value6);
     assert_msg(tnrw::SafeFloatf(value1) == tnrw::SafeFloatf(value2));
-    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
     return 0;
 }

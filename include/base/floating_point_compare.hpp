@@ -9,13 +9,12 @@
  * 
  */
 
-#ifndef __TNRW_BASE_FLOATING_POINT_COMPARE_HPP__
-#define __TNRW_BASE_FLOATING_POINT_COMPARE_HPP__
+#ifndef TNRW_BASE_FLOATING_POINT_COMPARE_HPP
+#define TNRW_BASE_FLOATING_POINT_COMPARE_HPP
 
 #include <cmath>
 #include <compare>
 #include <concepts>
-#include <limits>
 
 namespace tnrw {
 
@@ -159,4 +158,4 @@ namespace tnrw {
 
 } // namespace tnrw
 
-#endif // __TNRW_BASE_FLOATING_POINT_COMPARE_HPP__
+#endif // TNRW_BASE_FLOATING_POINT_COMPARE_HPP

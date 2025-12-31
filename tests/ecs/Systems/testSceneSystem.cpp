@@ -28,13 +28,14 @@ int main() {
 #endif // _WIN32
 
     using tnrw::ecs::SceneSystem;
-    entt::registry              registry;
-    tnrw::level_identifier_type scene1_id = 1;
+    entt::registry            registry;
+    tnrw::LevelIdentifierType scene1_id = 1;
     std::cout << "创建场景1\n";
-    auto [scene1_e, succeeded] = SceneSystem::createScene(registry, scene1_id);
-    assert_msg(succeeded, "错误：不应创建失败");
+    auto scene1_res = SceneSystem::createScene(registry, scene1_id);
+    assert_msg(scene1_res.has_value(), "错误：不应创建失败");
+    auto scene1_e = scene1_res.value();
     auto tmp = SceneSystem::createScene(registry, scene1_id);
-    assert_msg(!tmp.second, "错误：不应创建二次创建成功");
+    assert_msg(!tmp.has_value(), "错误：不应创建二次创建成功");
     assert_msg(scene1_e == SceneSystem::getSceneEntity(registry, scene1_id),
                "错误：场景1不应随获取方式而变化");
     assert_msg(scene1_e == SceneSystem::tryGetSceneEntity(registry, scene1_id),
@@ -42,7 +43,7 @@ int main() {
     auto child1 = registry.create();
     std::cout << "将孩子1添加到场景1中\n";
     SceneSystem::addToScene(registry, scene1_id, child1);
-    succeeded = SceneSystem::tryAddToScene(registry, scene1_e, child1);
+    bool succeeded = SceneSystem::tryAddToScene(registry, scene1_e, child1);
     assert_msg(!succeeded, "错误：不应二次添加成功");
     std::cout << "现在孩子1的父亲有：\n";
     for (auto father : SceneSystem::getFatherScenes(registry, child1)) {
@@ -71,13 +72,14 @@ int main() {
     assert_msg(&SceneSystem::getSceneChildren(registry, scene1_id)
                    == SceneSystem::tryGetSceneChildren(registry, scene1_e),
                "错误：场景孩子列表不应随获取方式而变化");
-    tnrw::level_identifier_type scene2_id = 2;
+    tnrw::LevelIdentifierType scene2_id = 2;
     std::cout << "创建场景2\n";
-    auto [scene2_e, succeeded2] = SceneSystem::createScene(registry, scene2_id);
-    assert_msg(succeeded2, "错误：不应创建失败");
+    auto scene2_res = SceneSystem::createScene(registry, scene2_id);
+    assert_msg(scene2_res.has_value(), "错误：不应创建失败");
+    auto scene2_e = scene2_res.value();
     std::cout << "现在registry拥有场景：\n";
-    for (auto [id, entity] : SceneSystem::getScenes(registry)) {
-        std::cout << "id: " << id << "entity: " << static_cast<entt::id_type>(entity) << '\n';
+    for (auto [identity, entity] : SceneSystem::getScenes(registry)) {
+        std::cout << "id: " << identity << "entity: " << static_cast<entt::id_type>(entity) << '\n';
     }
     std::cout << "销毁场景2\n";
     SceneSystem::eraseScene(registry, scene2_id);
@@ -85,14 +87,14 @@ int main() {
     succeeded = SceneSystem::tryEraseScene(registry, scene2_id);
     assert_msg(!succeeded, "错误：不应二次删除场景2");
     std::cout << "现在registry拥有场景：\n";
-    for (auto [id, entity] : SceneSystem::getScenes(registry)) {
-        std::cout << "id: " << id << "entity: " << static_cast<entt::id_type>(entity) << '\n';
+    for (auto [identity, entity] : SceneSystem::getScenes(registry)) {
+        std::cout << "id: " << identity << "entity: " << static_cast<entt::id_type>(entity) << '\n';
     }
     std::cout << "删除所有场景\n";
     SceneSystem::clearScenes(registry);
     std::cout << "现在registry拥有场景：\n";
-    for (auto [id, entity] : SceneSystem::getScenes(registry)) {
-        std::cout << "id: " << id << " entity: " << static_cast<entt::id_type>(entity) << '\n';
+    for (auto [identity, entity] : SceneSystem::getScenes(registry)) {
+        std::cout << "id: " << identity << " entity: " << static_cast<entt::id_type>(entity) << '\n';
     }
     std::cout << std::flush;
 

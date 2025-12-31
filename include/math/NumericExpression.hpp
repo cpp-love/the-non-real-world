@@ -15,10 +15,10 @@
  * 
  */
 
-#ifndef __TNRW_MATHS_NUMERIC_EXPRESSION_HPP__
-#define __TNRW_MATHS_NUMERIC_EXPRESSION_HPP__
+#ifndef TNRW_MATH_NUMERIC_EXPRESSION_HPP
+#define TNRW_MATH_NUMERIC_EXPRESSION_HPP
 
-#include "maths/Expressions_base.hpp"
+#include "math/expressions_base.hpp"
 #include <iosfwd>
 #include <locale>
 #include <memory>
@@ -26,7 +26,7 @@
 
 namespace tnrw {
 
-    namespace maths {
+    namespace math {
 
         namespace details {
             /**
@@ -47,7 +47,7 @@ namespace tnrw {
          * - 加入根式
          * - 完备代数运算
          */
-        class NumericExpression final {
+        class NumericExpression {
             /// @cond INTERNAL
           private: /// @privatesection
             // 成员变量
@@ -310,26 +310,26 @@ namespace tnrw {
         std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &out,
                                                       const NumericExpression           &rhs) noexcept;
 
-    } // namespace maths
+    } // namespace math
 
     inline namespace literals {
 
         /// @brief NumericExpression类的内联自定义字面量命名空间
-        inline namespace NumericExpression_literals {
+        inline namespace numeric_expression_literals {
 
             /**
              * @brief 以常量字面量创建无字母的代数式类
              * @param [in] constant 常量值字面量
              * @return NumericExpression 创建的无字母的代数式类
-             * @see @ref maths::NumericExpression::NumericExpression(maths::NumericExpression::ConstantType constant) "NumericExpression类的以常量为参数的构造函数"
+             * @see @ref math::NumericExpression::NumericExpression(math::NumericExpression::ConstantType constant) "NumericExpression类的以常量为参数的构造函数"
              */
-            [[nodiscard]] maths::NumericExpression
+            [[nodiscard]] math::NumericExpression
             operator""_cNumExpr(unsigned long long constant) noexcept;
 
-        } // namespace NumericExpression_literals
+        } // namespace numeric_expression_literals
 
     } // namespace literals
 
 } // namespace tnrw
 
-#endif // __TNRW_MATHS_NUMERIC_EXPRESSION_HPP__
+#endif // TNRW_MATH_NUMERIC_EXPRESSION_HPP

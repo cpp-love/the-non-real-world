@@ -13,7 +13,7 @@
 
 ### Added(新增)
 
-1. 添加了代数式类型 `tnrw::maths::AlgebraicExpression`
+1. 添加了代数式类型 `tnrw::math::AlgebraicExpression`
    和基本的代数式与常量和变量类型的操作
    和代数式类型的自定义字面量
 

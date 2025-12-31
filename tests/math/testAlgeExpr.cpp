@@ -1,7 +1,7 @@
 /**
  * @file testAlgeExpr.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
- * @brief `maths::AlgebraicExpression` 类的测试用例或使用示例
+ * @brief `math::AlgebraicExpression` 类的测试用例或使用示例
  * @version 0.1.0-1
  * @date 2025-07-13
  * 
@@ -9,24 +9,23 @@
  * 
  */
 
-#include "maths/AlgebraicExpression.hpp"
-#include "maths/Expressions_base.hpp"
+#include "math/AlgebraicExpression.hpp"
+#include "math/expressions_base.hpp"
 #include <array>
 #include <cstdio>
 #include <iostream>
-#include <limits>
 #include <string>
 #include <vector>
 #ifdef _WIN32
 #include <windows.h>
 #endif // _WIN32
 
-constexpr std::size_t                         cmd_size = 10; ///< 命令的个数
+constexpr std::size_t                   cmd_size = 10; ///< 命令的个数
 
-const std::array<std::string, cmd_size>       commands{"help",    "new",      "delete", "operator",
+const std::array<std::string, cmd_size> commands{"help",    "new",      "delete", "operator",
                                                  "clear",   "getValue", "isZero", "toOpposite",
                                                  "compare", "quit"}; ///< 命令列表
-const std::array<std::string, cmd_size>       briefs{"提供帮助",
+const std::array<std::string, cmd_size> briefs{"提供帮助",
                                                "添加代数式",
                                                "删除代数式",
                                                "对一个代数式使用运算符",
@@ -36,7 +35,7 @@ const std::array<std::string, cmd_size>       briefs{"提供帮助",
                                                "对一个代数式取相反数",
                                                "比较两个代数式",
                                                "退出程序"}; ///< 命令的简要描述列表
-const std::array<std::string, cmd_size>       details{"\
+const std::array<std::string, cmd_size> details{"\
 - help\n\
   用于快速获取命令列表\n\
 - help [command]\n\
@@ -60,10 +59,10 @@ const std::array<std::string, cmd_size>       details{"\
                                                 "\
 - getValue [index] ??\n\
   本节未完成\n\
-  原因：未定义tnrw::maths::AlgebraicExpression的getValue方法", "\
+  原因：未定义tnrw::math::AlgebraicExpression的getValue方法", "\
 - isZero [index] ??\n\
   本节未完成\n\
-  原因：未定义tnrw::maths::AlgebraicExpression的isZero方法", "\
+  原因：未定义tnrw::math::AlgebraicExpression的isZero方法", "\
 - toOpposite [index]\n\
   原因将第index(从0开始)个代数式改为相反数", "\
 - compare [index1] [index2]\n\
@@ -71,13 +70,11 @@ const std::array<std::string, cmd_size>       details{"\
 - quit\n\
   用于退出程序"}; ///< 命令的详细描述列表
 
-std::vector<tnrw::maths::AlgebraicExpression> algevec(1); ///< 代数式列表
-
 /**
  * @brief 处理大小不合适的参数
  * @param [in] cmd 主命令
  */
-void                                          processUnsuitedArgs(std::string_view cmd) {
+void                                    processUnsuitedArgs(std::string_view cmd) {
     std::cout << "错误：命令 \"" << cmd << "\" 的参数过少或过多，请键入 \"help\" 获取帮助\n";
 }
 
@@ -112,27 +109,26 @@ void processOverLimitArgs(std::string_view cmd) {
 [[nodiscard]] std::vector<std::string> getArgs() {
     std::vector<std::string> args;
     bool                     not_finished = true;
-    args.reserve(4); //< 提升性能
     for (int i = 0; not_finished; ++i) {
-        char ch;
+        char character = ' ';
         // 忽略前导空格
-        while ((ch = getchar()) == ' ');
-        if (ch == '\n') {
+        while (character == ' ') { std::cin.get(character); }
+        if (character == '\n') {
             break;
-        } else {
-            args.emplace_back();
-            args[i].reserve(8); //< 提升性能
-            args[i].push_back(ch);
         }
+        args.emplace_back();
+        args[i].push_back(character);
+
         while (true) {
-            ch = std::getchar();
-            if (ch == '\n') {
+            std::cin.get(character);
+            if (character == '\n') {
                 not_finished = false;
                 break;
-            } else if (ch == ' ') {
+            }
+            if (character == ' ') {
                 break;
             }
-            args[i].push_back(ch);
+            args[i].push_back(character);
         }
     }
 
@@ -140,7 +136,7 @@ void processOverLimitArgs(std::string_view cmd) {
 }
 
 /// @brief 作为String转为任意类型(Type)的结果
-enum class StrToTypeResult { Invalid, OverLimit, Normal };
+enum class StrToTypeResult : std::uint8_t { Invalid, OverLimit, Normal };
 
 /**
  * @brief 尝试将 `std::string` 转为 `long long`
@@ -151,14 +147,16 @@ enum class StrToTypeResult { Invalid, OverLimit, Normal };
  */
 [[nodiscard]] StrToTypeResult tryStrToLL(const std::string &str, long long *result = nullptr) {
     try {
-        size_t    pos;
+        size_t    pos = 0;
         long long value = std::stoll(str, &pos);
 
-        if (pos != str.size())
+        if (pos != str.size()) {
             return StrToTypeResult::Invalid;
+        }
 
-        if (result)
+        if (result != nullptr) {
             *result = value;
+        }
         return StrToTypeResult::Normal;
     } catch (const std::invalid_argument &) {
         return StrToTypeResult::Invalid;
@@ -174,14 +172,16 @@ enum class StrToTypeResult { Invalid, OverLimit, Normal };
  */
 [[nodiscard]] StrToTypeResult tryStrToULL(const std::string &str, unsigned long long *result) {
     try {
-        size_t             pos;
+        size_t             pos = 0;
         unsigned long long value = std::stoull(str, &pos);
 
-        if (pos != str.size())
+        if (pos != str.size()) {
             return StrToTypeResult::Invalid;
+        }
 
-        if (result)
+        if (result != nullptr) {
             *result = value;
+        }
         return StrToTypeResult::Normal;
     } catch (const std::invalid_argument &) {
         return StrToTypeResult::Invalid;
@@ -196,6 +196,7 @@ int main() {
     SetConsoleCP(CP_UTF8);
 #endif // _WIN32
 
+    std::vector<tnrw::math::AlgebraicExpression> algevec(1); ///< 代数式列表
     std::cout << "想查看帮助，请键入 help 获取\n";
 
     while (true) {
@@ -206,8 +207,9 @@ int main() {
         std::cout << ">>> " << std::flush;
         std::vector<std::string> args = getArgs();
         // 未键入
-        if (args.empty())
+        if (args.empty()) {
             continue;
+        }
         if (args[0] == commands[0]) {
             if (args.size() > 2) {
                 // 非法
@@ -248,7 +250,7 @@ int main() {
                     if (*res > algevec.size()) {
                         processOverLimitArgs(args[0]);
                     } else {
-                        algevec.emplace(algevec.begin() + *res);
+                        algevec.emplace(algevec.begin() + static_cast<long long>(*res));
                     }
                     break;
             }
@@ -267,7 +269,7 @@ int main() {
                     if (*res >= algevec.size()) {
                         processOverLimitArgs(args[0]);
                     } else {
-                        algevec.erase(algevec.begin() + *res);
+                        algevec.erase(algevec.begin() + static_cast<long long>(*res));
                     }
                     break;
             }
@@ -347,28 +349,28 @@ int main() {
                     const long long val = *res2;
                     if (args[2] == "+") {
                         std::cout << "结果："
-                                  << (algevec[index] + static_cast<tnrw::maths::ConstantType>(val))
+                                  << (algevec[index] + static_cast<tnrw::math::ConstantType>(val))
                                   << '\n';
                     } else if (args[2] == "-") {
                         std::cout << "结果："
-                                  << (algevec[index] - static_cast<tnrw::maths::ConstantType>(val))
+                                  << (algevec[index] - static_cast<tnrw::math::ConstantType>(val))
                                   << '\n';
                     } else if (args[2] == "*") {
                         std::cout << "结果："
-                                  << (algevec[index] * static_cast<tnrw::maths::ConstantType>(val))
+                                  << (algevec[index] * static_cast<tnrw::math::ConstantType>(val))
                                   << '\n';
                     } else if (args[2] == "/") {
                         std::cout << "结果："
-                                  << (algevec[index] / static_cast<tnrw::maths::ConstantType>(val))
+                                  << (algevec[index] / static_cast<tnrw::math::ConstantType>(val))
                                   << '\n';
                     } else if (args[2] == "+=") {
-                        algevec[index] += static_cast<tnrw::maths::ConstantType>(val);
+                        algevec[index] += static_cast<tnrw::math::ConstantType>(val);
                     } else if (args[2] == "-=") {
-                        algevec[index] -= static_cast<tnrw::maths::ConstantType>(val);
+                        algevec[index] -= static_cast<tnrw::math::ConstantType>(val);
                     } else if (args[2] == "*=") {
-                        algevec[index] *= static_cast<tnrw::maths::ConstantType>(val);
+                        algevec[index] *= static_cast<tnrw::math::ConstantType>(val);
                     } else if (args[2] == "/=") {
-                        algevec[index] /= static_cast<tnrw::maths::ConstantType>(val);
+                        algevec[index] /= static_cast<tnrw::math::ConstantType>(val);
                     } else {
                         processInvalidArgs(args[0]);
                     }
@@ -380,28 +382,28 @@ int main() {
                     const char val = args[4][0];
                     if (args[2] == "+") {
                         std::cout << "结果："
-                                  << (algevec[index] + static_cast<tnrw::maths::VariableType>(val))
+                                  << (algevec[index] + static_cast<tnrw::math::VariableType>(val))
                                   << '\n';
                     } else if (args[2] == "-") {
                         std::cout << "结果："
-                                  << (algevec[index] - static_cast<tnrw::maths::VariableType>(val))
+                                  << (algevec[index] - static_cast<tnrw::math::VariableType>(val))
                                   << '\n';
                     } else if (args[2] == "*") {
                         std::cout << "结果："
-                                  << (algevec[index] * static_cast<tnrw::maths::VariableType>(val))
+                                  << (algevec[index] * static_cast<tnrw::math::VariableType>(val))
                                   << '\n';
                     } else if (args[2] == "/") {
                         std::cout << "结果："
-                                  << (algevec[index] / static_cast<tnrw::maths::VariableType>(val))
+                                  << (algevec[index] / static_cast<tnrw::math::VariableType>(val))
                                   << '\n';
                     } else if (args[2] == "+=") {
-                        algevec[index] += static_cast<tnrw::maths::VariableType>(val);
+                        algevec[index] += static_cast<tnrw::math::VariableType>(val);
                     } else if (args[2] == "-=") {
-                        algevec[index] -= static_cast<tnrw::maths::VariableType>(val);
+                        algevec[index] -= static_cast<tnrw::math::VariableType>(val);
                     } else if (args[2] == "*=") {
-                        algevec[index] *= static_cast<tnrw::maths::VariableType>(val);
+                        algevec[index] *= static_cast<tnrw::math::VariableType>(val);
                     } else if (args[2] == "/=") {
-                        algevec[index] /= static_cast<tnrw::maths::VariableType>(val);
+                        algevec[index] /= static_cast<tnrw::math::VariableType>(val);
                     } else {
                         processInvalidArgs(args[0]);
                     }
@@ -429,10 +431,10 @@ int main() {
                     break;
             }
         } else if (args[0] == commands[5]) {
-            std::cout << "本节未完成\n原因：未定义tnrw::maths::"
+            std::cout << "本节未完成\n原因：未定义tnrw::math::"
                          "AlgebraicExpression的getValue方法\n";
         } else if (args[0] == commands[6]) {
-            std::cout << "本节未完成\n原因：未定义tnrw::maths::"
+            std::cout << "本节未完成\n原因：未定义tnrw::math::"
                          "AlgebraicExpression的isZero方法\n";
         } else if (args[0] == commands[7]) {
             if (args.size() != 2) {
@@ -494,7 +496,7 @@ int main() {
         }
     }
 
-    std::cout << "退出中..." << std::endl;
+    std::cout << "退出中..." << '\n' << std::flush;
 
     return 0;
 }

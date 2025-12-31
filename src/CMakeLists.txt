@@ -15,6 +15,17 @@ find_package(SFML 3 COMPONENTS Graphics Window System CONFIG REQUIRED)
 # find_package(TGUI CONFIG REQUIRED)
 # find_package(nlohmann_json CONFIG REQUIRED)
 
+# 包含头文件目录
+target_include_directories(tnrw
+    PUBLIC
+    ${EnTT_INCLUDE_DIRS}
+    ${fmt_INCLUDE_DIRS}
+    ${spdlog_INCLUDE_DIRS}
+    ${SFML_INCLUDE_DIRS}
+    # ${TGUI_INCLUDE_DIRS}
+    # ${nlohmann_json_INCLUDE_DIRS}
+)
+
 # 链接编译器标志
 target_link_libraries(tnrw
     PUBLIC

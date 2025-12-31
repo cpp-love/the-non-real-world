@@ -78,8 +78,7 @@ namespace tnrw::ecs {
             sf::Vector2f collided_pos =
                 first.center
                 + (line.normalized() * dis_signed)
-                      .rotatedBy(
-                          -90_deg); //< NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+                      .rotatedBy(-90_deg); //< NOLINT(cppcoreguidelines-avoid-magic-numbers)
             sf::Vector2f max_position;
             sf::Vector2f min_position;
             if (FastFloatf{second.start.position.x} < FastFloatf{second.end.position.x}) {
@@ -276,7 +275,7 @@ namespace tnrw::ecs {
          * @return sf::Angle 转换后的角度
          */
         [[nodiscard]] sf::Angle wrapToFirst(sf::Angle angle) {
-            // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+            // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
             using namespace sf::Literals;
             angle = angle.wrapSigned();
             if (sf::Angle::Zero > angle) {
@@ -286,7 +285,7 @@ namespace tnrw::ecs {
                 angle = 180_deg - angle;
             }
             return angle;
-            // NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+            // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
         }
     } // namespace
     /// @endcond

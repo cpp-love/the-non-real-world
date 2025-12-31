@@ -20,14 +20,16 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdio>
 #include <filesystem>
 #include <format>
 #include <fstream>
 #include <iostream>
 #include <print>
 #include <string>
+#include <string_view>
+#include <system_error>
 #include <vector>
-
 
 using namespace std::string_literals;
 
@@ -79,10 +81,10 @@ bool generateOneFile(const std::filesystem::path &workspace_folder, const std::f
         workspace_folder / "file_versions"s
         / std::filesystem::relative(file, workspace_folder).concat(".md"s)); //< 输出文件目录
 
-    const auto fileExt = file.extension();
+    const auto file_ext = file.extension();
     if (std::filesystem::exists(output_file)
-        || (fileExt != ".cpp" && fileExt != ".hpp" && fileExt != ".c" && fileExt != ".h"
-            && fileExt != ".cc" && fileExt != ".hh" && fileExt != ".cxx" && fileExt != ".hxx")) {
+        || (file_ext != ".cpp" && file_ext != ".hpp" && file_ext != ".c" && file_ext != ".h"
+            && file_ext != ".cc" && file_ext != ".hh" && file_ext != ".cxx" && file_ext != ".hxx")) {
         // 避免覆盖文件和生成无关文件
         return true;
     }

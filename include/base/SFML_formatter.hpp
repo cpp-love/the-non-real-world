@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef __TNRW_BASE_SFML_FORMATTER_HPP__
-#define __TNRW_BASE_SFML_FORMATTER_HPP__
+#ifndef TNRW_BASE_SFML_FORMATTER_HPP
+#define TNRW_BASE_SFML_FORMATTER_HPP
 
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
@@ -88,4 +88,4 @@ struct std::formatter<sf::Vector3<T>, CharT> {
     }
 };
 
-#endif // __TNRW_BASE_SFML_FORMATTER_HPP__
+#endif // TNRW_BASE_SFML_FORMATTER_HPP

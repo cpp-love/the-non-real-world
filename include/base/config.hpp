@@ -9,23 +9,24 @@
  * 
  */
 
+#ifndef TNRW_BASE_CONFIG_HPP
+#define TNRW_BASE_CONFIG_HPP
+
 #include <cstdint>
 
-#ifndef __TNRW_BASE_CONFIG_HPP__
-#define __TNRW_BASE_CONFIG_HPP__
-
 namespace tnrw {
-    using version_type = std::uint16_t;                                         ///< tnrw版本类型
-    using level_identifier_type = std::uint16_t;                                ///< 关卡标识符类型
-    constexpr version_type version_major_offset = 11;                           ///< tnrw主版本偏移量
-    constexpr version_type version_major = 0; ///< tnrw主版本号
-    constexpr version_type version_minor_offset = 6;                            ///< tnrw次版本偏移量
-    constexpr version_type version_minor = 1; ///< tnrw次版本号
-    constexpr version_type version_patch_offset = 0;                            ///< tnrw修订版本偏移量
-    constexpr version_type version_patch = 0; //< tnrw修订版本号
-    constexpr version_type version = (version_major << version_major_offset)
-                                     + (version_minor << version_minor_offset)
-                                     + (version_patch << version_patch_offset); ///< tnrw版本号
+
+    using VersionType = std::uint16_t;               ///< tnrw版本类型
+    using LevelIdentifierType = std::uint16_t;       ///< 关卡标识符类型
+    constexpr VersionType version_major_offset = 11; ///< tnrw主版本偏移量
+    constexpr VersionType version_major = 0;         ///< tnrw主版本号
+    constexpr VersionType version_minor_offset = 6;  ///< tnrw次版本偏移量
+    constexpr VersionType version_minor = 1;         ///< tnrw次版本号
+    constexpr VersionType version_patch_offset = 0;  ///< tnrw修订版本偏移量
+    constexpr VersionType version_patch = 0;         ///< tnrw修订版本号
+    constexpr VersionType version = (version_major << version_major_offset)
+                                    + (version_minor << version_minor_offset)
+                                    + (version_patch << version_patch_offset); ///< tnrw版本号
 } // namespace tnrw
 
-#endif // __TNRW_BASE_CONFIG_HPP__
+#endif // TNRW_BASE_CONFIG_HPP

@@ -41,3 +41,6 @@ out/**
 # log files
 *.log
 log/**
+
+# issue files
+code_issues/**

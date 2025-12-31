@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef __TNRW_ECS_FWD_HPP__
-#define __TNRW_ECS_FWD_HPP__
+#ifndef TNRW_ECS_FWD_HPP
+#define TNRW_ECS_FWD_HPP
 
 #include "ecs/Components/fwd.hpp"
 #include "ecs/Systems/fwd.hpp"
@@ -21,4 +21,4 @@
  */
 namespace tnrw::ecs {}
 
-#endif // __TNRW_ECS_FWD_HPP__
+#endif // TNRW_ECS_FWD_HPP

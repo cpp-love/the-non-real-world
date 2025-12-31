@@ -9,15 +9,17 @@
  * 
  */
 
-#ifndef __TNRW_BASE_ASSERT_MSG_HPP__
-#define __TNRW_BASE_ASSERT_MSG_HPP__
+#ifndef TNRW_BASE_ASSERT_MSG_HPP
+#define TNRW_BASE_ASSERT_MSG_HPP
 
+#include <exception>
 #include <format>
 #include <source_location>
 #include <spdlog/spdlog.h>
+#include <string_view>
 
 #ifdef NDEBUG
-#define assert_msg(expr, ...) ((void)0)
+#define assert_msg(expr, ...) ((void)0) //< NOLINT(readability-identifier-naming)
 #else
 
 /// @brief 一些内部实现，用户不应访问
@@ -29,8 +31,8 @@ namespace tnrw::details {
      * @param [in] loc 断言位置
      * @param [in] message 断言失败时输出的消息（如果没有，为 `nullptr)
      */
-    [[noreturn]] constexpr void assert_fail(std::string_view expr, const std::source_location &loc,
-                                            const char *message = nullptr) {
+    [[noreturn]] constexpr void assertFail(std::string_view expr, const std::source_location &loc,
+                                           const char *message = nullptr) {
         // 输出信息
         if (message != nullptr) {
             spdlog::critical("Assertion failed at {} : {} : {} (in function : {}):\n>> Expression: "
@@ -56,32 +58,34 @@ namespace tnrw::details {
      * @param [in] args 格式化字符串参数
      */
     template <typename... Args>
-    constexpr void assert_check(bool condition, std::string_view expr, const std::source_location &loc,
-                                std::format_string<Args...> fmt, Args... args) {
+    constexpr void assertCheck(bool condition, std::string_view expr, const std::source_location &loc,
+                               std::format_string<Args...> fmt, Args... args) {
         if (condition) {
             return;
         }
-        assert_fail(expr, loc, std::format(fmt, std::forward<Args>(args)...).c_str());
+        assertFail(expr, loc, std::format(fmt, std::forward<Args>(args)...).c_str());
     }
-    constexpr void assert_check(bool condition, const char *expr, const std::source_location &loc) {
+    constexpr void assertCheck(bool condition, const char *expr, const std::source_location &loc) {
         if (condition) {
             return;
         }
-        assert_fail(expr, loc);
+        assertFail(expr, loc);
     }
 } // namespace tnrw::details
 /// @endcond
 
+// NOLINTBEGIN(readability-identifier-naming)
 /**
  * @brief 带消息的assert断言
- * @param [in] expr 断言表达式（需要可以转化为 `bool` 类型）
+ * @param [in] expr 断言表达式（需要可以隐式转化为 `bool` 类型或本来就是 `bool` 类型）
  * @param [in] other_params(...) 可选的断言失败时输出的消息，支持格式化
- * @note 格式化与标准库的 `std::format` 格式化相同，且支持简易的字符串转换（参见 @ref tnrw::string_convert::to_utf8_string_view 重载）
+ * @note 格式化与标准库的 `std::format` 格式化相同，且支持简易的字符串转换（参见 @ref tnrw::string_convert::toUtf8StringView 重载）
+ * @note 当定义宏 `NDEBUG` 时与标准库的 `assert` 行为相同，都不启用
  */
 #define assert_msg(expr, ...)                                                                           \
-    ::tnrw::details::assert_check(static_cast<bool>(expr), #expr,                                       \
-                                  std::source_location::current() __VA_OPT__(, ) __VA_ARGS__)
+    ::tnrw::details::assertCheck(expr, #expr, std::source_location::current() __VA_OPT__(, ) __VA_ARGS__)
+// NOLINTEND(readability-identifier-naming)
 
 #endif // NDEBUG
 
-#endif // __TNRW_BASE_ASSERT_MSG_HPP__
+#endif // TNRW_BASE_ASSERT_MSG_HPP

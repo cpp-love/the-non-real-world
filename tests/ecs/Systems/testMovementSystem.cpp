@@ -24,7 +24,7 @@ using tnrw::ecs::MovementSystem;
 using tnrw::ecs::RenderSystem;
 using tnrw::ecs::SceneSystem;
 
-entt::entity createShape(entt::registry &registry, tnrw::level_identifier_type level_id,
+entt::entity createShape(entt::registry &registry, tnrw::LevelIdentifierType level_id,
                          tnrw::ecs::Shape shape) {
     const auto entity = registry.create();
     spdlog::info("create shape entity: {}", static_cast<entt::id_type>(entity));
@@ -36,12 +36,12 @@ entt::entity createShape(entt::registry &registry, tnrw::level_identifier_type l
     return entity;
 }
 
-constexpr sf::Vector2u                window_size = {800, 600};    ///< 窗口的大小
-constexpr tnrw::level_identifier_type first_level = 1;             ///< 第一个关卡
-constexpr tnrw::level_identifier_type second_level = 2;            ///< 第二个关卡
-constexpr float                       velocity_no_direction = 3.f; ///< 没有方向的速度
+constexpr sf::Vector2u              window_size = {800, 600};    ///< 窗口的大小
+constexpr tnrw::LevelIdentifierType first_level = 1;             ///< 第一个关卡
+constexpr tnrw::LevelIdentifierType second_level = 2;            ///< 第二个关卡
+constexpr float                     velocity_no_direction = 3.f; ///< 没有方向的速度
 
-int                                   main() {
+int                                 main() {
 
     auto file_logger = std::make_shared<spdlog::sinks::basic_file_sink_st>("log/log.log");
     file_logger->set_level(spdlog::level::trace);
@@ -58,46 +58,46 @@ int                                   main() {
     sf::RenderWindow          window(sf::VideoMode(window_size), "testMovementSystem");
     entt::registry            registry;
 
-    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
     circle_vec.push_back(createShape(registry, first_level,
-                                                                       {tnrw::ecs::Shape::Circle{.center = {30.f, 100.f},
-                                                                                                 .radius = 30.f,
-                                                                                                 .fill_color = sf::Color::Blue}}));
+                                                                     {tnrw::ecs::Shape::Circle{.center = {30.f, 100.f},
+                                                                                               .radius = 30.f,
+                                                                                               .fill_color = sf::Color::Blue}}));
     line_vec.push_back(createShape(
         registry, first_level,
         {tnrw::ecs::Shape::Line{.start = {.position = {20.f, 20.f}, .color = sf::Color::Red},
-                                                                  .end = {.position = {50.f, 50.f}, .color = sf::Color::Red}}}));
+                                                                .end = {.position = {50.f, 50.f}, .color = sf::Color::Red}}}));
     line_vec.push_back(createShape(
         registry, first_level,
         {tnrw::ecs::Shape::Line{.start = {.position = {50.f, 50.f}, .color = sf::Color::Red},
-                                                                  .end = {.position = {100.f, 40.f}, .color = sf::Color::Blue}}}));
+                                                                .end = {.position = {100.f, 40.f}, .color = sf::Color::Blue}}}));
     line_vec.push_back(createShape(
         registry, first_level,
         {tnrw::ecs::Shape::Line{.start = {.position = {100.f, 40.f}, .color = sf::Color::Blue},
-                                                                  .end = {.position = {200.f, 100.f}, .color = sf::Color::Green}}}));
+                                                                .end = {.position = {200.f, 100.f}, .color = sf::Color::Green}}}));
     line_vec.push_back(createShape(
         registry, first_level,
         {tnrw::ecs::Shape::Line{.start = {.position = {200.f, 100.f}, .color = sf::Color::Green},
-                                                                  .end = {.position = {500.f, 300.f}, .color = sf::Color::Green}}}));
+                                                                .end = {.position = {500.f, 300.f}, .color = sf::Color::Green}}}));
     line_vec.push_back(createShape(
         registry, first_level,
         {tnrw::ecs::Shape::Line{.start = {.position = {500.f, 300.f}, .color = sf::Color::Green},
-                                                                  .end = {.position = {600.f, 600.f}, .color = sf::Color::Green}}}));
+                                                                .end = {.position = {600.f, 600.f}, .color = sf::Color::Green}}}));
     line_vec.push_back(createShape(
         registry, first_level,
         {tnrw::ecs::Shape::Line{.start = {.position = {600.f, 600.f}, .color = sf::Color::Green},
-                                                                  .end = {.position = {650.f, 400.f}, .color = sf::Color::Green}}}));
+                                                                .end = {.position = {650.f, 400.f}, .color = sf::Color::Green}}}));
     line_vec.push_back(createShape(
         registry, second_level,
         {tnrw::ecs::Shape::Line{
-                                              .start = {.position = {200.f, 90.f}, .color = sf::Color::Green},
-                                              .end = {.position = {100.f, 100.f}, .color = sf::Color::Blue}}})); //< 这个组件不会参与碰撞
+                                            .start = {.position = {200.f, 90.f}, .color = sf::Color::Green},
+                                            .end = {.position = {100.f, 100.f}, .color = sf::Color::Blue}}})); //< 这个组件不会参与碰撞
     circle_vec.push_back(createShape(
         registry, second_level,
         {tnrw::ecs::Shape::Circle{.center = {300.f, 300.f},
-                                                                    .radius = 20.f,
-                                                                    .fill_color = sf::Color::Cyan}})); //< 这个组件也不会参与碰撞
-    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+                                                                  .radius = 20.f,
+                                                                  .fill_color = sf::Color::Cyan}})); //< 这个组件也不会参与碰撞
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
     auto curlevel = first_level;
     bool is_running = true;

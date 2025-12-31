@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef __TNRW_ECS_SYSTEM_RENDER_SYSTEM_HPP__
-#define __TNRW_ECS_SYSTEM_RENDER_SYSTEM_HPP__
+#ifndef TNRW_ECS_SYSTEM_RENDER_SYSTEM_HPP
+#define TNRW_ECS_SYSTEM_RENDER_SYSTEM_HPP
 
 #include "ecs/Components/ShapeComponents.hpp"
 #include <SFML/Graphics/RenderTarget.hpp>
@@ -21,32 +21,7 @@
 namespace tnrw::ecs {
 
     /// @brief 渲染系统
-    class RenderSystem final {
-        /// @cond INTERNAL
-      private: /// @privatesection
-        // 静态成员
-        static std::size_t circle_point_count; ///< 绘制的圆会有的点数
-
-        /**
-         * @brief 绘制单个图形
-         * @param [in] render 需要绘制的地方
-         * @param [in] line 线图形
-         */
-        static void        drawer(sf::RenderTarget &render, const Shape::Line &line) noexcept;
-        /**
-         * @brief 绘制单个图形
-         * @param [in] render 需要绘制的地方
-         * @param [in] circle 圆图形
-         */
-        static void        drawer(sf::RenderTarget &render, const Shape::Circle &circle) noexcept;
-        /**
-         * @brief 绘制单个图形
-         * @param [in] render 需要绘制的地方
-         * @param [in] rect 矩形图形
-         */
-        static void        drawer(sf::RenderTarget &render, const Shape::Rectangle &rect) noexcept;
-
-        /// @endcond
+    class RenderSystem {
       public: /// @publicsection
         /**
          * @brief 获取绘制的圆会有的点数
@@ -63,14 +38,14 @@ namespace tnrw::ecs {
          * @brief 绘制注册表里的内容
          * @param [in] render 需要渲染的地方
          * @param [in] registry 注册表
-         * @param [in] checkIfVaild 检查是否有资格渲染，不需要检查 @ref tnrw::ecs::ShouldRender 组件是否存在
+         * @param [in] check_if_valid 检查是否有资格渲染，不需要检查 @ref tnrw::ecs::ShouldRender 组件是否存在
          * @note 此函数会自动帮你忽略没有 @ref tnrw::ecs::ShouldRender 的组件
          * @note 此函数不会调用 `render.clear()`，需要使用者手动调用
          */
         static void                      draw(const entt::registry &registry, sf::RenderTarget &render,
-                                              std::function<bool(entt::entity)> checkIfVaild) noexcept;
+                                              std::function<bool(entt::entity)> check_if_valid) noexcept;
     };
 
 } // namespace tnrw::ecs
 
-#endif // __TNRW_ECS_SYSTEM_RENDER_SYSTEM_HPP__
+#endif // TNRW_ECS_SYSTEM_RENDER_SYSTEM_HPP

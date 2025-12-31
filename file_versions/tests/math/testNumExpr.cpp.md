@@ -13,7 +13,7 @@
 
 ### Added(新增)
 
-1. 添加了 `tnrw::maths::NumericExpression` 的使用样例和测试用例，
+1. 添加了 `tnrw::math::NumericExpression` 的使用样例和测试用例，
    具体使用方式请使用此程序键入 `help` 来获取帮助
 
 ***

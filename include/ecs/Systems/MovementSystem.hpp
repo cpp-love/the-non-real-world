@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef __TNRW_ECS_SYSTEMS_MOVEMENT_SYSTEM_HPP__
-#define __TNRW_ECS_SYSTEMS_MOVEMENT_SYSTEM_HPP__
+#ifndef TNRW_ECS_SYSTEMS_MOVEMENT_SYSTEM_HPP
+#define TNRW_ECS_SYSTEMS_MOVEMENT_SYSTEM_HPP
 
 #include "ecs/Components/MovementComponents.hpp"
 #include "ecs/Components/ShapeComponents.hpp"
@@ -19,7 +19,7 @@
 
 namespace tnrw::ecs {
 
-    class MovementSystem final {
+    class MovementSystem {
       public: /// @publicsection
         /**
          * @brief 获取实体的速度引用
@@ -54,4 +54,4 @@ namespace tnrw::ecs {
 
 } // namespace tnrw::ecs
 
-#endif // __TNRW_ECS_SYSTEMS_MOVEMENT_SYSTEM_HPP__
+#endif // TNRW_ECS_SYSTEMS_MOVEMENT_SYSTEM_HPP

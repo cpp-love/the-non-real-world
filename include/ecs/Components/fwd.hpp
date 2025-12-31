@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef __TNRW_ECS_COMPONENTS_FWD_HPP__
-#define __TNRW_ECS_COMPONENTS_FWD_HPP__
+#ifndef TNRW_ECS_COMPONENTS_FWD_HPP
+#define TNRW_ECS_COMPONENTS_FWD_HPP
 
 #include "ecs/Components/global/SceneComponents.hpp"
 #include <SFML/System/Vector2.hpp>
@@ -29,4 +29,4 @@ namespace tnrw::ecs {
 
 } // namespace tnrw::ecs
 
-#endif // __TNRW_ECS_COMPONENTS_FWD_HPP__
+#endif // TNRW_ECS_COMPONENTS_FWD_HPP

@@ -16,8 +16,8 @@
  * 
  */
 
-#ifndef __TNRW_ECS_SYSTEMS_GLOBAL_GAME_STATE_SYSTEM_HPP__
-#define __TNRW_ECS_SYSTEMS_GLOBAL_GAME_STATE_SYSTEM_HPP__
+#ifndef TNRW_ECS_SYSTEMS_GLOBAL_GAME_STATE_SYSTEM_HPP
+#define TNRW_ECS_SYSTEMS_GLOBAL_GAME_STATE_SYSTEM_HPP
 
 #include "ecs/Components/global/GameStateComponents.hpp"
 #include <entt/fwd.hpp>
@@ -26,7 +26,7 @@
 namespace tnrw::ecs {
 
     /// @brief 游戏状态系统
-    class GameStateSystem final {
+    class GameStateSystem {
       public: /// @publicsection
         /**
           * @brief 创建游戏状态
@@ -110,4 +110,4 @@ namespace tnrw::ecs {
 
 } // namespace tnrw::ecs
 
-#endif // __TNRW_ECS_SYSTEMS_GLOBAL_GAME_STATE_SYSTEM_HPP__
+#endif // TNRW_ECS_SYSTEMS_GLOBAL_GAME_STATE_SYSTEM_HPP

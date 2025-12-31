@@ -10,8 +10,8 @@
  */
 
 #include "base/assert_msg.hpp"
-#include <iostream>
 #include <numeric>
+#include <print>
 #ifdef _WIN32
 #include <windows.h>
 #endif // _WIN32
@@ -24,19 +24,19 @@ int main() {
     SetConsoleCP(CP_UTF8);
 #endif // _WIN32
 
-    int x = std::gcd(100, 10);
+    int var = std::gcd(100, 10); //NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
     // 这个断言不会触发
-    assert_msg(x > 9, "x 必须大于9");
+    assert_msg(var > 9, "var 必须大于9");
 
     // 这个断言也不会触发
-    assert_msg(x > 0);
+    assert_msg(var > 0);
 
     // 这个断言一定会被触发
-    assert_msg(x < 8, "这个断言一定会被触发，因为x为{}，大于8", x);
+    assert_msg(var < 8, "这个断言一定会被触发，因为var为 {} ，大于8", var);
 
     // 这句话不会被打印
-    std::cout << "这句话不会被打印" << std::endl;
+    std::println("这句话不会被打印");
 
     return 0;
 }

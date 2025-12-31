@@ -14,8 +14,8 @@
  * 
  */
 
-#ifndef __TNRW_ECS_COMPONENTS_GLOBAL_SCENE_COMPONENTS_HPP__
-#define __TNRW_ECS_COMPONENTS_GLOBAL_SCENE_COMPONENTS_HPP__
+#ifndef TNRW_ECS_COMPONENTS_GLOBAL_SCENE_COMPONENTS_HPP
+#define TNRW_ECS_COMPONENTS_GLOBAL_SCENE_COMPONENTS_HPP
 
 #include <entt/fwd.hpp>
 #include <functional>
@@ -30,24 +30,24 @@ namespace tnrw::ecs {
     /// @brief 全局获取场景的组件
     template <typename Key, typename Compare = std::less<Key>,
               typename Allocator = std::allocator<std ::pair<const Key, entt::entity>>>
-    class [[nodiscard]] GlobalScenes final {
+    class [[nodiscard]] GlobalScenes {
       public: /// @publicsection
         // using 声明
-        using key_type = Key;             //< 键类型
-        using key_compare = Compare;      //< 键比较类型
-        using allocator_type = Allocator; //< 分配器类型
+        using KeyType = Key;             //< 键类型
+        using KeyCompare = Compare;      //< 键比较类型
+        using AllocatorType = Allocator; //< 分配器类型
         // 友元声明
         friend class BasicSceneSystem<Key, Compare, Allocator>;
 
         /// @cond INTERNAL
       private: /// @privatesection
         // 成员
-        std::map<key_type, entt::entity, key_compare, allocator_type> m_scenes; //< 场景实体列表
+        std::map<KeyType, entt::entity, KeyCompare, AllocatorType> m_scenes; //< 场景实体列表
         /// @endcond
     };
 
     /// @brief 场景组件
-    class [[nodiscard]] Scene final {
+    class [[nodiscard]] Scene {
       public: /// @publicsection
         // 友元声明
         template <typename Key, typename Compare, typename Allocator>
@@ -60,7 +60,7 @@ namespace tnrw::ecs {
     };
 
     /// @brief 获取父场景实体的组件
-    class [[nodiscard]] FatherScenes final {
+    class [[nodiscard]] FatherScenes {
       public: /// @publicsection
         // 友元声明
         template <typename Key, typename Compare, typename Allocator>
@@ -74,4 +74,4 @@ namespace tnrw::ecs {
 
 } // namespace tnrw::ecs
 
-#endif // __TNRW_ECS_COMPONENTS_GLOBAL_SCENE_COMPONENTS_HPP__
+#endif // TNRW_ECS_COMPONENTS_GLOBAL_SCENE_COMPONENTS_HPP

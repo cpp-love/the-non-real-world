@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef __TNRW_ECS_COMPONENTS_MOVEMENT_COMPONENTS_HPP__
-#define __TNRW_ECS_COMPONENTS_MOVEMENT_COMPONENTS_HPP__
+#ifndef TNRW_ECS_COMPONENTS_MOVEMENT_COMPONENTS_HPP
+#define TNRW_ECS_COMPONENTS_MOVEMENT_COMPONENTS_HPP
 
 #include <SFML/System/Vector2.hpp>
 
@@ -20,10 +20,10 @@ namespace tnrw::ecs {
      * @brief 速度组件
      * @attention 此组件不是一个稳定的组件，可能会因需求变多而改变
      */
-    struct [[nodiscard]] Velocity final {
+    struct [[nodiscard]] Velocity {
         sf::Vector2f velocity;
     };
 
 } // namespace tnrw::ecs
 
-#endif // __TNRW_ECS_COMPONENTS_MOVEMENT_COMPONENTS_HPP__
+#endif // TNRW_ECS_COMPONENTS_MOVEMENT_COMPONENTS_HPP

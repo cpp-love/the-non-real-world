@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef __TNRW_ECS_SYSTEMS_FWD_HPP__
-#define __TNRW_ECS_SYSTEMS_FWD_HPP__
+#ifndef TNRW_ECS_SYSTEMS_FWD_HPP
+#define TNRW_ECS_SYSTEMS_FWD_HPP
 
 #include "global/SceneSystem.hpp"
 
@@ -24,4 +24,4 @@ namespace tnrw::ecs {
 
 } // namespace tnrw::ecs
 
-#endif // __TNRW_ECS_SYSTEMS_FWD_HPP__
+#endif // TNRW_ECS_SYSTEMS_FWD_HPP

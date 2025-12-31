@@ -10,11 +10,11 @@
  * @todo `string_convert.hpp` 的前向声明分离
  */
 
-#ifndef __TNRW_BASE_FWD_HPP__
-#define __TNRW_BASE_FWD_HPP__
+#ifndef TNRW_BASE_FWD_HPP
+#define TNRW_BASE_FWD_HPP
 
 #include "base/assert_msg.hpp"
 #include "base/config.hpp"
 #include "base/string_convert.hpp"
 
-#endif // __TNRW_BASE_FWD_HPP__
+#endif // TNRW_BASE_FWD_HPP

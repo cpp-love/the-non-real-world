@@ -35,7 +35,7 @@
 
 1. **BREAKING(不向下兼容):** 将模板文件改名为 `helper/file_version.template.md`
 2. 重构了整个文件
-3. 将原有的命令行参数使用方法 `.\bin\generate_file_version <file_directory> <file_name> [additional_content]`
+3. **BREAKING(不向下兼容):** 将原有的命令行参数使用方法 `.\bin\generate_file_version <file_directory> <file_name> [additional_content]`
    修改为 `.\bin\exes\generate_file_version <workspace_folder> <file> <authors>`，其中
    - `<workspace_folder>` 是工作区目录
    - `<file>` 是文件路径

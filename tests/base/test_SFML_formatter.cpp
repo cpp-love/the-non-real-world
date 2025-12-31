@@ -15,12 +15,12 @@
 
 int main() {
 
-    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
     sf::Vector2f      vec1{10, 10};
     sf::Vector2i      vec2{11, 11};
     sf::Vector2<long> vec3{13, 10};
     std::println("vec1 is {:.3f}, vec2 is {:d}, vec3 is {:d}", vec1, vec2, vec3);
-    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
     return 0;
 }

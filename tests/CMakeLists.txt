@@ -7,11 +7,11 @@ enable_testing()
 if(TNRW_BUILD_TESTS)
     option(TNRW_BUILD_BASE_TESTS "Build the tests in the tests/base directory" ON)
     option(TNRW_BUILD_ECS_TESTS "Build the tests in the tests/ecs directory" ON)
-    option(TNRW_BUILD_MATHS_TESTS "Build the tests in the tests/maths directory" ON)
+    option(TNRW_BUILD_MATH_TESTS "Build the tests in the tests/math directory" ON)
 else()
-    on(TNRW_BUILD_BASE_TESTS "Build the tests in the tests/base directory" OFF)
+    option(TNRW_BUILD_BASE_TESTS "Build the tests in the tests/base directory" OFF)
     option(TNRW_BUILD_ECS_TESTS "Build the tests in the tests/ecs directory" OFF)
-    option(TNRW_BUILD_MATHS_TESTS "Build the tests in the tests/maths directory" OFF)
+    option(TNRW_BUILD_MATH_TESTS "Build the tests in the tests/math directory" OFF)
 endif()
 
 if(TNRW_BUILD_BASE_TESTS)
@@ -127,15 +127,15 @@ if(TNRW_BUILD_ECS_TESTS)
     # todo : 添加test_movement_system的测试支持
 endif()
 
-if(TNRW_BUILD_MATHS_TESTS)
+if(TNRW_BUILD_MATH_TESTS)
     # 设置输出目录
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/tests)
 
     # 构建程序
 
     # 设置链接文件
-    add_executable(test_alge_expr ${CMAKE_CURRENT_SOURCE_DIR}/maths/testAlgeExpr.cpp)
-    add_executable(test_num_expr ${CMAKE_CURRENT_SOURCE_DIR}/maths/testNumExpr.cpp)
+    add_executable(test_alge_expr ${CMAKE_CURRENT_SOURCE_DIR}/math/testAlgeExpr.cpp)
+    add_executable(test_num_expr ${CMAKE_CURRENT_SOURCE_DIR}/math/testNumExpr.cpp)
 
     # 链接第三方库
     target_link_libraries(test_alge_expr

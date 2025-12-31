@@ -11,42 +11,42 @@
  * 
  */
 
-#ifndef __TNRW_MATHS_EXPRESSIONS_BASE_HPP__
-#define __TNRW_MATHS_EXPRESSIONS_BASE_HPP__
+#ifndef TNRW_MATH_EXPRESSIONS_BASE_HPP
+#define TNRW_MATH_EXPRESSIONS_BASE_HPP
 
 namespace tnrw {
 
-    namespace maths {
+    namespace math {
 
         // using别名
         using ConstantType = long long; ///< 常量值类型
         using VariableType = char;      ///< 变量字符类型
 
-    } // namespace maths
+    } // namespace math
 
     inline namespace literals {
 
         /// @brief Expressions类集( `AlgebraicExpression` 和 `NumericExpression` 类)的内联自定义字面量命名空间
-        inline namespace Expressions_base_literals {
+        inline namespace expressions_base_literals {
 
             /**
              * @brief 创建常量
              * @param [in] constant 常量值字面量
-             * @return maths::ConstantType 创建的常量类型
+             * @return math::ConstantType 创建的常量类型
              */
-            [[nodiscard]] constexpr maths::ConstantType
+            [[nodiscard]] constexpr math::ConstantType
             operator""_c(unsigned long long constant) noexcept;
             /**
              * @brief 创建变量
              * @param [in] variable 变量字符字面量
-             * @return maths::VariableType 创建的变量类型
+             * @return math::VariableType 创建的变量类型
              */
-            [[nodiscard]] constexpr maths::VariableType operator""_v(char variable) noexcept;
+            [[nodiscard]] constexpr math::VariableType operator""_v(char variable) noexcept;
 
-        } // namespace Expressions_base_literals
+        } // namespace expressions_base_literals
 
     } // namespace literals
 
 } // namespace tnrw
 
-#endif // __TNRW_MATHS_EXPRESSIONS_BASE_HPP__
+#endif // TNRW_MATH_EXPRESSIONS_BASE_HPP

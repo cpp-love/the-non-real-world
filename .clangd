@@ -1,23 +1,9 @@
-CompileFlags: 
-  Add: [
-    "stdlib=libc++",
-    "-isystem", "C:/LLVM/lib/clang/21/include",
-    "-isystem", "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.43.34808/include",
-    "-isystem", "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/ucrt",
-    "-isystem", "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/shared",
-    "-isystem", "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/um",
-    "-isystem", "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/winrt",
-    "-isystem", "C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/cppwinrt",
-    "-isystem", "C:/msys64/ucrt64/include"
-  ]
-  Remove: [
-    "/EHsc",
-    "/MD",
-    "/MDd",
-    "/GR-",
-    "/GR",
-    "/GS"
-  ]
+CompileFlags:
+  Add:
+    - "-stdlib=libc++"
+    - "-idirafter"
+    - "C:/msys64/ucrt64/include"
+
 Diagnostics:
   UnusedIncludes: Strict
 Completion:

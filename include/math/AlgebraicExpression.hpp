@@ -15,10 +15,10 @@
  * 
  */
 
-#ifndef __TNRW_MATHS_ALGEGRAIC_EXPRESSION_HPP__
-#define __TNRW_MATHS_ALGEGRAIC_EXPRESSION_HPP__
+#ifndef TNRW_MATH_ALGEGRAIC_EXPRESSION_HPP
+#define TNRW_MATH_ALGEGRAIC_EXPRESSION_HPP
 
-#include "maths/Expressions_base.hpp"
+#include "math/expressions_base.hpp"
 #include <iosfwd>
 #include <locale>
 #include <map>
@@ -27,7 +27,7 @@
 
 namespace tnrw {
 
-    namespace maths {
+    namespace math {
 
         namespace details {
             /**
@@ -48,7 +48,7 @@ namespace tnrw {
          * - 加入根式
          * - 完备代数运算
          */
-        class AlgebraicExpression final {
+        class AlgebraicExpression {
             /// @cond INTERNAL
           private: /// @privatesection
             // 成员变量
@@ -415,33 +415,33 @@ namespace tnrw {
         std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &out,
                                                       const AlgebraicExpression         &rhs) noexcept;
 
-    } // namespace maths
+    } // namespace math
 
     inline namespace literals {
 
         /// @brief AlgebraicExpression类的内联自定义字面量命名空间
-        inline namespace AlgebraicExpression_literals {
+        inline namespace algebraic_expression_literals {
 
             /**
              * @brief 以常量字面量创建代数式类
              * @param [in] constant 常量值字面量
              * @return AlgebraicExpression 创建的代数式类
-             * @see @ref maths::AlgebraicExpression::AlgebraicExpression(maths::AlgebraicExpression::ConstantType constant) "AlgebraicExpression类的以常量为参数的构造函数"
+             * @see @ref math::AlgebraicExpression::AlgebraicExpression(math::AlgebraicExpression::ConstantType constant) "AlgebraicExpression类的以常量为参数的构造函数"
              */
-            [[nodiscard]] maths::AlgebraicExpression
+            [[nodiscard]] math::AlgebraicExpression
             operator""_cAlgeExpr(unsigned long long constant) noexcept;
             /**
              * @brief 以变量字面量创建代数式类
              * @param [in] variable 变量字符字面量
              * @return AlgebraicExpression 创建的代数式类
-             * @see @ref maths::AlgebraicExpression::AlgebraicExpression(maths::AlgebraicExpression::VariableType vairable) "AlgebraicExpression类的以变量为参数的构造函数"
+             * @see @ref math::AlgebraicExpression::AlgebraicExpression(math::AlgebraicExpression::VariableType vairable) "AlgebraicExpression类的以变量为参数的构造函数"
              */
-            [[nodiscard]] maths::AlgebraicExpression operator""_vAlgeExpr(char variable) noexcept;
+            [[nodiscard]] math::AlgebraicExpression operator""_vAlgeExpr(char variable) noexcept;
 
-        } // namespace AlgebraicExpression_literals
+        } // namespace algebraic_expression_literals
 
     } // namespace literals
 
 } // namespace tnrw
 
-#endif // __TNRW_MATHS_ALGEGRAIC_EXPRESSION_HPP__
+#endif // TNRW_MATH_ALGEGRAIC_EXPRESSION_HPP

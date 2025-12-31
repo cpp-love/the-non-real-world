@@ -9,10 +9,11 @@
  * 
  */
 
-#ifndef __TNRW_BASE_STRING_CONVERT_HPP__
-#define __TNRW_BASE_STRING_CONVERT_HPP__
+#ifndef TNRW_BASE_STRING_CONVERT_HPP
+#define TNRW_BASE_STRING_CONVERT_HPP
 
 #include <bit>
+#include <concepts>
 #include <string>
 #include <string_view>
 
@@ -24,21 +25,21 @@ namespace tnrw::string_convert {
      * @param [in] character 字符
      * @return std::string UTF-8编码的字符串
      */
-    [[nodiscard]] inline std::string to_utf8_string(char character) { return std::string(1, character); }
+    [[nodiscard]] inline std::string toUtf8String(char character) { return {character}; }
     /**
      * @brief 转换到UTF-8编码的字符串
      * @param [in] character 字符
      * @return std::string UTF-8编码的字符串
      */
-    [[nodiscard]] inline std::string to_utf8_string(char8_t character) {
-        return std::string(1, static_cast<char>(character));
+    [[nodiscard]] inline std::string toUtf8String(char8_t character) {
+        return {static_cast<char>(character)};
     }
     /**
      * @brief 转换到UTF-8编码的字符串
      * @param [in] strview 字符串视图
      * @return std::string UTF-8编码的字符串
      */
-    [[nodiscard]] inline std::string to_utf8_string(std::string_view strview) {
+    [[nodiscard]] inline std::string toUtf8String(std::string_view strview) {
         return std::string(strview);
     }
     /**
@@ -46,7 +47,8 @@ namespace tnrw::string_convert {
      * @param [in] strview 字符串视图
      * @return std::string UTF-8编码的字符串
      */
-    [[nodiscard]] inline std::string to_utf8_string(std::u8string_view strview) {
+    [[nodiscard]] inline std::string toUtf8String(std::u8string_view strview) {
+        // NOLINTNEXTLINE(bugprone-bitwise-pointer-cast)
         return {std::bit_cast<const char *>(strview.data()), strview.size()};
     }
     /**
@@ -54,16 +56,16 @@ namespace tnrw::string_convert {
      * @param [in] str C风格的字符串
      * @return std::string UTF-8编码的字符串
      */
-    [[nodiscard]] inline std::string to_utf8_string(const char *str) {
-        return (str != nullptr) ? to_utf8_string(std::string_view(str)) : "(null)";
+    [[nodiscard]] inline std::string toUtf8String(const char *str) {
+        return (str != nullptr) ? toUtf8String(std::string_view(str)) : "(null)";
     }
     /**
      * @brief 转换到UTF-8编码的字符串
      * @param [in] str C风格的字符串
      * @return std::string UTF-8编码的字符串
      */
-    [[nodiscard]] inline std::string to_utf8_string(const char8_t *str) {
-        return (str != nullptr) ? to_utf8_string(std::u8string_view(str)) : "(null)";
+    [[nodiscard]] inline std::string toUtf8String(const char8_t *str) {
+        return (str != nullptr) ? toUtf8String(std::u8string_view(str)) : "(null)";
     }
 
     /**
@@ -71,15 +73,14 @@ namespace tnrw::string_convert {
      * @param [in] strview 字符串视图
      * @return std::string_view UTF-8编码的字符串视图
      */
-    [[nodiscard]] inline std::string_view to_utf8_string_view(std::string_view strview) {
-        return strview;
-    }
+    [[nodiscard]] inline std::string_view toUtf8StringView(std::string_view strview) { return strview; }
     /**
      * @brief 转换到UTF-8编码的字符串视图
      * @param [in] strview 字符串视图
      * @return std::string_view UTF-8编码的字符串视图
      */
-    [[nodiscard]] inline std::string_view to_utf8_string_view(std::u8string_view strview) {
+    [[nodiscard]] inline std::string_view toUtf8StringView(std::u8string_view strview) {
+        // NOLINTNEXTLINE(bugprone-bitwise-pointer-cast)
         return {std::bit_cast<const char *>(strview.data()), strview.size()};
     }
     /**
@@ -87,16 +88,16 @@ namespace tnrw::string_convert {
      * @param [in] str C风格的字符串
      * @return std::string_view UTF-8编码的字符串视图
      */
-    [[nodiscard]] inline std::string_view to_utf8_string_view(const char *str) {
-        return (str != nullptr) ? to_utf8_string_view(std::string_view(str)) : "(null)";
+    [[nodiscard]] inline std::string_view toUtf8StringView(const char *str) {
+        return (str != nullptr) ? toUtf8StringView(std::string_view(str)) : "(null)";
     }
     /**
      * @brief 转换到UTF-8编码的字符串视图
      * @param [in] str C风格的字符串
      * @return std::string_view UTF-8编码的字符串视图
      */
-    [[nodiscard]] inline std::string_view to_utf8_string_view(const char8_t *str) {
-        return (str != nullptr) ? to_utf8_string_view(std::u8string_view(str)) : "(null)";
+    [[nodiscard]] inline std::string_view toUtf8StringView(const char8_t *str) {
+        return (str != nullptr) ? toUtf8StringView(std::u8string_view(str)) : "(null)";
     }
 
     /**
@@ -105,9 +106,10 @@ namespace tnrw::string_convert {
      */
     template <typename T>
     concept Convertible = requires(const T &value) {
-        { to_utf8_string(value) } -> std::convertible_to<std::string>;
+        { toUtf8String(value) } -> std::same_as<std::string>;
+        { toUtf8StringView(value) } -> std::same_as<std::string_view>;
     };
 
 } // namespace tnrw::string_convert
 
-#endif // __TNRW_BASE_STRING_CONVERT_HPP__
+#endif // TNRW_BASE_STRING_CONVERT_HPP
