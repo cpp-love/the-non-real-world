@@ -32,4 +32,15 @@
 *.app
 
 # Documentation
-./docs
+docs/**
+
+# Build files
+build/**
+out/**
+
+# log files
+*.log
+log/**
+
+# issue files
+code_issues/**

@@ -9,22 +9,22 @@
  * 
  */
 
-#ifndef __FWD_HPP__
-#define __FWD_HPP__
+#ifndef TNRW_FWD_HPP
+#define TNRW_FWD_HPP
 
-#include "Maths/fwd.hpp"
 #include "base/fwd.hpp"
 #include "ecs/fwd.hpp"
+#include "math/fwd.hpp"
 
 /**
  * @brief "The Non-real World" 游戏的命名空间
  * @details 此游戏的所有API都在此命名空间内
  */
-namespace tnrw {
+namespace tnrw { //< NOLINT(modernize-concat-nested-namespaces)
 
     /// @brief tnrw命名空间内的自定义字面量命名空间
-    namespace literals {}
+    inline namespace literals {}
 
 } // namespace tnrw
 
-#endif // __FWD_HPP__
+#endif // TNRW_FWD_HPP

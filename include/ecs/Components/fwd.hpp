@@ -9,18 +9,24 @@
  * 
  */
 
-#ifndef __ECS_COMPONENTS_FWD_HPP__
-#define __ECS_COMPONENTS_FWD_HPP__
+#ifndef TNRW_ECS_COMPONENTS_FWD_HPP
+#define TNRW_ECS_COMPONENTS_FWD_HPP
 
-namespace tnrw {
+#include "ecs/Components/global/SceneComponents.hpp"
+#include <SFML/System/Vector2.hpp>
 
-    namespace ecs {
+namespace tnrw::ecs {
 
-        // GameState.hpp
-        struct GameState final;
+    // global/GameState.hpp
+    class GameState;
 
-    } // namespace ecs
+    // ShapeComponents.hpp
+    struct Line;
+    struct Circle;
+    struct Rectangle;
+    struct ShouldRender;
+    struct ShouldCollide;
 
-} // namespace tnrw
+} // namespace tnrw::ecs
 
-#endif
+#endif // TNRW_ECS_COMPONENTS_FWD_HPP

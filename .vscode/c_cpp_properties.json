@@ -2,10 +2,17 @@
     "version": 4,
     "env": {
         "DEFAULTINCLUDEPATH": [
+            "C:/msys64/ucrt64/include/c++/15.2.0",
+            "C:/msys64/ucrt64/include/c++/15.2.0/x86_64-w64-mingw32",
+            "C:/msys64/ucrt64/include/c++/15.2.0/backward",
+            "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/15.2.0/include",
             "C:/msys64/ucrt64/include",
-            "C:/msys64/ucrt64/include/c++/15.1.0"
+            "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/15.2.0/include-fixed"
         ],
-        "DEFAULTDEFINES": []
+        "DEFAULTDEFINES": [
+            "DEBUG",
+            "_DEBUG"
+        ]
     },
     "configurations": [
         {

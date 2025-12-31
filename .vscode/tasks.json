@@ -2,121 +2,83 @@
     "version": "2.0.0",
     "inputs": [
         {
-            "id": "selectFileGroup",
-            "type": "pickString",
-            "description": "选择要编译的文件组",
-            "options": [
-                "测试AlgebraicExpression类",
-                "测试NumericExpression类",
-                "文件版本生成器",
-                "测试字符串转换",
-                "测试assert_msg"
-            ],
-            "default": "核心模块"
+            "id": "generateFiles",
+            "type": "promptString",
+            "description": "选择相对当前工作区目录的要生成版本文档的文件（夹）"
         }
     ],
     "tasks": [
         {
-            "label": "C/C++: g++.exe 编译文件组",
+            "label": "C/C++: 输出代码问题到文件",
             "type": "shell",
             "command": "python",
             "args": [
-                "${workspaceFolder}\\.vscode\\compile_runner.py",
-                "--group",
-                "${input:selectFileGroup}"
+                "${workspaceFolder}/helper/generate_code_issues.py",
+                "-p",
+                "${command:cmake.buildDirectory}/compile_commands.json",
+                "-ea=-idirafter",
+                "-ea=C:/msys64/ucrt64/include",
+                "-fd",
+                "${workspaceFolder}/helper",
+                "-fd",
+                "${workspaceFolder}/include",
+                "-fd",
+                "${workspaceFolder}/src",
+                "-fd",
+                "${workspaceFolder}/tests"
             ],
-            "group": "build",
-            "options": {
-                "cwd": "${workspaceFolder}",
-                "env": {
-                    "workspaceFolder": "${workspaceFolder}",
-                    "file": "${file}"
-                }
-            },
-            "problemMatcher": {
-                "owner": "cpp",
-                "fileLocation": "absolute",
-                "pattern": {
-                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-                    "file": 1,
-                    "line": 2,
-                    "column": 3,
-                    "severity": 4,
-                    "message": 5
-                }
-            },
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated",
-                "showReuseMessage": false
-            },
-            "detail": "编译 The Non-\"real\" World 项目的文件组的任务"
-        },
-        {
-            "label": "C/C++: g++.exe 编译自定义项目",
-            "type": "shell",
-            "command": "python",
-            "args": [
-                "${workspaceFolder}\\.vscode\\compile_runner.py",
-                "--interactive"
-            ],
-            "group": "build",
-            "options": {
-                "cwd": "${workspaceFolder}",
-                "env": {
-                    "workspaceFolder": "${workspaceFolder}",
-                    "file": "${file}"
-                }
-            },
-            "problemMatcher": {
-                "owner": "cpp",
-                "fileLocation": "absolute",
-                "pattern": {
-                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
-                    "file": 1,
-                    "line": 2,
-                    "column": 3,
-                    "severity": 4,
-                    "message": 5
-                }
-            },
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated"
-            },
-            "detail": "编译自定义项目的任务"
-        },
-        {
-            "label": "C/C++: 清理构建",
-            "type": "shell",
-            "command": "rm -rf ${workspaceFolder}\\bin",
-            "windows": {
-                "command": "rmdir /s /q bin"
-            },
             "problemMatcher": [],
-            "detail": "清理构建的任务"
+            "detail": "输出tnrw代码问题到文件的任务"
         },
         {
             "label": "C/C++: 生成文件版本文件",
             "type": "shell",
-            "command": "${workspaceFolder}\\bin\\exes\\generate_file_version",
+            "command": "${command:cmake.buildDirectory}/bin/generate_file_version",
             "args": [
                 "${workspaceFolder}",
                 "${file}",
                 "'cpp-love(15865418+cpp-love@user.noreply.gitee.com)'"
             ],
             "problemMatcher": [],
-            "detail": "输出文件版本文件的任务"
+            "detail": "输出文件版本文件的任务",
+            "runOptions": {
+                "instanceLimit": 10
+            }
         },
         {
-            "label": "C/C++: doxygen 生成文档",
+            "label": "C/C++: 生成文件版本文件（选择版）",
+            "type": "shell",
+            "command": "${command:cmake.buildDirectory}/bin/generate_file_version",
+            "args": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/${input:generateFiles}",
+                "'cpp-love(15865418+cpp-love@user.noreply.gitee.com)'"
+            ],
+            "problemMatcher": [],
+            "detail": "输出文件版本文件的任务",
+            "runOptions": {
+                "instanceLimit": 10
+            }
+        },
+        {
+            "label": "C/C++: doxygen 生成文档（公共）",
             "type": "shell",
             "command": "doxygen", // 生成 Doxygen 文档
             "args": [
-                "${workspaceFolder}\\Doxyfile"
+                "${workspaceFolder}/Doxyfile"
             ],
             "problemMatcher": [],
-            "detail": "生成 Doxygen 文档的任务"
+            "detail": "生成 Doxygen 公共文档的任务"
+        },
+        {
+            "label": "C/C++: doxygen 生成文档（内部）",
+            "type": "shell",
+            "command": "doxygen", // 生成 Doxygen 文档
+            "args": [
+                "${workspaceFolder}/Doxyfile.internal"
+            ],
+            "problemMatcher": [],
+            "detail": "生成 Doxygen 内部文档的任务"
         }
     ]
 }

@@ -2,29 +2,31 @@
  * @file config.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief tnrw项目的基本配置信息
- * @version 0.1.0-1
- * @date 2025-08-10
+ * @version 0.1.0-2
+ * @date 2025-08-16
  * 
  * @copyright cpp-love
  * 
  */
 
-#ifndef __BASE_CONFIG_HPP__
-#define __BASE_CONFIG_HPP__
+#ifndef TNRW_BASE_CONFIG_HPP
+#define TNRW_BASE_CONFIG_HPP
 
-#ifdef TNRW_VERSION_MAJOR
-#undef TNRW_VERSION_MAJOR
-#endif // TNRW_VERSION_MAJOR
-#define TNRW_VERSION_MAJOR 0
+#include <cstdint>
 
-#ifdef TNRW_VERSION_MINOR
-#undef TNRW_VERSION_MINOR
-#endif // TNRW_VERSION_MINOR
-#define TNRW_VERSION_MINOR 1
+namespace tnrw {
 
-#ifdef TNRW_VERSION_PATCH
-#undef TNRW_VERSION_PATCH
-#endif // TNRW_VERSION_PATCH
-#define TNRW_VERSION_PATCH 0
+    using VersionType = std::uint16_t;               ///< tnrw版本类型
+    using LevelIdentifierType = std::uint16_t;       ///< 关卡标识符类型
+    constexpr VersionType version_major_offset = 11; ///< tnrw主版本偏移量
+    constexpr VersionType version_major = 0;         ///< tnrw主版本号
+    constexpr VersionType version_minor_offset = 6;  ///< tnrw次版本偏移量
+    constexpr VersionType version_minor = 1;         ///< tnrw次版本号
+    constexpr VersionType version_patch_offset = 0;  ///< tnrw修订版本偏移量
+    constexpr VersionType version_patch = 0;         ///< tnrw修订版本号
+    constexpr VersionType version = (version_major << version_major_offset)
+                                    + (version_minor << version_minor_offset)
+                                    + (version_patch << version_patch_offset); ///< tnrw版本号
+} // namespace tnrw
 
-#endif // __BASE_CONFIG_HPP__
+#endif // TNRW_BASE_CONFIG_HPP

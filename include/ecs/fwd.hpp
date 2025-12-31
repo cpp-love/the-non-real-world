@@ -9,20 +9,16 @@
  * 
  */
 
-#ifndef __ECS_FWD_HPP__
-#define __ECS_FWD_HPP__
+#ifndef TNRW_ECS_FWD_HPP
+#define TNRW_ECS_FWD_HPP
 
 #include "ecs/Components/fwd.hpp"
 #include "ecs/Systems/fwd.hpp"
 
-namespace tnrw {
+/**
+ * @brief ecs系统相关的命名空间
+ * @details 为游戏的重要部分: ecs系统开发核心内容
+ */
+namespace tnrw::ecs {}
 
-    /**
-     * @brief ecs系统相关的命名空间
-     * @details 为游戏的重要部分: ecs系统开发核心内容
-     */
-    namespace ecs {}
-
-} // namespace tnrw
-
-#endif // __ECS_FWD_HPP__
+#endif // TNRW_ECS_FWD_HPP
