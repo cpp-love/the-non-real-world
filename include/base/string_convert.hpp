@@ -101,7 +101,7 @@ namespace tnrw::string_convert {
     }
 
     /**
-     * @brief 支持转换字符串的概念约束
+     * @brief 概念：可以支持转换字符串的类型
      * @tparam T 类型
      */
     template <typename T>

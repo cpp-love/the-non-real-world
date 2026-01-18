@@ -2,8 +2,8 @@
  * @file testNumExpr.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief `math::NumericExpression` 类的测试用例或使用示例
- * @version 0.1.0-1
- * @date 2025-07-26
+ * @version 0.1.0-2
+ * @date 2026-01-18
  * 
  * @copyright cpp-love
  * 
@@ -21,18 +21,17 @@
 #include <windows.h>
 #endif // _WIN32
 
-constexpr std::size_t                   cmd_size = 10; ///< 命令的个数
+constexpr std::size_t                   cmd_size = 9; ///< 命令的个数
 
-const std::array<std::string, cmd_size> commands{"help",    "new",      "delete", "operator",
-                                                 "clear",   "getValue", "isZero", "toOpposite",
-                                                 "compare", "quit"}; ///< 命令列表
+const std::array<std::string, cmd_size> commands{"help",       "new",     "delete",
+                                                 "operator",   "clear",   "calculateApproximation",
+                                                 "toOpposite", "compare", "quit"}; ///< 命令列表
 const std::array<std::string, cmd_size> briefs{"提供帮助",
                                                "添加无字母的代数式",
                                                "删除无字母的代数式",
                                                "对一个无字母的代数式使用运算符",
                                                "清除一个无字母的代数式",
-                                               "获取一个无字母的代数式的值(暂未加入)",
-                                               "判断一个无字母的代数式是否为0",
+                                               "计算一个无字母的代数式的近似值",
                                                "对一个无字母的代数式取相反数",
                                                "比较两个无字母的代数式",
                                                "退出程序"}; ///< 命令的简要描述列表
@@ -56,26 +55,21 @@ const std::array<std::string, cmd_size> details{"\
 - operator [index] [+ | -]\n\
   用于获取[+ | -]第index(从0开始)个无字母的代数式的结果", "\
 - clear [index]\n\
-  用于清空第index(从0开始)个无字母的代数式",
-                                                "\
-- getValue [index] ??\n\
-  本节未完成\n\
-  原因：未定义tnrw::math::NumericExpression的getValue方法", "\
-- isZero [index] ??\n\
-  本节未完成\n\
-  原因：未定义tnrw::math::NumericExpression的isZero方法", "\
+  用于清空第index(从0开始)个无字母的代数式", "\
+- calculateApproximation [index] \n\
+  用于计算无字母的代数式的近似值", "\
 - toOpposite [index]\n\
   原因将第index(从0开始)个无字母的代数式改为相反数", "\
 - compare [index1] [index2]\n\
   用于比较第index1(从0开始)个无字母的代数式和第index2(从0开始)个无字母的代数式是否相等", "\
 - quit\n\
-  用于退出程序"}; ///< 命令的详细描述列表
+  用于退出程序"};                                           ///< 命令的详细描述列表
 
 /**
  * @brief 处理大小不合适的参数
  * @param [in] cmd 主命令
  */
-void                                    processUnsuitedArgs(std::string_view cmd) {
+void processUnsuitedArgs(std::string_view cmd) {
     std::cout << "错误：命令 \"" << cmd << "\" 的参数过少或过多，请键入 \"help\" 获取帮助\n";
 }
 
@@ -107,7 +101,7 @@ void processOverLimitArgs(std::string_view cmd) {
  * @brief 获取命令行参数
  * @return std::vector<std::string> 命令行参数
  */
-[[nodiscard]] std::vector<std::string> getArgs() {
+[[nodiscard]] std::vector<std::string> getInputArgs() {
     std::vector<std::string> args;
     bool                     not_finished = true;
     for (int i = 0; not_finished; ++i) {
@@ -188,6 +182,7 @@ enum class StrToTypeResult : std::uint8_t { Invalid, OverLimit, Normal };
         return StrToTypeResult::Invalid;
     } catch (const std::out_of_range &) { return StrToTypeResult::OverLimit; }
 }
+
 int main() {
 
 #ifdef _WIN32
@@ -203,7 +198,7 @@ int main() {
         std::cout << "现在无字母的代数式数组为：\n";
         for (std::size_t i = 0; i < numvec.size(); ++i) { std::cout << i << ": " << numvec[i] << '\n'; }
         std::cout << ">>> " << std::flush;
-        std::vector<std::string> args = getArgs();
+        std::vector<std::string> args = getInputArgs();
         // 未键入
         if (args.empty())
             continue;
@@ -344,25 +339,29 @@ int main() {
                 }
                 const long long val = *res2;
                 if (args[2] == "+") {
-                    std::cout << "结果：" << (numvec[index] + static_cast<tnrw::math::ConstantType>(val))
+                    std::cout << "结果："
+                              << (numvec[index] + static_cast<tnrw::math::IntegerConstantType>(val))
                               << '\n';
                 } else if (args[2] == "-") {
-                    std::cout << "结果：" << (numvec[index] - static_cast<tnrw::math::ConstantType>(val))
+                    std::cout << "结果："
+                              << (numvec[index] - static_cast<tnrw::math::IntegerConstantType>(val))
                               << '\n';
                 } else if (args[2] == "*") {
-                    std::cout << "结果：" << (numvec[index] * static_cast<tnrw::math::ConstantType>(val))
+                    std::cout << "结果："
+                              << (numvec[index] * static_cast<tnrw::math::IntegerConstantType>(val))
                               << '\n';
                 } else if (args[2] == "/") {
-                    std::cout << "结果：" << (numvec[index] / static_cast<tnrw::math::ConstantType>(val))
+                    std::cout << "结果："
+                              << (numvec[index] / static_cast<tnrw::math::IntegerConstantType>(val))
                               << '\n';
                 } else if (args[2] == "+=") {
-                    numvec[index] += static_cast<tnrw::math::ConstantType>(val);
+                    numvec[index] += static_cast<tnrw::math::IntegerConstantType>(val);
                 } else if (args[2] == "-=") {
-                    numvec[index] -= static_cast<tnrw::math::ConstantType>(val);
+                    numvec[index] -= static_cast<tnrw::math::IntegerConstantType>(val);
                 } else if (args[2] == "*=") {
-                    numvec[index] *= static_cast<tnrw::math::ConstantType>(val);
+                    numvec[index] *= static_cast<tnrw::math::IntegerConstantType>(val);
                 } else if (args[2] == "/=") {
-                    numvec[index] /= static_cast<tnrw::math::ConstantType>(val);
+                    numvec[index] /= static_cast<tnrw::math::IntegerConstantType>(val);
                 } else {
                     processInvalidArgs(args[0]);
                 }
@@ -387,12 +386,25 @@ int main() {
                     break;
             }
         } else if (args[0] == commands[5]) {
-            std::cout << "本节未完成\n原因：未定义tnrw::math::"
-                         "NumericExpression的getValue方法\n";
+            if (args.size() != 2) {
+                // 非法
+                processUnsuitedArgs(args[0]);
+                continue;
+            }
+            // 计算一个无字母的代数式的近似值
+            std::unique_ptr<std::size_t> res = std::make_unique<std::size_t>(0);
+            switch (tryStrToULL(args[1], res.get())) {
+                case StrToTypeResult::Invalid: processInvalidArgs(args[0]); break;
+                case StrToTypeResult::OverLimit: processOverLimitArgs(args[0]); break;
+                case StrToTypeResult::Normal:
+                    if (*res >= numvec.size()) {
+                        processOverLimitArgs(args[0]);
+                    } else {
+                        std::cout << "结果：" << numvec[*res].calculateApproximation<double>() << '\n';
+                    }
+                    break;
+            }
         } else if (args[0] == commands[6]) {
-            std::cout << "本节未完成\n原因：未定义tnrw::math::"
-                         "NumericExpression的isZero方法\n";
-        } else if (args[0] == commands[7]) {
             if (args.size() != 2) {
                 // 非法
                 processUnsuitedArgs(args[0]);
@@ -411,7 +423,7 @@ int main() {
                     }
                     break;
             }
-        } else if (args[0] == commands[8]) {
+        } else if (args[0] == commands[7]) {
             if (args.size() != 3) {
                 // 非法
                 processUnsuitedArgs(args[0]);
@@ -445,7 +457,7 @@ int main() {
                     }
                     break;
             }
-        } else if (args[0] == commands[9]) {
+        } else if (args[0] == commands[8]) {
             break;
         } else {
             processInvalidCmds(args[0]);

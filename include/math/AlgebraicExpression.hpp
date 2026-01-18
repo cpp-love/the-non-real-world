@@ -2,8 +2,8 @@
  * @file AlgebraicExpression.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 声明了代数式类
- * @version 0.1.0-1
- * @date 2025-07-05
+ * @version 0.1.0-2
+ * @date 2026-01-17
  * 
  * @copyright cpp-love
  * 
@@ -19,27 +19,16 @@
 #define TNRW_MATH_ALGEGRAIC_EXPRESSION_HPP
 
 #include "math/expressions_base.hpp"
+#include <concepts>
+#include <format>
+#include <functional>
 #include <iosfwd>
 #include <locale>
-#include <map>
-#include <memory>
 #include <string>
 
 namespace tnrw {
 
     namespace math {
-
-        namespace details {
-            /**
-             * @brief  `Pimpl` 惯用法实现 `AlgebraicExpression` 类和 `NumericExpression` 类的私有封装（前向声明）
-             * @details
-             * - 所有私有成员都隐藏在此结构体的完整定义中，
-             *   具体定义见源文件 @ref `Expressions.cpp`
-             * - 此结构体也是代数式树的节点定义
-             * @warning 该结构体是私有的，用户不应直接访问
-             */
-            struct Node;
-        } // namespace details
 
         /**
          * @brief 代数式类
@@ -52,21 +41,16 @@ namespace tnrw {
             /// @cond INTERNAL
           private: /// @privatesection
             // 成员变量
-            std::unique_ptr<details::Node> m_root; ///< 私有实现指针，也是代数式树的根节点
+            details::NodePtr m_root; ///< 私有实现指针，也是代数式树的根节点
 
             /// @endcond
           public: /// @publicsection
             // 友元声明
+
             friend bool operator==(const AlgebraicExpression &lhs,
                                    const AlgebraicExpression &rhs) noexcept;
             friend bool operator!=(const AlgebraicExpression &lhs,
                                    const AlgebraicExpression &rhs) noexcept;
-
-            // using别名
-            using ConstantType = ConstantType; ///< 常量值类型
-            using VariableType = VariableType; ///< 变量字符类型
-            template <typename T>
-            using VariableDictType = std::map<VariableType, T>; ///< 变量字典类型
 
             // 构造、赋值、析构
             /**
@@ -78,12 +62,12 @@ namespace tnrw {
              * @brief 以常量为参数的构造函数
              * @param [in] constant 常量值
              */
-            [[nodiscard]] explicit AlgebraicExpression(ConstantType constant) noexcept;
+            [[nodiscard]] explicit AlgebraicExpression(IntegerConstantType constant) noexcept;
             /**
              * @brief 以变量为参数的构造函数
-             * @param [in] vairable 变量字符
+             * @param [in] variable 变量字符
              */
-            [[nodiscard]] explicit AlgebraicExpression(VariableType vairable) noexcept;
+            [[nodiscard]] explicit AlgebraicExpression(VariableView variable) noexcept;
             /**
              * @brief 析构函数
              * @details 释放代数式资源
@@ -107,14 +91,14 @@ namespace tnrw {
              * @return AlgebraicExpression& 当前对象的引用( `*this` )
              * @details 用另一个对象的内容覆盖本对象的内容
              */
-            AlgebraicExpression                    &operator=(const AlgebraicExpression &rhs) noexcept;
+            AlgebraicExpression              &operator=(const AlgebraicExpression &rhs)              &noexcept;
             /**
              * @brief 移动赋值运算符
              * @param [in] rhs 另一个代数式对象
              * @return AlgebraicExpression& 当前对象的引用( `*this` )
              * @details 用另一个对象的内容覆盖本对象的内容，并置空另一个对象的内容
              */
-            AlgebraicExpression                    &operator=(AlgebraicExpression &&rhs) noexcept;
+            AlgebraicExpression              &operator=(AlgebraicExpression &&rhs)              &noexcept;
 
             // 复合赋值与其他操作符
             /**
@@ -122,269 +106,246 @@ namespace tnrw {
              * @param [in] rhs 常量
              * @return AlgebraicExpression& 当前对象的引用( `*this` )
              */
-            AlgebraicExpression                    &operator+=(ConstantType rhs) noexcept;
+            AlgebraicExpression              &operator+=(IntegerConstantType rhs)              &noexcept;
             /**
              * @brief 加法赋值运算符
              * @param [in] rhs 变量
              * @return AlgebraicExpression& 当前对象的引用( `*this` )
              */
-            AlgebraicExpression                    &operator+=(VariableType rhs) noexcept;
+            AlgebraicExpression              &operator+=(VariableView rhs)              &noexcept;
             /**
              * @brief 减法赋值运算符
              * @param [in] rhs 常量
              * @return AlgebraicExpression& 当前对象的引用( `*this` )
              */
-            AlgebraicExpression                    &operator-=(ConstantType rhs) noexcept;
+            AlgebraicExpression              &operator-=(IntegerConstantType rhs)              &noexcept;
             /**
              * @brief 减法赋值运算符
              * @param [in] rhs 变量
              * @return AlgebraicExpression& 当前对象的引用( `*this` )
              */
-            AlgebraicExpression                    &operator-=(VariableType rhs) noexcept;
+            AlgebraicExpression              &operator-=(VariableView rhs)              &noexcept;
             /**
              * @brief 乘法赋值运算符
              * @param [in] rhs 常量
              * @return AlgebraicExpression& 当前对象的引用( `*this` )
              */
-            AlgebraicExpression                    &operator*=(ConstantType rhs) noexcept;
+            AlgebraicExpression              &operator*=(IntegerConstantType rhs)              &noexcept;
             /**
              * @brief 乘法赋值运算符
              * @param [in] rhs 变量
              * @return AlgebraicExpression& 当前对象的引用( `*this` )
              */
-            AlgebraicExpression                    &operator*=(VariableType rhs) noexcept;
+            AlgebraicExpression              &operator*=(VariableView rhs)              &noexcept;
             /**
              * @brief 除法赋值运算符
              * @param [in] rhs 常量
              * @return AlgebraicExpression& 当前对象的引用( `*this` )
              * @warning 除以0行为未定义
              */
-            AlgebraicExpression                    &operator/=(ConstantType rhs) noexcept;
+            AlgebraicExpression              &operator/=(IntegerConstantType rhs)              &noexcept;
             /**
              * @brief 除法赋值运算符
              * @param [in] rhs 变量
              * @return AlgebraicExpression& 当前对象的引用( `*this` )
              */
-            AlgebraicExpression                    &operator/=(VariableType rhs) noexcept;
+            AlgebraicExpression              &operator/=(VariableView rhs)              &noexcept;
             /**
              * @brief 一元加法运算符
              * @return AlgebraicExpression 当前对象的副本( `*this` )
              */
-            [[nodiscard]] AlgebraicExpression       operator+() noexcept;
+            [[nodiscard]] AlgebraicExpression operator+() const noexcept;
             /**
              * @brief 一元减法运算符
-             * @return AlgebraicExpression 当前对象取反的副本( `*this` )
+             * @return AlgebraicExpression 当前对象的副本取相反数( `*this` )
              */
-            [[nodiscard]] AlgebraicExpression       operator-() noexcept;
+            [[nodiscard]] AlgebraicExpression operator-() const noexcept;
             /**
              * @brief 后缀自增运算符
-             * @return const AlgebraicExpression& 当前对象的引用( `*this` )
+             * @return AlgebraicExpression& 当前对象的引用( `*this` )
              */
-            AlgebraicExpression                    &operator++() noexcept;
+            AlgebraicExpression              &operator++() noexcept;
             /**
              * @brief 后缀自减运算符
-             * @return const AlgebraicExpression& 当前对象的引用( `*this` )
+             * @return AlgebraicExpression& 当前对象的引用( `*this` )
              */
-            AlgebraicExpression                    &operator--() noexcept;
+            AlgebraicExpression              &operator--() noexcept;
             /**
              * @brief 前缀自增运算符
              * @return AlgebraicExpression 自增前的副本
              */
-            [[nodiscard]] const AlgebraicExpression operator++(int) noexcept;
+            [[nodiscard]] AlgebraicExpression operator++(int) noexcept;
             /**
              * @brief 前缀自减运算符
              * @return AlgebraicExpression 自减前的副本
              */
-            [[nodiscard]] const AlgebraicExpression operator--(int) noexcept;
+            [[nodiscard]] AlgebraicExpression operator--(int) noexcept;
 
             // 其他成员函数
             /**
-             * @brief 判断代数式是否为0
-             * @tparam T 字典值类型
-             * @param [in] dict 变量对应的值的字典
-             * @return true 代数式为0
-             * @return false 代数式不为0
-             * @note 该方法会精准判断代数式是否为0，所以字典类型应完整且精确
-             * @warning 对于未在字典中出现的变量 `a`，根据 `std::map::operator[](a)` 返回值带入（使用默认赋值）
+             * @brief 计算无字母的代数式的近似值
+             * @tparam FloatT 返回类型
+             * @param [in] converter 获取变量对应的近似值的函数
+             * @return FloatT 无字母的代数式的近似值
              */
-            template <typename T>
-            [[nodiscard]] bool isZero(const VariableDictType<T> &dict) const noexcept;
-            /**
-             * @brief 计算并获取代数式的值
-             * @tparam T 字典值类型
-             * @param [in] dict 变量对应的值的字典
-             * @return T 代数式的值
-             * @warning 对于未在字典中出现的变量 `a`，根据 `std::map::operator[](a)` 返回值带入（使用默认赋值）
-             */
-            template <typename T>
-            [[nodiscard]] T            getValue(const VariableDictType<T> &dict) const noexcept;
+            template <std::floating_point FloatT>
+            [[nodiscard]] FloatT
+                 calculateApproximation(std::function<FloatT(VariableView)> converter) const noexcept;
             /**
              * @brief 清空代数式
              * @details 释放原代数式，重设为0
              */
-            void                       clear() noexcept;
+            void clear() noexcept;
             /**
              * @brief 将代数式转为人类可读的字符串
-             * @param [in] loc 可能的 `std::locale` 配置，可省略
              * @return std::string 人类可读的字符串
              */
-            [[nodiscard]] std::string  toString(const std::locale &loc = std::locale()) const noexcept;
+            [[nodiscard]] std::string  toString() const noexcept;
             /**
              * @brief 将代数式转为人类可读的字符串
-             * @param [in] loc 可能的 `std::locale` 配置，可省略
              * @return std::wstring 人类可读的字符串
              */
-            [[nodiscard]] std::wstring toWString(const std::locale &loc = std::locale()) const noexcept;
-            /**
-             * @brief 将代数式转为人类可读的字符串
-             * @tparam CharT 字符串模板参数1
-             * @tparam Traits 字符串模板参数2
-             * @param [in] loc 可能的 `std::locale` 配置，可省略
-             * @return std::basic_string<CharT, Traits> 人类可读的字符串
-             */
-            template <typename CharT, typename Traits = std::char_traits<CharT>>
-            [[nodiscard]] std::basic_string<CharT, Traits>
-                 toBasicString(const std::locale &loc = std::locale()) const noexcept;
+            [[nodiscard]] std::wstring toWString() const noexcept;
             /**
              * @brief 将原代数式取相反数
              */
-            void changeToOpposite() noexcept;
+            void                       changeToOpposite() noexcept;
         };
 
         /**
          * @brief 加法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 常量
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return AlgebraicExpression 两项相加后的副本
          */
-        [[nodiscard]] const AlgebraicExpression
-        operator+(const AlgebraicExpression &lhs, AlgebraicExpression::ConstantType rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator+(const AlgebraicExpression &lhs,
+                                                    IntegerConstantType        rhs) noexcept;
         /**
          * @brief 加法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return AlgebraicExpression 两项相加后的副本
          */
-        [[nodiscard]] const AlgebraicExpression operator+(AlgebraicExpression::ConstantType lhs,
-                                                          const AlgebraicExpression &rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator+(IntegerConstantType        lhs,
+                                                    const AlgebraicExpression &rhs) noexcept;
 
         /**
          * @brief 加法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 变量
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return AlgebraicExpression 两项相加后的副本
          */
-        [[nodiscard]] [[nodiscard]] const AlgebraicExpression
-        operator+(const AlgebraicExpression &lhs, AlgebraicExpression::VariableType rhs) noexcept;
+        [[nodiscard]] [[nodiscard]] AlgebraicExpression operator+(const AlgebraicExpression &lhs,
+                                                                  VariableView rhs) noexcept;
         /**
          * @brief 加法运算符
          * @param [in] lhs 变量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相加后的副本
+         * @return AlgebraicExpression 两项相加后的副本
          */
-        [[nodiscard]] const AlgebraicExpression operator+(AlgebraicExpression::VariableType lhs,
-                                                          const AlgebraicExpression &rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator+(VariableView               lhs,
+                                                    const AlgebraicExpression &rhs) noexcept;
         /**
          * @brief 减法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 常量
-         * @return const AlgebraicExpression 两项相减后的副本
+         * @return AlgebraicExpression 两项相减后的副本
          */
-        [[nodiscard]] const AlgebraicExpression
-        operator-(const AlgebraicExpression &lhs, AlgebraicExpression::ConstantType rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator-(const AlgebraicExpression &lhs,
+                                                    IntegerConstantType        rhs) noexcept;
         /**
          * @brief 减法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相减后的副本
+         * @return AlgebraicExpression 两项相减后的副本
          */
-        [[nodiscard]] const AlgebraicExpression operator-(AlgebraicExpression::ConstantType lhs,
-                                                          const AlgebraicExpression &rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator-(IntegerConstantType        lhs,
+                                                    const AlgebraicExpression &rhs) noexcept;
 
         /**
          * @brief 减法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 变量
-         * @return const AlgebraicExpression 两项相减后的副本
+         * @return AlgebraicExpression 两项相减后的副本
          */
-        [[nodiscard]] const AlgebraicExpression
-        operator-(const AlgebraicExpression &lhs, AlgebraicExpression::VariableType rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator-(const AlgebraicExpression &lhs,
+                                                    VariableView               rhs) noexcept;
         /**
          * @brief 减法运算符
          * @param [in] lhs 变量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相减后的副本
+         * @return AlgebraicExpression 两项相减后的副本
          */
-        [[nodiscard]] const AlgebraicExpression operator-(AlgebraicExpression::VariableType lhs,
-                                                          const AlgebraicExpression &rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator-(VariableView               lhs,
+                                                    const AlgebraicExpression &rhs) noexcept;
         /**
          * @brief 乘法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 常量
-         * @return const AlgebraicExpression 两项相乘后的副本
+         * @return AlgebraicExpression 两项相乘后的副本
          */
-        [[nodiscard]] const AlgebraicExpression
-        operator*(const AlgebraicExpression &lhs, AlgebraicExpression::ConstantType rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator*(const AlgebraicExpression &lhs,
+                                                    IntegerConstantType        rhs) noexcept;
         /**
          * @brief 乘法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相乘后的副本
+         * @return AlgebraicExpression 两项相乘后的副本
          */
-        [[nodiscard]] const AlgebraicExpression operator*(AlgebraicExpression::ConstantType lhs,
-                                                          const AlgebraicExpression &rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator*(IntegerConstantType        lhs,
+                                                    const AlgebraicExpression &rhs) noexcept;
 
         /**
          * @brief 乘法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 变量
-         * @return const AlgebraicExpression 两项相乘后的副本
+         * @return AlgebraicExpression 两项相乘后的副本
          */
-        [[nodiscard]] const AlgebraicExpression
-        operator*(const AlgebraicExpression &lhs, AlgebraicExpression::VariableType rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator*(const AlgebraicExpression &lhs,
+                                                    VariableView               rhs) noexcept;
         /**
          * @brief 乘法运算符
          * @param [in] lhs 变量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相乘后的副本
+         * @return AlgebraicExpression 两项相乘后的副本
          */
-        [[nodiscard]] const AlgebraicExpression operator*(AlgebraicExpression::VariableType lhs,
-                                                          const AlgebraicExpression &rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator*(VariableView               lhs,
+                                                    const AlgebraicExpression &rhs) noexcept;
         /**
          * @brief 除法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 常量
-         * @return const AlgebraicExpression 两项相除后的副本
+         * @return AlgebraicExpression 两项相除后的副本
          * @warning 除以0行为未定义
          */
-        [[nodiscard]] const AlgebraicExpression
-        operator/(const AlgebraicExpression &lhs, AlgebraicExpression::ConstantType rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator/(const AlgebraicExpression &lhs,
+                                                    IntegerConstantType        rhs) noexcept;
         /**
          * @brief 除法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相除后的副本
+         * @return AlgebraicExpression 两项相除后的副本
          * @warning 除以0行为未定义
          */
-        [[nodiscard]] const AlgebraicExpression operator/(AlgebraicExpression::ConstantType lhs,
-                                                          const AlgebraicExpression &rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator/(IntegerConstantType        lhs,
+                                                    const AlgebraicExpression &rhs) noexcept;
 
         /**
          * @brief 除法运算符
          * @param [in] lhs 代数式对象
          * @param [in] rhs 变量
-         * @return const AlgebraicExpression 两项相除后的副本
+         * @return AlgebraicExpression 两项相除后的副本
          */
-        [[nodiscard]] const AlgebraicExpression
-        operator/(const AlgebraicExpression &lhs, AlgebraicExpression::VariableType rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator/(const AlgebraicExpression &lhs,
+                                                    VariableView               rhs) noexcept;
         /**
          * @brief 除法运算符
          * @param [in] lhs 变量
          * @param [in] rhs 代数式对象
-         * @return const AlgebraicExpression 两项相除后的副本
+         * @return AlgebraicExpression 两项相除后的副本
          */
-        [[nodiscard]] const AlgebraicExpression operator/(AlgebraicExpression::VariableType lhs,
-                                                          const AlgebraicExpression &rhs) noexcept;
+        [[nodiscard]] AlgebraicExpression               operator/(VariableView               lhs,
+                                                    const AlgebraicExpression &rhs) noexcept;
         /**
          * @brief 比较运算符（等号）
          * @param [in] lhs 代数式对象1
@@ -392,7 +353,7 @@ namespace tnrw {
          * @return true 两代数式相等
          * @return false 两代数式不相等
          */
-        [[nodiscard]] bool                      operator==(const AlgebraicExpression &lhs,
+        [[nodiscard]] bool                              operator==(const AlgebraicExpression &lhs,
                                       const AlgebraicExpression &rhs) noexcept;
         /**
          * @brief 比较运算符（不等号）
@@ -401,7 +362,7 @@ namespace tnrw {
          * @return true 两代数式不相等
          * @return false 两代数式相等
          */
-        [[nodiscard]] bool                      operator!=(const AlgebraicExpression &lhs,
+        [[nodiscard]] bool                              operator!=(const AlgebraicExpression &lhs,
                                       const AlgebraicExpression &rhs) noexcept;
         /**
          * @brief 流输出操作符
@@ -426,22 +387,61 @@ namespace tnrw {
              * @brief 以常量字面量创建代数式类
              * @param [in] constant 常量值字面量
              * @return AlgebraicExpression 创建的代数式类
-             * @see @ref math::AlgebraicExpression::AlgebraicExpression(math::AlgebraicExpression::ConstantType constant) "AlgebraicExpression类的以常量为参数的构造函数"
+             * @see @ref math::AlgebraicExpression::AlgebraicExpression(math::IntegerConstantType constant) "AlgebraicExpression类的以常量为参数的构造函数"
              */
             [[nodiscard]] math::AlgebraicExpression
             operator""_cAlgeExpr(unsigned long long constant) noexcept;
             /**
              * @brief 以变量字面量创建代数式类
-             * @param [in] variable 变量字符字面量
+             * @param [in] variable 变量字符串字面量
+             * @param [in] len 变量字符串字面量的长度
              * @return AlgebraicExpression 创建的代数式类
-             * @see @ref math::AlgebraicExpression::AlgebraicExpression(math::AlgebraicExpression::VariableType vairable) "AlgebraicExpression类的以变量为参数的构造函数"
+             * @see @ref math::AlgebraicExpression::AlgebraicExpression(math::VariableView vairable) "AlgebraicExpression类的以变量为参数的构造函数"
              */
-            [[nodiscard]] math::AlgebraicExpression operator""_vAlgeExpr(char variable) noexcept;
+            [[nodiscard]] math::AlgebraicExpression operator""_vAlgeExpr(const char *variable,
+                                                                         std::size_t len) noexcept;
 
         } // namespace algebraic_expression_literals
 
     } // namespace literals
 
 } // namespace tnrw
+
+template <typename CharT>
+struct std::formatter<tnrw::math::AlgebraicExpression, CharT> {
+    using FmtType = tnrw::math::AlgebraicExpression; ///< 格式化参数
+    using CharType = CharT;                          ///< 字符类型
+    /**
+     * @brief 解析格式化参数的解析器
+     * @tparam ParseCtx 解析的上下文类型
+     * @param [in] ctx 上下文
+     * @return ParseCtx::iterator 解析后的迭代器
+     */
+    template <typename ParseCtx>
+    constexpr ParseCtx::iterator parse(ParseCtx &ctx) {
+        if (ctx.begin() != ctx.end() && *ctx.begin() != '}') {
+            throw std::format_error("Invalid format args for tnrw::math::AlgebraicExpression!");
+        }
+        return ctx.begin();
+    }
+    /**
+     * @brief 格式化器
+     * @tparam ParseCtx 格式化的上下文类型
+     * @param [in] alge 要格式化的对象
+     * @param [in] ctx 上下文
+     * @return FmtCtx::iterator 格式化后的迭代器
+     */
+    template <typename FmtCtx>
+    typename FmtCtx::iterator format(const FmtType &alge, FmtCtx &ctx) const {
+        std::string str = alge.toString();
+        auto        out_it = ctx.out();
+        auto       &ctype = std::use_facet<std::ctype<CharT>>(ctx.locale());
+        for (char character : str) {
+            *out_it = ctype.widen(character);
+            ++out_it;
+        }
+        return out_it;
+    }
+};
 
 #endif // TNRW_MATH_ALGEGRAIC_EXPRESSION_HPP

@@ -26,15 +26,28 @@
  */
 template <typename T, typename CharT>
 struct std::formatter<sf::Vector2<T>, CharT> {
-    using FmtType = sf::Vector2<T>;
-    using CharType = CharT;
-    std::formatter<T, CharT> m_formatter_impl;
+    using FmtType = sf::Vector2<T>; ///< 格式化参数
+    using CharType = CharT;         ///< 字符类型
+    std::formatter<T, CharType> m_formatter_impl;
+    /**
+     * @brief 解析格式化参数的解析器
+     * @tparam ParseCtx 解析的上下文类型
+     * @param [in] ctx 上下文
+     * @return ParseCtx::iterator 解析后的迭代器
+     */
     template <typename ParseCtx>
     constexpr ParseCtx::iterator parse(ParseCtx &ctx) {
         return m_formatter_impl.parse(ctx);
     }
+    /**
+     * @brief 格式化器
+     * @tparam ParseCtx 格式化的上下文类型
+     * @param [in] vector 要格式化的对象
+     * @param [in] ctx 上下文
+     * @return FmtCtx::iterator 格式化后的迭代器
+     */
     template <typename FmtCtx>
-    FmtCtx::iterator format(const FmtType &vector, FmtCtx &ctx) const {
+    typename FmtCtx::iterator format(const FmtType &vector, FmtCtx &ctx) const {
         const auto &facet = std::use_facet<std::ctype<CharType>>(ctx.locale());
         *ctx.out() = facet.widen('(');
         ++ctx.out();
@@ -59,15 +72,28 @@ struct std::formatter<sf::Vector2<T>, CharT> {
  */
 template <typename T, typename CharT>
 struct std::formatter<sf::Vector3<T>, CharT> {
-    using FmtType = sf::Vector3<T>;
-    using CharType = CharT;
+    using FmtType = sf::Vector3<T>; ///< 格式化参数
+    using CharType = CharT;         ///< 字符类型
     std::formatter<T, CharT> m_formatter_impl;
+    /**
+     * @brief 解析格式化参数的解析器
+     * @tparam ParseCtx 解析的上下文类型
+     * @param [in] ctx 上下文
+     * @return ParseCtx::iterator 解析后的迭代器
+     */
     template <typename ParseCtx>
     constexpr ParseCtx::iterator parse(ParseCtx &ctx) {
         return m_formatter_impl.parse(ctx);
     }
+    /**
+     * @brief 格式化器
+     * @tparam ParseCtx 格式化的上下文类型
+     * @param [in] vector 要格式化的对象
+     * @param [in] ctx 上下文
+     * @return FmtCtx::iterator 格式化后的迭代器
+     */
     template <typename FmtCtx>
-    FmtCtx::iterator format(const FmtType &vector, FmtCtx &ctx) const {
+    typename FmtCtx::iterator format(const FmtType &vector, FmtCtx &ctx) const {
         auto facet = std::use_facet<std::ctype<CharType>>(ctx.locale());
         *ctx.out() = facet.widen('(');
         ++ctx.out();

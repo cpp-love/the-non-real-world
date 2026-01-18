@@ -128,30 +128,45 @@ if(TNRW_BUILD_ECS_TESTS)
 endif()
 
 if(TNRW_BUILD_MATH_TESTS)
+    option(TNRW_BUILD_OLD_MATH_TESTS "Build the old tests in the tests/math directory" OFF)
+
     # 设置输出目录
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/tests)
 
     # 构建程序
 
     # 设置链接文件
-    add_executable(test_alge_expr ${CMAKE_CURRENT_SOURCE_DIR}/math/testAlgeExpr.cpp)
-    add_executable(test_num_expr ${CMAKE_CURRENT_SOURCE_DIR}/math/testNumExpr.cpp)
+    add_executable(test_expressions ${CMAKE_CURRENT_SOURCE_DIR}/math/test_expressions.cpp)
+    if(TNRW_BUILD_OLD_MATH_TESTS)
+        add_executable(test_alge_expr ${CMAKE_CURRENT_SOURCE_DIR}/math/testAlgeExpr.cpp)
+        add_executable(test_num_expr ${CMAKE_CURRENT_SOURCE_DIR}/math/testNumExpr.cpp)
+    endif()
 
     # 链接第三方库
-    target_link_libraries(test_alge_expr
+    target_link_libraries(test_expressions
         PUBLIC
         tnrw_compiler_flags
         tnrw
     )
+    if(TNRW_BUILD_OLD_MATH_TESTS)
+        target_link_libraries(test_alge_expr
+            PUBLIC
+            tnrw_compiler_flags
+            tnrw
+        )
 
-    target_link_libraries(test_num_expr
-        PUBLIC
-        tnrw_compiler_flags
-        tnrw
-    )
+        target_link_libraries(test_num_expr
+            PUBLIC
+            tnrw_compiler_flags
+            tnrw
+        )
+    endif()
 
     # 添加安装支持
-    install(TARGETS test_alge_expr test_num_expr DESTINATION bin/tests)
+    install(TARGETS test_expressions DESTINATION bin/tests)
+    if(TNRW_BUILD_OLD_MATH_TESTS)
+        install(TARGETS test_alge_expr test_num_expr DESTINATION bin/tests)
+    endif()
 
     # todo : 添加测试支持
 
