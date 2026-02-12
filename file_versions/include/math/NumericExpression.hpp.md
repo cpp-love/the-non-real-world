@@ -7,7 +7,7 @@
 
 # NumericExpression.hpp 版本历史
 
-***
+---
 
 ## [0.1.0-2] - 2026-01-17 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -30,7 +30,7 @@
    若字符类型是 `char` 或 `wchar_t` 可用 `toString` 和 `toWString` 代替，
    若不是，可用 `std::format` 或 `std::ostringstream` 来达到类似的效果
 
-***
+---
 
 ## [0.1.0-1] - 2025-07-26 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -40,4 +40,4 @@
    和基本的无字母的代数式与常量和变量类型的操作
    和无字母的代数式类型的自定义字面量
 
-***
+---

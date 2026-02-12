@@ -25,7 +25,6 @@
 #include <locale>
 #include <string>
 
-
 namespace tnrw {
 
     namespace math {
@@ -40,7 +39,7 @@ namespace tnrw {
         class NumericExpression {
             /// @cond INTERNAL
           private: /// @privatesection
-            // 成员变量
+            // 数据成员
             details::NodePtr m_root; ///< 私有实现指针，也是代数式树的根节点
 
             /// @endcond
@@ -328,7 +327,7 @@ struct std::formatter<tnrw::math::NumericExpression, CharT> {
     typename FmtCtx::iterator format(const FmtType &num, FmtCtx &ctx) const {
         std::string str = num.toString();
         auto        out_it = ctx.out();
-        auto       &ctype = std::use_facet<std::ctype<CharT>>(ctx.locale());
+        auto       &ctype = std::use_facet<std::ctype<CharType>>(ctx.locale());
         for (char character : str) {
             *out_it = ctype.widen(character);
             ++out_it;

@@ -7,7 +7,7 @@
 
 # GameStateSystem.cpp 版本历史
 
-***
+---
 
 ## [0.1.0-1] - 2025-07-27 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -15,4 +15,4 @@
 
 1. 添加了 `ecs/Systems/global/GameStateSystem.hpp` 的实现
 
-***
+---

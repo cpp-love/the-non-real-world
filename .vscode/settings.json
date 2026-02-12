@@ -14,6 +14,9 @@
     "C_Cpp.formatting": "disabled",
     "C_Cpp.errorSquiggles": "disabled",
     "C_Cpp.enhancedColorization": "disabled",
+    "[cpp]": {
+        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+    },
     "files.associations": {
         ".clang-tidy": "yaml",
         ".clangd": "yaml",

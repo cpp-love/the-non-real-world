@@ -16,7 +16,7 @@ if(TNRW_BUILD_HELPER)
 
     # 添加安装支持
     install(TARGETS generate_file_version DESTINATION bin)
-    install(PROGRAMS generate_code_issues.py DESTINATION bin)
+    install(PROGRAMS generate_code_issues.py generate_test_expressions_data.py DESTINATION bin)
 
     # 添加测试支持
     add_test(NAME RunHelper COMMAND generate_file_version ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/helper author)

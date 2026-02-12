@@ -2,8 +2,8 @@
  * @file expressions.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 实现了代数式和无字母的代数式类的细节
- * @version 0.1.0-2
- * @date 2026-01-17
+ * @version 0.1.0-3
+ * @date 2026-02-12
  * 
  * @copyright cpp-love
  * 
@@ -15,6 +15,7 @@
 #include "math/expressions_base.hpp"
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <concepts>
 #include <cstddef>
 #include <cstdlib>
@@ -22,11 +23,15 @@
 #include <format>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <numeric>
 #include <print>
+#include <ranges>
+#include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -37,28 +42,22 @@
 namespace tnrw::math::details {
 
     /**
-     * @brief 整型常量节点
-     * @details
+     * @brief 单项式节点
+     * @details 
      *  - 其下没有子节点
      */
-    struct IntegerConstant {
-        IntegerConstantType m_value; ///< 值
-    };
-
-    /**
-     * @brief 变量节点
-     * @details
-     *  - 其下没有子节点
-     */
-    struct Variable {
-        VariableType m_value; ///< 值
+    struct Monomial {
+        IntegerConstantType m_coeff = 0; ///< 单项式系数
+        using MapVarExp =
+            std::map<VariableView, IntegerConstantType, std::ranges::less>; //< 变量 -> 指数 的键值对
+        MapVarExp m_var_exps{};                                             ///< 变量与幂次的键值对
     };
 
     /**
      * @brief 加法节点
-     * @details
+     * @detailts
      *  - 若加的项中有常量（包括非整型的），则必须为 `m_children` 成员的第0项（即 `m_children[0]` 的位置）
-     *  - 其下的直接子节点只能为 @ref IntegerConstant , @ref Variable , @ref Negation , @ref Multiplication , @ref Division
+     *  - 其下的直接子节点只能为 @ref Monomial, @ref Division
      */
     struct Addition {
         std::vector<NodePtr> m_children; ///< 子节点
@@ -69,7 +68,7 @@ namespace tnrw::math::details {
          * @param [in] args 节点列表
          */
         template <typename... Args>
-            requires(std::is_same_v<Args &&, NodePtr &&> && ...) && (sizeof...(Args) > 1)
+            requires(std::is_same_v<Args &&, NodePtr &&> && ...)
         explicit Addition(Args &&...args) noexcept;
         /**
          * @brief 深复制构造函数
@@ -81,9 +80,7 @@ namespace tnrw::math::details {
          * @param [in] rhs 另一个对象
          */
         Addition(Addition &&rhs) noexcept = default;
-        /**
-         * @brief 析构函数
-         */
+        /// @brief 析构函数
         ~Addition() noexcept = default;
         /// @brief 禁止复制赋值运算符重载
         Addition &operator=(const Addition &rhs) noexcept = delete;
@@ -92,43 +89,9 @@ namespace tnrw::math::details {
     };
 
     /**
-     * @brief 相反数节点
-     *  - 其下的直接子节点只能为 @ref Variable , @ref Multiplication , @ref Division
-     */
-    struct Negation {
-        NodePtr m_value; ///< 值
-
-        /**
-         * @brief 从代数式构造的构造函数
-         * @param [in] rhs 代数式
-         */
-        explicit Negation(NodePtr rhs) noexcept;
-        /**
-         * @brief 深复制构造函数
-         * @param [in] rhs 另一个对象
-         */
-        Negation(const Negation &rhs) noexcept;
-        /**
-         * @brief 移动构造函数
-         * @param [in] rhs 另一个对象
-         */
-        Negation(Negation &&rhs) noexcept = default;
-        /**
-         * @brief 析构函数
-         */
-        ~Negation() noexcept = default;
-        /// @brief 禁止复制赋值运算符重载
-        Negation &operator=(const Negation &rhs) noexcept = delete;
-        /// @brief 禁止移动赋值运算符重载
-        Negation &operator=(Negation &&rhs) noexcept = delete;
-    };
-
-    /**
      * @brief 乘法节点
-     *  - 若加的项中有整型常量，则必须为 `m_children` 成员的第0项（即 `m_children[0]` 的位置）且其必须为正
-     *  - 应提取所有在子节点中可提取的取相反数的操作，若本身为负，则在外面套 @ref Negation 节点
-     *  - 此节点下的变量必须按名字排序
-     *  - 其下的直接子节点只能为 @ref IntegerConstant , @ref Variable
+     * @details
+     *  - 此节点为临时节点，在简化后不应出现
      */
     struct Multiplication {
         std::vector<NodePtr> m_children; ///< 子节点
@@ -139,7 +102,7 @@ namespace tnrw::math::details {
          * @param [in] args 节点列表
          */
         template <typename... Args>
-            requires(std::is_same_v<Args &&, NodePtr &&> && ...) && (sizeof...(Args) > 1)
+            requires(std::is_same_v<Args &&, NodePtr &&> && ...)
         explicit Multiplication(Args &&...args) noexcept;
         /**
          * @brief 深复制构造函数
@@ -151,9 +114,7 @@ namespace tnrw::math::details {
          * @param [in] rhs 另一个对象
          */
         Multiplication(Multiplication &&rhs) noexcept = default;
-        /**
-         * @brief 析构函数
-         */
+        /// @brief 析构函数
         ~Multiplication() noexcept = default;
         /// @brief 禁止复制赋值运算符重载
         Multiplication &operator=(const Multiplication &rhs) noexcept = delete;
@@ -169,7 +130,7 @@ namespace tnrw::math::details {
      *  - 其分子分母的最高此项的系数必须为正
      *  - 应提取所有在子节点中可提取的取相反数的操作，若本身为负，则在外面套 @ref Negation 节点
      *  - 此节点下的变量必须按名字排序
-     *  - 其下的直接子节点只能为 @ref IntegerConstant , @ref Variable , @ref Addition , @ref Multiplication
+     *  - 其下的直接子节点只能为 @ref Monomial, @ref Addition
      */
     struct Division {
         std::array<NodePtr, 2> m_children; ///< 子节点
@@ -190,9 +151,7 @@ namespace tnrw::math::details {
          * @param [in] rhs 另一个对象
          */
         Division(Division &&rhs) noexcept = default;
-        /**
-         * @brief 析构函数
-         */
+        /// @brief 析构函数
         ~Division() noexcept = default;
         /// @brief 禁止复制赋值运算符重载
         Division &operator=(const Division &rhs) noexcept = delete;
@@ -200,17 +159,10 @@ namespace tnrw::math::details {
         Division &operator=(Division &&rhs) noexcept = delete;
     };
 
-    /**
-     * @brief 基本节点
-     */
+    /// @brief 代数式基本节点
     struct Node {
-        std::variant<IntegerConstant, Variable, Addition, Negation, Multiplication, Division>
-                       m_value; ///< 值
-        /**
-         * @brief 生成空节点（为0）
-         * @return NodePtr 空节点
-         */
-        static NodePtr createZero() noexcept;
+        using VariantType = std::variant<Monomial, Addition, Multiplication, Division>;
+        VariantType m_value; ///< 值
     };
 
     /**
@@ -238,11 +190,11 @@ namespace tnrw::math::details {
      * @tparam T 类型
      */
     template <typename T>
-    concept SubNode = requires(Node node) { requires is_variant_member_v<T, decltype(node.m_value)>; };
+    concept SubNode = is_variant_member_v<T, Node::VariantType>;
 
     // 为了避免 Node 未定义的问题，延后定义构造函数
     template <typename... Args>
-        requires(std::is_same_v<Args &&, NodePtr &&> && ...) && (sizeof...(Args) > 1)
+        requires(std::is_same_v<Args &&, NodePtr &&> && ...)
     Addition::Addition(Args &&...args) noexcept {
         m_children.reserve(sizeof...(Args));
         (m_children.push_back(std::forward<Args>(args)), ...);
@@ -254,11 +206,8 @@ namespace tnrw::math::details {
         }
     }
 
-    Negation::Negation(NodePtr rhs) noexcept : m_value(std::move(rhs)) {}
-    Negation::Negation(const Negation &rhs) noexcept : m_value{std::make_unique<Node>(*rhs.m_value)} {}
-
     template <typename... Args>
-        requires(std::is_same_v<Args &&, NodePtr &&> && ...) && (sizeof...(Args) > 1)
+        requires(std::is_same_v<Args &&, NodePtr &&> && ...)
     Multiplication::Multiplication(Args &&...args) noexcept {
         m_children.reserve(sizeof...(Args));
         (m_children.push_back(std::forward<Args>(args)), ...);
@@ -288,15 +237,22 @@ namespace tnrw::math::details {
         return std::make_unique<Node>(SubNodeT{std::forward<Args>(args)...});
     }
 
-    NodePtr Node::createZero() noexcept { return makeNode<IntegerConstant>(0); }
+    /**
+     * @brief 生成空节点（为0）
+     * @return NodePtr 空节点
+     */
+    NodePtr createZeroNode() noexcept { return makeNode<Monomial>(0); }
 
     /**
-     * @brief 清空节点
-     * @param [in] root 节点
+     * @brief 判断代数式节点是否为0
+     * @param [in] root 代数式节点 
+     * @return true 代数式节点为0
+     * @return false 代数式节点不为0
+     * @warning 这要求 root 节点被化简过
      */
-    void    clearNode(NodePtr &root) noexcept {
-        assert_msg(root != nullptr, "参数 root 错误地为 nullptr");
-        root = Node::createZero();
+    bool    isZero(const NodePtr &root) noexcept {
+        return std::holds_alternative<Monomial>(root->m_value)
+               && std::get<Monomial>(root->m_value).m_coeff == 0;
     }
 
     /**
@@ -305,29 +261,27 @@ namespace tnrw::math::details {
      * @param [in] rhs 代数式2
      * @return true 相等
      * @return false 不相等
+     * @warning 这要求 root 节点被化简过
      */
     bool isEqual(const NodePtr &lhs, const NodePtr &rhs) noexcept {
         assert_msg(lhs != nullptr && rhs != nullptr, "参数 lhs 和/或 rhs 错误地为 nullptr");
         return std::visit(
-            entt::overloaded{[&](const IntegerConstant &value1, const IntegerConstant &value2) -> bool {
-                                 return value1.m_value == value2.m_value;
-                             },
-                             [&](const Variable &value1, const Variable &value2) -> bool {
-                                 return value1.m_value == value2.m_value;
-                             },
-                             [&](const Negation &value1, const Negation &value2) -> bool {
-                                 return isEqual(value1.m_value, value2.m_value);
+            entt::overloaded{[&](const Monomial &value1, const Monomial &value2) -> bool {
+                                 if (value1.m_coeff != value2.m_coeff) {
+                                     return false;
+                                 }
+                                 return value1.m_var_exps == value2.m_var_exps;
                              },
                              [&]<typename T>(const T &value1, const T &value2) -> bool {
                                  if (value1.m_children.size() != value2.m_children.size()) {
                                      return false;
                                  }
-                                 for (std::size_t i = 0; i < value1.m_children.size(); ++i) {
-                                     if (!isEqual(value1.m_children[i], value2.m_children[i])) {
-                                         return false;
-                                     }
-                                 }
-                                 return true;
+                                 return std::ranges::all_of(
+                                     std::views::zip(value1.m_children, value2.m_children),
+                                     [](const auto &elem) {
+                                         const auto &[ch1, ch2] = elem;
+                                         return isEqual(ch1, ch2);
+                                     });
                              },
                              [&](const auto & /*unused*/, const auto & /*unused*/) { return false; }},
             lhs->m_value, rhs->m_value);
@@ -335,47 +289,59 @@ namespace tnrw::math::details {
 
     /**
      * @brief 将节点转换为 std::string
-     * @param node 节点引用
+     * @param [in] root 代数式节点
      * @return std::string 节点的字符串表示
+     * @attention 建议 root 节点被化简过
      */
-    std::string nodeToString(const Node &node) {
+    std::string nodeToString(const NodePtr &root) {
         return std::visit(
-            entt::overloaded{[](const IntegerConstant &value) { return std::to_string(value.m_value); },
-                             [](const Variable &value) { return value.m_value; },
+            entt::overloaded{[](const Monomial &value) {
+                                 std::string str;
+                                 str += std::format("{}", value.m_coeff);
+                                 for (const auto &[var, exp] : value.m_var_exps) {
+                                     if (exp == 1) {
+                                         str += std::format("*{}", var);
+                                     } else {
+                                         str += std::format("*{}^{}", var, exp);
+                                     }
+                                 }
+                                 if (str.size() > 2 && value.m_coeff == 1) {
+                                     return std::move(str).substr(2);
+                                 }
+                                 return str;
+                             },
                              [](const Addition &value) {
                                  std::string str = "(";
                                  for (std::size_t i = 0; i < value.m_children.size(); ++i) {
                                      if (i) {
                                          str += ")+(";
                                      }
-                                     str += nodeToString(*value.m_children[i]);
+                                     str += nodeToString(value.m_children[i]);
                                  }
                                  str += ")";
                                  return str;
                              },
-                             [](const Negation &value) {
-                                 return std::string("-(") + nodeToString(*value.m_value) + ")";
-                             },
                              [](const Multiplication &value) {
-                                 std::string str;
+                                 std::string str = "(";
                                  for (std::size_t i = 0; i < value.m_children.size(); ++i) {
                                      if (i) {
-                                         str += "*";
+                                         str += ")*(";
                                      }
-                                     str += nodeToString(*value.m_children[i]);
+                                     str += nodeToString(value.m_children[i]);
                                  }
+                                 str += ")";
                                  return str;
                              },
                              [](const Division &value) {
-                                 return std::string("(") + nodeToString(*value.m_children[0]) + ")/("
-                                        + nodeToString(*value.m_children[1]) + ")";
+                                 return std::format("({})/({})", nodeToString(value.m_children[0]),
+                                                    nodeToString(value.m_children[1]));
                              }},
-            node.m_value);
+            root->m_value);
     }
 
     /**
      * @brief 简化代数式
-     * @param [in] root 代数式
+     * @param [in, out] root 代数式
      */
     void simplify(NodePtr &root);
 
@@ -387,789 +353,906 @@ namespace tnrw::math::details {
     struct Simplifier {
         /**
          * @brief 简化代数式节点
-         * @param [in] root_val 子节点的引用
-         * @param [in] root 节点的引用
+         * @param [in, out] root_val 子节点的引用
+         * @param [in, out] root 节点的引用
          */
         void operator()(SubNodeT &root_val, NodePtr &root) noexcept;
     };
 
     template <>
-    void Simplifier<IntegerConstant>::operator()(IntegerConstant & /*unused*/,
-                                                 NodePtr & /*unused*/) noexcept {
-        // 无需化简
-    }
-
-    template <>
-    void Simplifier<Variable>::operator()(Variable & /*unused*/, NodePtr & /*unused*/) noexcept {
-        // 无需化简
+    void Simplifier<Monomial>::operator()(Monomial &root_val, [[maybe_unused]] NodePtr &root) noexcept {
+        if (root_val.m_coeff == 0) {
+            // 节点为0，清空
+            root_val.m_var_exps.clear();
+            return;
+        }
+        for (auto iter = root_val.m_var_exps.begin(); iter != root_val.m_var_exps.end();) {
+            IntegerConstantType &exp = iter->second;
+            if (exp == 0) {
+                // 删除多余无用变量
+                iter = root_val.m_var_exps.erase(iter);
+            } else {
+                ++iter;
+            }
+        }
     }
 
     template <>
     void Simplifier<Addition>::operator()(Addition &root_val, NodePtr &root) noexcept {
-        // std::println("the raw addition node is {}", nodeToString(*root));
+        // std::println("the raw addition node is {}", nodeToString(root));
         auto &children = root_val.m_children;
         if (children.empty()) {
-            clearNode(root);
+            root = createZeroNode();
             return;
         }
 
-        IntegerConstantType integer_augend = 0; //< 整型常量
-        IntegerConstantType augend_num = 0;     //< 分数常量
-        IntegerConstantType augend_den = 1;     //< 分数常量
-        struct PositionAndCoeff {
-            std::size_t         pos;
-            IntegerConstantType coeff_num;
-            IntegerConstantType coeff_den;
-        };
-        std::map<VariableView, PositionAndCoeff> var_coeffs; //< 单个变量节点的字符串 -> 其位置和系数
-        std::map<std::string, PositionAndCoeff>  multi_vars; //< 多变量节点的字符串 -> 其位置和系数
+        IntegerConstantType                       integer_augend = 0; //< 整型常量
+        std::unordered_map<std::string, Monomial> monomials; //< Monomial 节点除去系数的字符串 -> 其值
+        std::unordered_map<std::string, Division>
+            divisions; //< Division 节点分母的字符串 -> 其分母和分子
 
-        for (std::size_t i = 0; i < children.size();) {
-            // 获取元素
+        // 暂时不能将其改为range-for，因为在 Addition 中有对 children 的更改
+        for (std::size_t i = 0; i < children.size(); ++i) {
             NodePtr cur = std::move(children[i]);
-            std::swap(children[i], children.back());
-            children.pop_back();
+            // 获取元素
             assert_msg(cur != nullptr, "Addition 节点的子节点 cur 错误地为 nullptr");
             // 对每个子节点化简
             simplify(cur);
 
-            /// @todo 取消不同的重载的重复
-            std::visit(
-                entt::overloaded{
-                    [&](IntegerConstant &value) {
-                        // 整合所有 IntegerConstant 节点
-                        integer_augend += value.m_value;
-                    },
-                    [&](Addition &value) {
-                        // 展开 Addition 节点
-                        auto &sub_children = value.m_children;
-                        for (NodePtr &sub : sub_children) { children.push_back(std::move(sub)); }
-                    },
-                    [&](Variable &value) {
-                        auto [iter, succeeded] = var_coeffs.try_emplace(
-                            value.m_value, PositionAndCoeff{.pos = i, .coeff_num = 1, .coeff_den = 1});
-                        if (!succeeded) {
-                            // 说明已经存在变量，相加
-                            iter->second.coeff_num += iter->second.coeff_den;
-                        } else {
-                            // 复原
-                            children.push_back(std::move(cur));
-                            std::swap(children[i], children.back());
-                            ++i;
-                        }
-                    },
-                    [&](Multiplication &value) {
-                        // 获取系数
-                        IntegerConstantType coeff = 1;
-                        auto               &vchildren = value.m_children;
-                        if (std::holds_alternative<IntegerConstant>(vchildren.front()->m_value)) {
-                            coeff = std::get<IntegerConstant>(vchildren.front()->m_value).m_value;
-                            std::swap(vchildren.front(), vchildren.back());
-                            vchildren.pop_back();
-                        }
-                        if (vchildren.size() == 1) {
-                            // 单变量
-                            auto [iter, succeeded] = var_coeffs.try_emplace(
-                                std::get<Variable>(vchildren.front()->m_value).m_value,
-                                PositionAndCoeff{.pos = i, .coeff_num = coeff, .coeff_den = 1});
-                            if (!succeeded) {
-                                // 说明已经存在变量，相加
-                                iter->second.coeff_num += coeff * iter->second.coeff_den;
-                            } else {
-                                // 复原
-                                children.push_back(std::move(cur));
-                                std::swap(children[i], children.back());
-                                ++i;
-                            }
-                            return;
-                        }
-                        // 多变量
-                        std::string key = nodeToString(*cur);
-                        auto [iter, succeeded] = multi_vars.try_emplace(
-                            key, PositionAndCoeff{.pos = i, .coeff_num = coeff, .coeff_den = 1});
-                        if (!succeeded) {
-                            // 说明已经存在变量，相加
-                            iter->second.coeff_num += coeff * iter->second.coeff_den;
-                        } else {
-                            // 复原
-                            children.push_back(std::move(cur));
-                            std::swap(children[i], children.back());
-                            ++i;
-                        }
-                    },
-                    [&](Division &value) {
-                        // 获取系数
-                        std::array<IntegerConstantType, 2> coeff = {1, 1};
-                        for (std::size_t i = 0; i < value.m_children.size(); ++i) {
-                            if (std::holds_alternative<Multiplication>(value.m_children[i]->m_value)) {
-                                auto &vchildren =
-                                    std::get<Multiplication>(value.m_children[i]->m_value).m_children;
-                                if (std::holds_alternative<IntegerConstant>(
-                                        vchildren.front()->m_value)) {
-                                    coeff[i] =
-                                        std::get<IntegerConstant>(vchildren.front()->m_value).m_value;
-                                    std::swap(vchildren.front(), vchildren.back());
-                                    vchildren.pop_back();
-                                }
-                                if (vchildren.size() == 1) {
-                                    // 单变量
-                                    NodePtr tmp = std::move(vchildren.front());
-                                    value.m_children[i] = std::move(tmp);
-                                }
-                            }
-                        }
-                        if (std::holds_alternative<IntegerConstant>(value.m_children[0]->m_value)) {
-                            auto &num = std::get<IntegerConstant>(value.m_children[0]->m_value).m_value;
-                            if (std::holds_alternative<IntegerConstant>(value.m_children[1]->m_value)) {
-                                // 特殊：是常数
-                                auto den =
-                                    std::get<IntegerConstant>(value.m_children[1]->m_value).m_value;
-                                augend_num = (augend_num * den) + (num * augend_den);
-                                augend_den *= den;
-                                return;
-                            }
-                            coeff[0] = num;
-                            num = 1;
-                        } else if (std::holds_alternative<IntegerConstant>(
-                                       value.m_children[1]->m_value)) {
-                            coeff[1] = std::get<IntegerConstant>(value.m_children[1]->m_value).m_value;
-                            if (std::holds_alternative<Variable>(value.m_children[0]->m_value)) {
-                                // 单变量
-                                auto &var = std::get<Variable>(value.m_children[0]->m_value).m_value;
-                                auto [iter, succeeded] =
-                                    var_coeffs.try_emplace(var, PositionAndCoeff{.pos = i,
-                                                                                 .coeff_num = coeff[0],
-                                                                                 .coeff_den = coeff[1]});
-                                if (!succeeded) {
-                                    // 说明已经存在变量，相加
-                                    iter->second.coeff_num = (iter->second.coeff_num * coeff[1])
-                                                             + (iter->second.coeff_den * coeff[0]);
-                                    iter->second.coeff_den *= coeff[1];
-                                } else {
-                                    // 复原
-                                    children.push_back(std::move(value.m_children[0]));
-                                    std::swap(children[i], children.back());
-                                    ++i;
-                                }
-                                return;
-                            }
-                            // 多变量
-                            std::string key = nodeToString(*value.m_children[0]);
-                            auto [iter, succeeded] =
-                                multi_vars.try_emplace(key, PositionAndCoeff{.pos = i,
-                                                                             .coeff_num = coeff[0],
-                                                                             .coeff_den = coeff[1]});
-                            if (!succeeded) {
-                                // 说明已经存在变量，相加
-                                iter->second.coeff_num = (iter->second.coeff_num * coeff[1])
-                                                         + (iter->second.coeff_den * coeff[0]);
-                                iter->second.coeff_den *= coeff[1];
-                            } else {
-                                // 复原
-                                children.push_back(std::move(value.m_children[0]));
-                                std::swap(children[i], children.back());
-                                ++i;
-                            }
-                            return;
-                        }
-                        // 多变量
-                        std::string key = nodeToString(*cur);
-                        auto [iter, succeeded] = multi_vars.try_emplace(
-                            key,
-                            PositionAndCoeff{.pos = i, .coeff_num = coeff[0], .coeff_den = coeff[1]});
-                        if (!succeeded) {
-                            // 说明已经存在变量，相加
-                            iter->second.coeff_num = (iter->second.coeff_num * coeff[1])
-                                                     + (iter->second.coeff_den * coeff[0]);
-                            iter->second.coeff_den *= coeff[1];
-                        } else {
-                            // 复原
-                            children.push_back(std::move(cur));
-                            std::swap(children[i], children.back());
-                            ++i;
-                        }
-                    },
-                    [&](Negation &value) {
-                        NodePtr &inner = value.m_value;
-                        std::visit(
-                            entt::overloaded{
-                                [&](auto & /*unused*/) {
-                                    // 不支持情况
-                                    assert_msg(false, "Negation 节点里面只能为 "
-                                                      "Variable / Multiplication / Division 节点");
-                                },
-                                [&](Variable &nested_value) {
-                                    auto [iter, succeeded] = var_coeffs.try_emplace(
-                                        nested_value.m_value,
-                                        PositionAndCoeff{.pos = i, .coeff_num = -1, .coeff_den = 1});
-                                    if (!succeeded) {
-                                        iter->second.coeff_num -= iter->second.coeff_den;
-                                    } else {
-                                        children.push_back(std::move(value.m_value));
-                                        std::swap(children[i], children.back());
-                                        ++i;
-                                    }
-                                },
-                                [&](Multiplication &nested_value) {
-                                    IntegerConstantType coeff = 1;
-                                    auto               &vchildren = nested_value.m_children;
-                                    if (std::holds_alternative<IntegerConstant>(
-                                            vchildren.front()->m_value)) {
-                                        coeff = std::get<IntegerConstant>(vchildren.front()->m_value)
-                                                    .m_value;
-                                        std::swap(vchildren.front(), vchildren.back());
-                                        vchildren.pop_back();
-                                    }
-                                    if (vchildren.size() == 1) {
-                                        auto [iter, succeeded] = var_coeffs.try_emplace(
-                                            std::get<Variable>(vchildren.front()->m_value).m_value,
-                                            PositionAndCoeff{.pos = i,
-                                                             .coeff_num = -coeff,
-                                                             .coeff_den = 1});
-                                        if (!succeeded) {
-                                            iter->second.coeff_num -= coeff * iter->second.coeff_den;
-                                        } else {
-                                            children.push_back(std::move(value.m_value));
-                                            std::swap(children[i], children.back());
-                                            ++i;
-                                        }
-                                        return;
-                                    }
-                                    std::string key = nodeToString(*cur);
-                                    auto [iter, succeeded] = multi_vars.try_emplace(
-                                        key,
-                                        PositionAndCoeff{.pos = i, .coeff_num = -coeff, .coeff_den = 1});
-                                    if (!succeeded) {
-                                        iter->second.coeff_num -= coeff * iter->second.coeff_den;
-                                    } else {
-                                        children.push_back(std::move(value.m_value));
-                                        std::swap(children[i], children.back());
-                                        ++i;
-                                    }
-                                },
-                                [&](Division &nested_value) {
-                                    std::array<IntegerConstantType, 2> coeff = {1, 1};
-                                    for (std::size_t idx = 0; idx < nested_value.m_children.size();
-                                         ++idx) {
-                                        if (std::holds_alternative<Multiplication>(
-                                                nested_value.m_children[idx]->m_value)) {
-                                            auto &vchildren = std::get<Multiplication>(
-                                                                  nested_value.m_children[idx]->m_value)
-                                                                  .m_children;
-                                            if (std::holds_alternative<IntegerConstant>(
-                                                    vchildren.front()->m_value)) {
-                                                coeff[idx] =
-                                                    std::get<IntegerConstant>(vchildren.front()->m_value)
-                                                        .m_value;
-                                                std::swap(vchildren.front(), vchildren.back());
-                                                vchildren.pop_back();
-                                            }
-                                            if (vchildren.size() == 1) {
-                                                NodePtr tmp = std::move(vchildren.front());
-                                                nested_value.m_children[idx] = std::move(tmp);
-                                            }
-                                        }
-                                    }
-                                    if (std::holds_alternative<IntegerConstant>(
-                                            nested_value.m_children[0]->m_value)) {
-                                        auto &num = std::get<IntegerConstant>(
-                                                        nested_value.m_children[0]->m_value)
-                                                        .m_value;
-                                        if (std::holds_alternative<IntegerConstant>(
-                                                nested_value.m_children[1]->m_value)) {
-                                            auto den = std::get<IntegerConstant>(
-                                                           nested_value.m_children[1]->m_value)
-                                                           .m_value;
-                                            // 减去分数常数
-                                            augend_num = (augend_num * den) - (num * augend_den);
-                                            augend_den *= den;
-                                            return;
-                                        }
-                                        coeff[0] = num;
-                                        num = 1;
-                                    } else if (std::holds_alternative<IntegerConstant>(
-                                                   nested_value.m_children[1]->m_value)) {
-                                        coeff[1] = std::get<IntegerConstant>(
-                                                       nested_value.m_children[1]->m_value)
-                                                       .m_value;
-                                        if (std::holds_alternative<Variable>(
-                                                nested_value.m_children[0]->m_value)) {
-                                            auto &var =
-                                                std::get<Variable>(nested_value.m_children[0]->m_value)
-                                                    .m_value;
-                                            auto [iter, succeeded] = var_coeffs.try_emplace(
-                                                var, PositionAndCoeff{.pos = i,
-                                                                      .coeff_num = -coeff[0],
-                                                                      .coeff_den = coeff[1]});
-                                            if (!succeeded) {
-                                                iter->second.coeff_num =
-                                                    (iter->second.coeff_num * coeff[1])
-                                                    - (iter->second.coeff_den * coeff[0]);
-                                                iter->second.coeff_den *= coeff[1];
-                                            } else {
-                                                children.push_back(
-                                                    std::move(nested_value.m_children[0]));
-                                                std::swap(children[i], children.back());
-                                                ++i;
-                                            }
-                                            return;
-                                        }
-                                        std::string key = nodeToString(*nested_value.m_children[0]);
-                                        auto [iter, succeeded] = multi_vars.try_emplace(
-                                            key, PositionAndCoeff{.pos = i,
-                                                                  .coeff_num = -coeff[0],
-                                                                  .coeff_den = coeff[1]});
-                                        if (!succeeded) {
-                                            iter->second.coeff_num =
-                                                (iter->second.coeff_num * coeff[1])
-                                                - (iter->second.coeff_den * coeff[0]);
-                                            iter->second.coeff_den *= coeff[1];
-                                        } else {
-                                            children.push_back(std::move(nested_value.m_children[0]));
-                                            std::swap(children[i], children.back());
-                                            ++i;
-                                        }
-                                        return;
-                                    }
-                                    std::string key = nodeToString(*cur);
-                                    auto [iter, succeeded] = multi_vars.try_emplace(
-                                        key, PositionAndCoeff{.pos = i,
-                                                              .coeff_num = -coeff[0],
-                                                              .coeff_den = coeff[1]});
-                                    if (!succeeded) {
-                                        iter->second.coeff_num = (iter->second.coeff_num * coeff[1])
-                                                                 - (iter->second.coeff_den * coeff[0]);
-                                        iter->second.coeff_den *= coeff[1];
-                                    } else {
-                                        children.push_back(std::move(value.m_value));
-                                        std::swap(children[i], children.back());
-                                        ++i;
-                                    }
-                                }},
-                            inner->m_value);
-                    }},
-                cur->m_value);
+            std::visit(entt::overloaded{
+                           [&](Addition &value) {
+                               // 展开 Addition 节点
+                               auto &sub_children = value.m_children;
+                               children.append_range(sub_children | std::views::as_rvalue);
+                           },
+                           [&](Monomial &value) {
+                               if (value.m_var_exps.empty()) {
+                                   // 是常量
+                                   integer_augend += value.m_coeff;
+                                   return;
+                               }
+                               // 是变量
+                               IntegerConstantType coeff = std::exchange(value.m_coeff, 1);
+                               std::string         key = nodeToString(cur); //< 原始值的字符串
+                               value.m_coeff = coeff;
+                               auto [iter, succeeded] = monomials.try_emplace(key, std::move(value));
+                               if (!succeeded) {
+                                   // 已经存在，相加
+                                   iter->second.m_coeff += coeff;
+                               }
+                           },
+                           [&](Multiplication & /*unused*/) {
+                               assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                           },
+                           [&](Division &value) {
+                               std::string key = nodeToString(value.m_children[1]);
+                               auto        iter =
+                                   divisions
+                                       .try_emplace(key, Division{createZeroNode(),
+                                                                  std::move(value.m_children[1])})
+                                       .first;
+                               iter->second.m_children[0] =
+                                   makeNode<Addition>(std::move(value.m_children[0]),
+                                                      std::move(iter->second.m_children[0]));
+                           }},
+                       cur->m_value);
+        }
+        children.clear();
+
+        // 重建 Division 节点
+        for (auto &[var, division] : divisions) {
+            NodePtr new_child = makeNode<Division>(std::move(division));
+            simplify(new_child);
+
+            /// @todo 取消此处与上面重载的重复
+            std::visit(entt::overloaded{
+                           [&](Addition &value) {
+                               // 展开 Addition 节点
+                               auto &sub_children = value.m_children;
+                               for (NodePtr &sub : sub_children) {
+                                   // sub一定是 Monomial
+                                   assert_msg(std::holds_alternative<Monomial>(sub->m_value),
+                                              "猜想错误：sub 实际上不一定为 Monomial");
+                                   auto &sub_value = std::get<Monomial>(sub->m_value);
+                                   if (sub_value.m_var_exps.empty()) {
+                                       // 是常量
+                                       integer_augend += sub_value.m_coeff;
+                                       return;
+                                   }
+                                   // 是变量
+                                   IntegerConstantType coeff = std::exchange(sub_value.m_coeff, 1);
+                                   std::string         key = nodeToString(sub); //< 原始值的字符串
+                                   sub_value.m_coeff = coeff;
+                                   auto [iter, succeeded] =
+                                       monomials.try_emplace(key, std::move(sub_value));
+                                   if (!succeeded) {
+                                       // 已经存在，相加
+                                       iter->second.m_coeff += coeff;
+                                   }
+                               }
+                           },
+                           [&](Monomial &value) {
+                               if (value.m_var_exps.empty()) {
+                                   // 是常量
+                                   integer_augend += value.m_coeff;
+                                   return;
+                               }
+                               // 是变量
+                               IntegerConstantType coeff = std::exchange(value.m_coeff, 1);
+                               std::string         key = nodeToString(new_child); //< 原始值的字符串
+                               value.m_coeff = coeff;
+                               auto [iter, succeeded] = monomials.try_emplace(key, std::move(value));
+                               if (!succeeded) {
+                                   // 已经存在，相加
+                                   iter->second.m_coeff += coeff;
+                               }
+                           },
+                           [&](Multiplication & /*unused*/) {
+                               assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                           },
+                           [&](Division & /*unused*/) {
+                               // 添加
+                               children.push_back(std::move(new_child));
+                           }},
+                       new_child->m_value);
         }
 
-        std::vector<size_t> should_delete_pos; //< 应删除的位置
-
-        // 重建单变量的系数
-        for (auto &[var, pos_and_coeff] : var_coeffs) {
-            NodePtr &cur = children[pos_and_coeff.pos];
-            if (pos_and_coeff.coeff_num == 0) {
-                should_delete_pos.push_back(pos_and_coeff.pos);
+        // 重建 Monomial 节点
+        for (auto &[var, monomial] : monomials) {
+            if (monomial.m_coeff == 0) {
                 continue;
             }
-            IntegerConstantType gcdnum = std::gcd(pos_and_coeff.coeff_num, pos_and_coeff.coeff_den);
-            assert_msg(gcdnum != 0, "gcdnum 错误地为0");
-            pos_and_coeff.coeff_num /= gcdnum;
-            pos_and_coeff.coeff_den /= gcdnum;
-            if (IntegerConstantType num = std::abs(pos_and_coeff.coeff_num); num != 1) {
-                cur = makeNode<Multiplication>(makeNode<IntegerConstant>(num), std::move(cur));
-            }
-            if (pos_and_coeff.coeff_den != 1) {
-                cur = makeNode<Division>(std::move(cur),
-                                         makeNode<IntegerConstant>(pos_and_coeff.coeff_den));
-            }
-            if (pos_and_coeff.coeff_num < 0) {
-                cur = makeNode<Negation>(std::move(cur));
-            }
-        }
-
-        // 重建多变量的系数
-        for (const auto &[var, pos_and_coeff] : multi_vars) {
-            auto &cur = children[pos_and_coeff.pos];
-            if (pos_and_coeff.coeff_num == 0) {
-                should_delete_pos.push_back(pos_and_coeff.pos);
-                continue;
-            }
-            cur = makeNode<Multiplication>(std::move(cur),
-                                           makeNode<IntegerConstant>(pos_and_coeff.coeff_num));
-            cur = makeNode<Division>(std::move(cur), makeNode<IntegerConstant>(pos_and_coeff.coeff_den));
-            simplify(cur);
-        }
-
-        // 删除多余的节点
-        std::ranges::sort(should_delete_pos, std::ranges::greater());
-        for (size_t pos : should_delete_pos) {
-            std::swap(children[pos], children.back());
-            children.pop_back();
+            children.push_back(makeNode<Monomial>(std::move(monomial)));
         }
 
         // 重建常量
-        augend_num += integer_augend * augend_den;
-        if (augend_num == 0) {
+        if (integer_augend == 0) {
             // 若只有一个或没有子节点，取消 Addition 节点
             if (children.size() == 1) {
                 NodePtr tmp = std::move(children[0]);
                 root = std::move(tmp);
             } else if (children.empty()) {
-                clearNode(root);
+                root = createZeroNode();
             }
             return;
         }
-        IntegerConstantType gcdnum = std::gcd(augend_num, augend_den);
-        assert_msg(gcdnum != 0, "gcdnum 错误地为0");
-        augend_num /= gcdnum;
-        augend_den /= gcdnum;
-        NodePtr constant = makeNode<IntegerConstant>(augend_num);
-        if (augend_den != 1) {
-            constant = makeNode<Division>(std::move(constant), makeNode<IntegerConstant>(augend_den));
-        }
-        children.push_back(std::move(constant));
+        children.push_back(makeNode<Monomial>(integer_augend));
         std::swap(children.front(), children.back());
         // 若只有一个子节点，取消 Addition 节点
         if (children.size() == 1) {
             NodePtr tmp = std::move(children.front());
             root = std::move(tmp);
         }
-        // std::println("the simpilfied addition node is {}", nodeToString(*root));
-    }
-
-    template <>
-    void Simplifier<Negation>::operator()(Negation &root_val, NodePtr &root) noexcept {
-        assert_msg(root_val.m_value != nullptr, "Negation node 的子节点为空");
-        // std::println("the raw negation node is {}", nodeToString(*root));
-        simplify(root_val.m_value);
-        std::visit(entt::overloaded{[&](IntegerConstant &value) {
-                                        // 若子节点为整型常量，直接取反
-                                        root = makeNode<IntegerConstant>(-value.m_value);
-                                    },
-                                    [&](Negation &value) {
-                                        // 若子节点为 Negation，去掉双重取反
-                                        NodePtr inner = std::move(value.m_value);
-                                        root = std::move(inner);
-                                    },
-                                    [&](Variable & /*unused*/) {
-                                        // 无需化简
-                                    },
-                                    [&](auto & /*unused*/) {
-                                        // 将节点转化为乘法节点，交由乘法节点来化简
-                                        root = makeNode<Multiplication>(makeNode<IntegerConstant>(-1),
-                                                                        std::move(root_val.m_value));
-                                        simplify(root);
-                                    }},
-                   root_val.m_value->m_value);
-        // std::println("the simpilfied negation node is {}", nodeToString(*root));
+        // std::println("the simpilfied addition node is {}", nodeToString(root));
     }
 
     template <>
     void Simplifier<Multiplication>::operator()(Multiplication &root_val, NodePtr &root) noexcept {
-        // std::println("the raw multiplication node is {}", nodeToString(*root));
+        // std::println("the raw multiplication node is {}", nodeToString(root));
         auto &children = root_val.m_children;
         if (children.empty()) {
-            clearNode(root);
+            root = createZeroNode();
             return;
         }
 
-        IntegerConstantType coeff = 1;
-        bool                negative = false;
-        for (std::size_t i = 0; i < children.size();) {
-            NodePtr cur = std::move(children[i]);
-            std::swap(children[i], children.back());
-            children.pop_back();
-            assert_msg(cur != nullptr, "Multiplication 节点的子节点 cur 错误地为 nullptr");
+        Monomial new_node{.m_coeff = 1};
+        for (auto iter = children.begin(); iter != children.end(); ++iter) {
+            NodePtr cur = std::move(*iter);
             simplify(cur);
             bool finished = false; //< 是否结束
-            std::visit(
-                entt::overloaded{
-                    [&](IntegerConstant &value) {
-                        // 整合所有 IntegerConstant 节点
-                        coeff *= value.m_value;
-                    },
-                    [&](Multiplication &value) {
-                        // 展开 Multiplication 节点
-                        children.reserve(children.size() + value.m_children.size());
-                        for (NodePtr &child : value.m_children) { children.push_back(std::move(child)); }
-                    },
-                    [&](Negation &value) {
-                        // 收集所有的 Negation 节点
-                        negative = !negative;
-                        children.push_back(std::move(value.m_value));
-                    },
-                    [&](Division &value) {
-                        // 将 Division 的分母扩大到外面，交由 Division 的简化器来处理
-                        children.push_back(std::move(value.m_children[0]));
-                        NodePtr den = std::move(value.m_children[1]);
-                        root = makeNode<Division>(
-                            makeNode<Multiplication>(
-                                std::move(root), makeNode<IntegerConstant>(negative ? -coeff : coeff)),
-                            std::move(den));
-                        simplify(root);
-                        finished = true;
-                    },
-                    [&](Addition &value) {
-                        // 将 root 节点除此节点外全部乘到此节点中，交由 Addition 的简化器来处理
-                        children.push_back(makeNode<IntegerConstant>(negative ? -coeff : coeff));
-                        for (NodePtr &child : value.m_children) {
-                            Multiplication copy = root_val;
-                            copy.m_children.push_back(std::move(child));
-                            child = makeNode<Multiplication>(std::move(copy));
-                        }
-                        NodePtr new_root = makeNode<Addition>(std::move(value));
-                        simplify(new_root);
-                        root = std::move(new_root);
-                        finished = true;
-                    },
-                    [&](Variable & /*unused*/) {
-                        // 不用改动
-                        children.push_back(std::move(cur));
-                        std::swap(children[i], children.back());
-                        ++i;
-                    }},
-                cur->m_value);
-            if (coeff == 0) {
-                // 早发现，早返回
-                root = Node::createZero();
-                return;
-            }
+            std::visit(entt::overloaded{[&](Monomial &value) {
+                                            // 合并
+                                            new_node.m_coeff *= value.m_coeff;
+                                            new_node.m_var_exps.merge(value.m_var_exps);
+                                            for (auto &[var, exp] : value.m_var_exps) {
+                                                new_node.m_var_exps[var] += exp;
+                                            }
+                                        },
+                                        [&](Multiplication & /*unused*/) {
+                                            assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                                        },
+                                        [&](Addition &value) {
+                                            // 乘进去
+                                            Multiplication rest{makeNode<Monomial>(
+                                                std::move(new_node))}; //< 目前剩余的节点
+                                            ++iter;
+                                            for (; iter != children.end(); ++iter) {
+                                                rest.m_children.push_back(std::move(*iter));
+                                            }
+                                            for (NodePtr &sub_ch : value.m_children) {
+                                                Multiplication cpy = rest;
+                                                cpy.m_children.push_back(std::move(sub_ch));
+                                                sub_ch = makeNode<Multiplication>(std::move(cpy));
+                                            }
+                                            root = makeNode<Addition>(std::move(value));
+                                            simplify(root);
+                                            finished = true;
+                                        },
+                                        [&](Division &value) {
+                                            // 乘进去
+                                            Multiplication rest{
+                                                makeNode<Monomial>(std::move(new_node)),
+                                                std::move(value.m_children[0])}; //< 目前剩余的节点
+                                            ++iter;
+                                            for (; iter != children.end(); ++iter) {
+                                                rest.m_children.push_back(std::move(*iter));
+                                            }
+                                            value.m_children[0] = makeNode<Multiplication>(rest);
+                                            root = makeNode<Division>(std::move(value));
+                                            simplify(root);
+                                            finished = true;
+                                        }},
+                       cur->m_value);
             if (finished) {
                 return;
             }
+            if (new_node.m_coeff == 0) {
+                // 为0，退出
+                root = createZeroNode();
+                return;
+            }
         }
 
-        // 确立正负
-        if (coeff < 0) {
-            coeff = -coeff;
-            negative = !negative;
+        root = makeNode<Monomial>(std::move(new_node));
+        simplify(root);
+        // std::println("the simpilfied multiplication node is {}", nodeToString(root));
+    }
+
+    using Polynomial = std::vector<NodePtr>; //< 多项式别名，索引 = 指数
+
+    /**
+     * @brief 去除多项式的多余节点
+     * @param [in] poly 多项式
+     */
+    void removeRedundantPoly(Polynomial &poly) {
+        while (!poly.empty() && isZero(poly.back())) { poly.pop_back(); }
+    };
+
+    /**
+     * @brief 将普通代数式节点转换成为按主元指数排列的系数多项式向量
+     * @param [in] root 代数式节点
+     * @param [in] main_var 主元
+     * @return Polynomial 多项式向量
+     * @warning 这要求 root 节点被化简过
+     */
+    Polynomial toPoly(NodePtr root, VariableView main_var) {
+        return std::visit(
+            entt::overloaded{
+                [&](Monomial &value) {
+                    auto                iter = value.m_var_exps.find(main_var);
+                    IntegerConstantType exp = (iter == value.m_var_exps.end()) ? 0 : iter->second;
+                    Polynomial          poly;
+                    poly.reserve(exp + 1);
+                    std::ranges::generate_n(std::back_inserter(poly), exp + 1, createZeroNode);
+                    if (iter != value.m_var_exps.end()) {
+                        value.m_var_exps.erase(iter);
+                    }
+                    poly[exp] = std::move(root);
+                    return poly;
+                },
+                [&](Addition &value) {
+                    Polynomial poly;
+                    for (NodePtr &child : value.m_children) {
+                        auto               &value = std::get<Monomial>(child->m_value);
+                        auto                iter = value.m_var_exps.find(main_var);
+                        IntegerConstantType exp = (iter == value.m_var_exps.end()) ? 0 : iter->second;
+
+                        // 重新调整大小
+                        if (std::size_t old_size = poly.size(), new_size = exp + 1;
+                            old_size < new_size) {
+                            poly.reserve(new_size);
+                            std::ranges::generate_n(std::back_inserter(poly),
+                                                    static_cast<long long>(new_size - old_size),
+                                                    createZeroNode);
+                        }
+
+                        if (iter != value.m_var_exps.end()) {
+                            value.m_var_exps.erase(iter);
+                        }
+                        poly[exp] = makeNode<Addition>(std::move(poly[exp]), std::move(child));
+                        simplify(poly[exp]);
+                    }
+                    removeRedundantPoly(poly);
+                    return poly;
+                },
+                [&](Multiplication & /*unused*/) {
+                    assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                    return Polynomial{};
+                },
+                [&](Division & /*unused*/) {
+                    assert_msg(false, "多项式节点中不应有 Division 节点");
+                    return Polynomial{};
+                }},
+            root->m_value);
+    };
+
+    /**
+     * @brief 将按主元指数排列的系数多项式向量转换成为普通代数式节点
+     * @param [in] poly 多项式向量
+     * @param [in] main_var 主元
+     * @return NodePtr 代数式节点
+     * @warning 需要提前调用 removeRedundantPoly 函数
+     */
+    NodePtr toNodePtr(Polynomial poly, VariableView main_var) {
+        NodePtr ret = createZeroNode();
+        for (const auto [exp, child] : std::views::enumerate(poly)) {
+            ret = makeNode<Addition>(
+                std::move(ret),
+                makeNode<Multiplication>(std::move(child),
+                                         makeNode<Monomial>(1, Monomial::MapVarExp{{main_var, exp}})));
+        }
+        simplify(ret);
+        return ret;
+    };
+
+    /**
+     * @brief 获取多项式的最高次数
+     * @param [in] poly 多项式
+     * @return std::size_t 最高次数
+     * @warning 需要提前调用 removeRedundantPoly 函数
+     */
+    std::size_t getDegreePoly(const Polynomial &poly) { return poly.empty() ? 0 : poly.size() - 1; };
+
+    /**
+     * @brief 获取多项式的首项系数的副本
+     * @param [in] poly 多项式
+     * @return NodePtr 多项式的首项系数的副本
+     * @warning 需要提前调用 removeRedundantPoly 函数
+     */
+    NodePtr     getLeadingCoefficientPoly(const Polynomial &poly) {
+        return std::make_unique<Node>(*poly.back());
+    };
+
+    /**
+     * @brief 克隆多项式
+     * @param [in] poly 多项式
+     * @return Polynomial 多项式副本
+     */
+    Polynomial clonePoly(const Polynomial &poly) {
+        Polynomial ret;
+        ret.reserve(poly.size());
+        for (const auto &child : poly) { ret.push_back(std::make_unique<Node>(*child)); }
+        return ret;
+    };
+
+    /**
+     * @brief 将多项式乘上主元的 offset 次幂
+     * @param [in] poly 多项式
+     * @param [in] offset 幂数，或者是向高次的移动次数
+     * @return Polynomial 更改后的多项式
+     */
+    Polynomial shiftPoly(Polynomial poly, std::size_t offset) {
+        Polynomial ret;
+        ret.reserve(offset);
+        std::ranges::generate_n(std::back_inserter(ret), static_cast<long long>(offset), createZeroNode);
+        ret.append_range(poly | std::views::as_rvalue);
+        return ret;
+    };
+
+    /**
+     * @brief 判断多项式是否为0
+     * @param [in] poly 多项式
+     * @return true 为0 
+     * @return false 不为0
+     * @warning 需要提前调用 removeRedundantPoly 函数
+     */
+    bool       isZeroPoly(const Polynomial &poly) { return poly.empty(); };
+
+    /**
+     * @brief 将两个多项式相加
+     * @param [in] addend1 加数1
+     * @param [in] addend2 加数2
+     * @return Polynomial 相加结果
+     */
+    Polynomial addPoly(Polynomial addend1, Polynomial addend2) {
+        std::size_t max_size = std::max(addend1.size(), addend2.size());
+        Polynomial  ret;
+        ret.reserve(max_size);
+        for (std::size_t i = 0; i < max_size; ++i) {
+            NodePtr addend1_i = i < addend1.size() ? std::move(addend1[i]) : createZeroNode();
+            NodePtr addend2_i = i < addend2.size() ? std::move(addend2[i]) : createZeroNode();
+            // ret[i] = a + b
+            ret.push_back(makeNode<Addition>(std::move(addend1_i), std::move(addend2_i)));
+            simplify(ret[i]);
+        }
+        removeRedundantPoly(ret);
+        return ret;
+    };
+
+    /**
+     * @brief 将两个多项式相减
+     * @param [in] minuend 被减数
+     * @param [in] subtrahend 减数
+     * @return Polynomial 相减结果
+     */
+    Polynomial subPoly(Polynomial minuend, Polynomial subtrahend) {
+        std::size_t max_size = std::max(minuend.size(), subtrahend.size());
+        Polynomial  ret;
+        ret.reserve(max_size);
+        for (std::size_t i = 0; i < max_size; ++i) {
+            NodePtr minuend_i = i < minuend.size() ? std::move(minuend[i]) : createZeroNode();
+            NodePtr subtrahend_i = i < subtrahend.size() ? std::move(subtrahend[i]) : createZeroNode();
+            // ret[i] = a - b  => a + (-1) * b
+            ret.push_back(makeNode<Addition>(
+                std::move(minuend_i),
+                makeNode<Multiplication>(std::move(subtrahend_i), makeNode<Monomial>(-1))));
+            simplify(ret[i]);
+        }
+        removeRedundantPoly(ret);
+        return ret;
+    };
+
+    /**
+     * @brief 将两个多项式相乘
+     * @param [in] multiplier1 乘数1
+     * @param [in] multiplier2 乘数2
+     * @return Polynomial 相乘结果
+     */
+    Polynomial mulPoly(const Polynomial &multiplier1, const Polynomial &multiplier2) {
+        Polynomial ret;
+        ret.reserve(multiplier1.size() + multiplier2.size());
+        std::ranges::generate_n(std::back_inserter(ret),
+                                static_cast<long long>(multiplier1.size() + multiplier2.size()),
+                                createZeroNode);
+
+        for (std::size_t i = 0; i < multiplier1.size(); ++i) {
+            for (std::size_t j = 0; j < multiplier2.size(); ++j) {
+                ret[i + j] = makeNode<Addition>(
+                    std::move(ret[i + j]),
+                    makeNode<Multiplication>(std::make_unique<Node>(*multiplier1[i]),
+                                             std::make_unique<Node>(*multiplier2[j])));
+            }
         }
 
-        // 重建整型常数
-        auto var_begin = children.begin();
-        if (coeff != 1 || var_begin == children.end()) {
-            children.push_back(makeNode<IntegerConstant>(coeff));
-            std::swap(children.front(), children.back());
-            // 重置变量起始点
-            var_begin = std::next(children.begin());
+        for (NodePtr &child : ret) { simplify(child); }
+        removeRedundantPoly(ret);
+        return ret;
+    };
+
+    /**
+     * @brief 将两个多项式相除
+     * @param [in] dividend 被除数
+     * @param [in] divisor 除数
+     * @return Polynomial 相除结果
+     * @warning 要求多项式必须整除
+     * @warning 需要提前调用 removeRedundantPoly 函数
+     */
+    Polynomial divPoly(Polynomial dividend, const Polynomial &divisor) {
+        NodePtr    lc_divisor = getLeadingCoefficientPoly(divisor);
+        Polynomial quotient;
+        while (!isZeroPoly(dividend)) {
+            assert_msg(getDegreePoly(dividend) >= getDegreePoly(divisor),
+                       "dividend 不能被 divisor 整除");
+            NodePtr lc_dividend = getLeadingCoefficientPoly(dividend);
+            NodePtr lc_div_node =
+                makeNode<Division>(std::move(lc_dividend), std::make_unique<Node>(*lc_divisor));
+            simplify(lc_div_node);
+            Polynomial lc_div;
+            lc_div.push_back(std::move(lc_div_node));
+            // multiplier = lc(dividend) / lc(divisor) * (x ^ (deg(dividend) - deg(divisor)))
+            Polynomial multiplier =
+                shiftPoly(std::move(lc_div), getDegreePoly(dividend) - getDegreePoly(divisor));
+            Polynomial subtrahend = mulPoly(divisor, multiplier);
+            // quotient += multiplier
+            quotient = addPoly(std::move(quotient), std::move(multiplier));
+            // dividend = dividend - divisor * multiplier
+            dividend = subPoly(std::move(dividend), std::move(subtrahend));
+        }
+        removeRedundantPoly(quotient);
+        return quotient;
+    };
+
+    /**
+     * @brief 运用伪余数定理，计算伪余式
+     * @param [in] dividend 被除数
+     * @param [in] divisor 除数
+     * @return Polynomial 伪余式
+     * @warning 需要提前调用 removeRedundantPoly 函数
+     */
+    Polynomial getPseudoRemainderPoly(Polynomial dividend, const Polynomial &divisor) {
+        if (getDegreePoly(dividend) < getDegreePoly(divisor)) {
+            return dividend;
+        }
+        Polynomial lc_divisor;
+        lc_divisor.push_back(getLeadingCoefficientPoly(divisor));
+        Polynomial remainder = std::move(dividend);
+        // Polynomial quotient;
+        while (getDegreePoly(remainder) >= getDegreePoly(divisor)) {
+            // 算法原理：保持 lc_divisor^i(循环次数) * dividend(初始) = quotient(注释部分) * divisor + remainder
+            auto       exp = getDegreePoly(remainder) - getDegreePoly(divisor);
+            Polynomial lc_dividend;
+            lc_dividend.push_back(getLeadingCoefficientPoly(remainder));
+            // term1 = lc(divisor) * dividend
+            Polynomial term1 = mulPoly(remainder, lc_divisor);
+            // term2 = lc(dividend) * x^exp * divisor
+            Polynomial q_term = shiftPoly(std::move(lc_dividend), exp);
+            Polynomial term2 = mulPoly(divisor, q_term);
+            // quotient = addPoly(poly_mul(divisor, quotient), std::move(q_term));
+            remainder = subPoly(std::move(term1), std::move(term2));
+        }
+        return remainder;
+    };
+
+    NodePtr polynomialGcd(NodePtr root1, NodePtr root2);
+
+    /**
+     * @brief 获取多项式的内容部分
+     * @param [in] poly 多项式
+     * @return NodePtr 多项式的内容部分
+     * @warning 需要提前调用 removeRedundantPoly 函数
+     */
+    NodePtr getContentPoly(Polynomial poly) {
+        std::optional<NodePtr> gcd_result;
+        for (auto &child : poly) {
+            gcd_result = gcd_result
+                             .transform([&](NodePtr &result) {
+                                 return polynomialGcd(std::move(result), std::move(child));
+                             })
+                             .or_else([&]() -> std::optional<NodePtr> { return std::move(child); });
+        }
+        return std::move(gcd_result).value_or(createZeroNode());
+    };
+
+    /**
+     * @brief 计算多项式的最大公因式
+     * @param [in] poly1 多项式1
+     * @param [in] poly2 多项式2
+     * @return Polynomial 最大公因式
+     * @warning 需要提前调用 removeRedundantPoly 函数
+     * @details
+     *  - 采用内容-本原部分分解法
+     */
+    Polynomial polynomialGcd(Polynomial poly1, Polynomial poly2) {
+        // 特殊情况
+        if (isZeroPoly(poly1)) {
+            return poly2;
+        }
+        if (isZeroPoly(poly2)) {
+            return poly1;
         }
 
-        // 对非整型因子进行规范化：先把变量排到前面并按名字排序
-        std::ranges::sort(var_begin, children.end(), [](const NodePtr &var1, const NodePtr &var2) {
-            assert_msg(std::holds_alternative<Variable>(var1->m_value)
-                           && std::holds_alternative<Variable>(var2->m_value),
-                       "参数 var1/var2 的类型错误地不为 Variable");
+        // 本原部分的 GCD（运用辗转相除法），需要提前调用 removeRedundantPoly 函数
+        auto gcd_primitive = [](this auto gcd_primitive, Polynomial poly1,
+                                Polynomial poly2) -> Polynomial {
+            // 保证 degree(poly1) >= degree(poly2)
+            if (getDegreePoly(poly1) < getDegreePoly(poly2)) {
+                std::swap(poly1, poly2);
+            }
 
-            VariableView var1_str = std::get<Variable>(var1->m_value).m_value;
-            VariableView var2_str = std::get<Variable>(var2->m_value).m_value;
-            return var1_str < var2_str;
-        });
+            // 递归终止条件：poly2 为0
+            if (isZeroPoly(poly2)) {
+                return poly1;
+            }
 
-        // 若只有一个子节点，展开
-        if (children.size() == 1) {
-            NodePtr tmp = std::move(children[0]);
-            root = std::move(tmp);
+            // 递归终止条件：poly2 为常数
+            if (getDegreePoly(poly2) == 0) {
+                // 此时 poly1 不可能为常数
+                assert_msg(getDegreePoly(poly1) > 0, "猜想错误：poly1 实际上可能为常数");
+                // 返回 1
+                Polynomial ret;
+                ret.push_back(makeNode<Monomial>(1));
+                return ret;
+            }
+
+            // 计算伪余数
+            Polynomial remainder = getPseudoRemainderPoly(std::move(poly1), poly2);
+
+            // 计算 remiander 的本原部分
+            Polynomial r_content;
+            r_content.push_back(getContentPoly(clonePoly(remainder)));
+            Polynomial r_prim = divPoly(std::move(remainder), r_content);
+
+            return gcd_primitive(std::move(poly2), std::move(r_prim));
+        };
+
+        // 计算内容和本原部分
+        Polynomial content1;
+        content1.push_back(getContentPoly(clonePoly(poly1)));
+        Polynomial prim1 = divPoly(std::move(poly1), content1);
+        Polynomial content2;
+        content2.push_back(getContentPoly(clonePoly(poly2)));
+        Polynomial prim2 = divPoly(std::move(poly2), content2);
+        // std::println("gcd: divided");
+
+        // 计算内容部分的 GCD
+        Polynomial gcd_content;
+        gcd_content.push_back(polynomialGcd(std::move(content1[0]), std::move(content2[0])));
+        // std::println("gcd: computed content");
+
+        // 计算本原部分的 GCD
+        Polynomial gcd_prim = gcd_primitive(std::move(prim1), std::move(prim2));
+        // std::println("gcd: computed primitive");
+
+        // 合并
+        Polynomial result = mulPoly(gcd_prim, gcd_content);
+        // std::println("gcd: merged");
+
+        return result;
+    }
+
+    /**
+     * @brief 获取两个代数式公共的变量
+     * @param [in] root1 代数式节点1
+     * @param [in] root2 代数式节点2
+     * @return std::optional<VariableView> 公共的变量，若没有则为0
+     * @warning 这要求 root 节点被化简过
+     */
+    std::optional<VariableView> getCommonVar(const NodePtr &root1, const NodePtr &root2) {
+        std::optional<VariableView> main_var; //< 主元
+        std::set<VariableView>      vars;     //< 变量集
+        std::visit(entt::overloaded{[&](const Monomial &value) {
+                                        for (const auto &[var, exp] : value.m_var_exps) {
+                                            vars.insert(var);
+                                        }
+                                    },
+                                    [&](const Addition &value) {
+                                        for (const NodePtr &child : value.m_children) {
+                                            const auto &value = std::get<Monomial>(child->m_value);
+                                            for (const auto &[var, exp] : value.m_var_exps) {
+                                                vars.insert(var);
+                                            }
+                                        }
+                                    },
+                                    [&](const Multiplication & /*unused*/) {
+                                        assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                                    },
+                                    [&](const Division & /*unused*/) {
+                                        assert_msg(false, "多项式节点中不应有 Division 节点");
+                                    }},
+                   root1->m_value);
+
+        std::visit(entt::overloaded{[&](const Monomial &value) {
+                                        for (const auto &[var, exp] : value.m_var_exps) {
+                                            if (vars.contains(var)) {
+                                                main_var = var;
+                                                return;
+                                            }
+                                        }
+                                    },
+                                    [&](const Addition &value) {
+                                        for (const NodePtr &child : value.m_children) {
+                                            const auto &value = std::get<Monomial>(child->m_value);
+                                            for (const auto &[var, exp] : value.m_var_exps) {
+                                                main_var = var;
+                                                return;
+                                            }
+                                        }
+                                    },
+                                    [&](const Multiplication & /*unused*/) {
+                                        assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                                    },
+                                    [&](const Division & /*unused*/) {
+                                        assert_msg(false, "多项式节点中不应有 Division 节点");
+                                    }},
+                   root2->m_value);
+        return main_var;
+    }
+
+    /**
+     * @brief 提取代数式节点的整数因数
+     * @param [in, out] root 代数式节点
+     * @return IntegerConstantType 提取的整数因数
+     * @warning 这要求 root 节点被化简过
+     * @warning 这要求 root 节点是多项式
+     * @note 代数式节点将不会除去提取的因数
+     */
+    IntegerConstantType extractPolynomialIntegerCoefficient(const NodePtr &root) {
+        return std::visit(
+            entt::overloaded{[&](const Monomial &value) { return std::abs(value.m_coeff); },
+                             [&](const Addition &value) {
+                                 std::optional<IntegerConstantType> coeff = std::nullopt;
+                                 for (const NodePtr &child : value.m_children) {
+                                     assert_msg(std::holds_alternative<Monomial>(child->m_value),
+                                                "猜想错误：child 实际上不一定为 Monomial");
+                                     auto &mono = std::get<Monomial>(child->m_value);
+                                     coeff = coeff
+                                                 .transform([&](IntegerConstantType nested_coeff) {
+                                                     return std::gcd(nested_coeff, mono.m_coeff);
+                                                 })
+                                                 .or_else([&] { return std::optional{mono.m_coeff}; });
+                                 }
+                                 return coeff.value_or(1);
+                             },
+                             [&](const Multiplication & /*unused*/) -> IntegerConstantType {
+                                 assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                                 return 0;
+                             },
+                             [&](const Division & /*unused*/) -> IntegerConstantType {
+                                 assert_msg(false, "多项式节点中不应有 Division 节点");
+                                 return 0;
+                             }},
+            root->m_value);
+    }
+
+    /**
+     * @brief 将代数式节点除掉整数因数
+     * @param [in] root 代数式节点
+     * @param [in] coeff 整数因数
+     * @warning 这要求 root 节点被化简过
+     * @warning 这要求 root 节点是多项式
+     * @warning 这要求 root 节点能整除 coeff
+     */
+    void dividePolynomialWithIntegerCoefficient(NodePtr &root, IntegerConstantType coeff) {
+        std::visit(entt::overloaded{[&](Monomial &value) { value.m_coeff /= coeff; },
+                                    [&](Addition &value) {
+                                        for (const NodePtr &child : value.m_children) {
+                                            assert_msg(std::holds_alternative<Monomial>(child->m_value),
+                                                       "猜想错误：child 实际上不一定为 Monomial");
+                                            auto &mono = std::get<Monomial>(child->m_value);
+                                            mono.m_coeff /= coeff;
+                                        }
+                                    },
+                                    [&](Multiplication & /*unused*/) {
+                                        assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                                    },
+                                    [&](Division & /*unused*/) {
+                                        assert_msg(false, "多项式节点中不应有 Division 节点");
+                                    }},
+                   root->m_value);
+    }
+
+    /**
+      @brief 计算代数式节点（需要为多项式）的最大公因式
+     * @param [in] root1 代数式节点1
+     * @param [in] root2 代数式节点2
+     * @return NodePtr 最大公因式
+     * @warning 这要求 root 节点被化简过
+     */
+    NodePtr polynomialGcd(NodePtr root1, NodePtr root2) {
+        // 特殊情况
+        if (isZero(root1)) {
+            return root2;
+        }
+        if (isZero(root2)) {
+            return root1;
         }
 
-        // 处理负号
-        if (negative) {
-            root = makeNode<Negation>(std::move(root));
-        }
-        // std::println("the simpilfied multiplication node is {}", nodeToString(*root));
+        // 选择主元
+        std::optional<VariableView> main_var = getCommonVar(root1, root2); //< 主元
+
+        return main_var
+            .transform([&](VariableView nested_main_var) {
+                // 转换
+                auto       poly1 = toPoly(std::move(root1), nested_main_var);
+                auto       poly2 = toPoly(std::move(root2), nested_main_var);
+
+                // 计算
+                Polynomial result = polynomialGcd(std::move(poly1), std::move(poly2));
+
+                // 展平
+                return toNodePtr(std::move(result), nested_main_var);
+            })
+            .or_else([&] {
+                // 没有相同的变量，返回
+                return std::optional{
+                    makeNode<Monomial>(std::gcd(extractPolynomialIntegerCoefficient(root1),
+                                                extractPolynomialIntegerCoefficient(root2)))};
+            })
+            .value();
     }
 
     template <>
     void Simplifier<Division>::operator()(Division &root_val, NodePtr &root) noexcept {
-        /// @todo 完备多项式提取公因式逻辑
-        // std::println("the raw division node is {}", nodeToString(*root));
+        // std::println("the raw division node is {}", nodeToString(root));
         NodePtr &num = root_val.m_children[0];
         NodePtr &den = root_val.m_children[1];
         simplify(num);
         simplify(den);
-        // 获取分子的常量及变量
-        IntegerConstantType *num_coeff = nullptr;
-        std::map<VariableView, std::vector<std::function<void()>>>
-                              num_vars;              //< var -> std::vector<deleter>
-        std::vector<size_t>   should_delete_pos;     //< 应删除的变量子节点位置
-        std::function<void()> final_deleter = [] {}; //< 变量的最终删除器
-        bool                  finished = false;      //< 是否结束
-        std::visit(
-            entt::overloaded{
-                [&](IntegerConstant &value) {
-                    if (value.m_value == 0) {
-                        // 特殊：直接返回
-                        clearNode(root);
-                        finished = true;
-                    } else {
-                        num_coeff = &value.m_value;
-                    }
-                },
-                [&](Variable &value) {
-                    num_vars.emplace(value.m_value, std::vector{std::function{[&num] {
-                                         num = makeNode<IntegerConstant>(1);
-                                     }}});
-                },
-                [&](Addition &value) {
-                    for (NodePtr &sub : value.m_children) {
-                        sub = makeNode<Division>(std::move(sub), std::make_unique<Node>(*den));
-                    }
-                    root = makeNode<Addition>(std::move(value));
-                    simplify(root);
-                    finished = true;
-                },
-                [&](Multiplication &value) {
-                    final_deleter = [&] {
-                        if (should_delete_pos.empty()) {
-                            return;
-                        }
-                        std::ranges::sort(should_delete_pos);
-                        // 删除
-                        auto        delete_pos_it = should_delete_pos.begin();
-                        std::size_t left_i = 0;
-                        for (std::size_t right_i = 0; true; ++left_i, ++right_i) {
-                            if (delete_pos_it != should_delete_pos.end() && right_i == *delete_pos_it) {
-                                // 这个位置应该被删除，跳过
-                                ++right_i;
-                            }
-                            if (right_i >= value.m_children.size()) {
-                                break;
-                            }
-                            value.m_children[left_i] = std::exchange(value.m_children[right_i], nullptr);
-                        }
-                        value.m_children.erase(
-                            value.m_children.begin()
-                                + static_cast<std::vector<NodePtr>::difference_type>(left_i),
-                            value.m_children.end());
-                        if (value.m_children.empty()) {
-                            num = makeNode<IntegerConstant>(1);
-                        } else if (value.m_children.size() == 1) {
-                            NodePtr tmp = std::move(value.m_children.front());
-                            num = std::move(tmp);
-                        }
-                    };
-                    for (size_t i = 0; i < value.m_children.size(); ++i) {
-                        NodePtr &sub = value.m_children[i];
-                        std::visit(entt::overloaded{
-                                       [&](IntegerConstant &value) { num_coeff = &value.m_value; },
-                                       [&](Variable &value) {
-                                           num_vars[value.m_value].emplace_back([&should_delete_pos, i] {
-                                               should_delete_pos.push_back(i);
-                                           });
-                                       },
-                                       [&](auto & /*unused*/) {
-                                           assert_msg(false, "Multiplication 节点的子节点只能为 "
-                                                             "IntegerConstant/Variable 节点");
-                                       }},
-                                   sub->m_value);
-                    }
-                },
-                [&](Division &value) {
-                    den = makeNode<Multiplication>(std::move(den), std::move(value.m_children[1]));
-                    NodePtr tmp = std::move(value.m_children[0]);
-                    num = std::move(tmp);
-                    simplify(root);
-                    finished = true;
-                },
-                [&](Negation &value) {
-                    NodePtr tmp = std::move(value.m_value);
-                    num = std::move(tmp);
-                    root = makeNode<Negation>(std::move(root));
-                    simplify(root);
-                    finished = true;
-                }},
-            num->m_value);
 
-        if (finished) {
+        // 保证为多项式
+        if (std::holds_alternative<Division>(num->m_value)) {
+            auto &value = std::get<Division>(num->m_value);
+            den = makeNode<Multiplication>(std::move(den), std::move(value.m_children[1]));
+            NodePtr tmp = std::move(value.m_children[0]);
+            num = std::move(tmp);
+            simplify(root);
+            return;
+        }
+        if (std::holds_alternative<Division>(den->m_value)) {
+            auto &value = std::get<Division>(den->m_value);
+            num = makeNode<Multiplication>(std::move(den), std::move(value.m_children[1]));
+            NodePtr tmp = std::move(value.m_children[0]);
+            den = std::move(tmp);
+            simplify(root);
+            return;
+        }
+        if (std::holds_alternative<Addition>(num->m_value)) {
+            auto &value = std::get<Addition>(num->m_value);
+            for (auto &child : value.m_children) {
+                // 避免子节点非单项式
+                if (std::holds_alternative<Division>(child->m_value)) {
+                    auto   &child_value = std::get<Division>(child->m_value);
+                    NodePtr sub_den = std::move(child_value.m_children[1]);
+                    NodePtr sub_num = std::move(child_value.m_children[0]);
+                    std::swap(value.m_children.back(), child);
+                    value.m_children.pop_back();
+                    num = makeNode<Addition>(
+                        makeNode<Multiplication>(std::move(num), std::make_unique<Node>(*sub_den)),
+                        std::move(sub_num));
+                    den = makeNode<Multiplication>(std::move(den), std::move(sub_den));
+                    simplify(root);
+                    return;
+                }
+            }
+        }
+        if (std::holds_alternative<Addition>(den->m_value)) {
+            auto &value = std::get<Addition>(den->m_value);
+            for (auto &child : value.m_children) {
+                // 避免子节点非单项式
+                if (std::holds_alternative<Division>(child->m_value)) {
+                    auto   &child_value = std::get<Division>(child->m_value);
+                    NodePtr sub_den = std::move(child_value.m_children[1]);
+                    NodePtr sub_num = std::move(child_value.m_children[0]);
+                    std::swap(value.m_children.back(), child);
+                    value.m_children.pop_back();
+                    den = makeNode<Addition>(
+                        makeNode<Multiplication>(std::move(den), std::make_unique<Node>(*sub_den)),
+                        std::move(sub_num));
+                    num = makeNode<Multiplication>(std::move(num), std::move(sub_den));
+                    simplify(root);
+                    return;
+                }
+            }
+        }
+
+        // 特殊情况
+        if (isZero(num)) {
+            root = createZeroNode();
             return;
         }
 
-        std::visit(entt::overloaded{
-                       [&](IntegerConstant &value) {
-                           if (value.m_value == 1) {
-                               NodePtr tmp = std::move(num);
-                               root = std::move(tmp);
-                               return;
-                           }
-                           if (num_coeff == nullptr) {
-                               return;
-                           }
-                           auto gcdval = std::gcd(*num_coeff, value.m_value);
-                           *num_coeff /= gcdval;
-                           value.m_value /= gcdval;
-                           if (*num_coeff == 1) {
-                               simplify(num); //< 防止 1 * ... 的出现
-                           }
-                           if (value.m_value == 1) {
-                               NodePtr tmp = std::move(num);
-                               root = std::move(tmp);
-                           }
-                       },
-                       [&](Variable &value) {
-                           auto iter = num_vars.find(value.m_value);
-                           if (iter == num_vars.end()) {
-                               return;
-                           }
-                           iter->second.back()();
-                           final_deleter();
-                           NodePtr tmp = std::move(num);
-                           root = std::move(tmp);
-                       },
-                       [&](Addition & /*usused*/) { assert_msg(false, "Not yet completed."); },
-                       [&](Multiplication &value) {
-                           auto &children = value.m_children;
-                           for (auto iter = children.begin(); iter != children.end();) {
-                               NodePtr &sub = *iter;
-                               std::visit(entt::overloaded{
-                                              [&](IntegerConstant &nested_value) {
-                                                  if (num_coeff == nullptr) {
-                                                      ++iter;
-                                                      return;
-                                                  }
-                                                  auto gcdval =
-                                                      std::gcd(*num_coeff, nested_value.m_value);
-                                                  *num_coeff /= gcdval;
-                                                  nested_value.m_value /= gcdval;
-                                                  if (*num_coeff == 1) {
-                                                      simplify(num); //< 防止 1 * ... 的出现
-                                                  }
-                                                  if (nested_value.m_value == 1) {
-                                                      iter = children.erase(iter);
-                                                  } else {
-                                                      ++iter;
-                                                  }
-                                              },
-                                              [&](Variable &nested_value) {
-                                                  auto find_it = num_vars.find(nested_value.m_value);
-                                                  if (find_it == num_vars.end()) {
-                                                      ++iter;
-                                                      return;
-                                                  }
-                                                  find_it->second.back()();
-                                                  find_it->second.pop_back();
-                                                  if (find_it->second.empty()) {
-                                                      num_vars.erase(find_it);
-                                                  }
-                                                  iter = children.erase(iter);
-                                              },
-                                              [&](auto & /*usused*/) -> void {
-                                                  assert_msg(false, "Multiplication 节点的子节点只能为 "
-                                                                    "IntegerConstant/Variable 节点");
-                                              }},
-                                          sub->m_value);
-                           }
-                           final_deleter();
-                           if (children.empty()) {
-                               NodePtr tmp = std::move(num);
-                               root = std::move(tmp);
-                           } else if (children.size() == 1) {
-                               NodePtr tmp = std::move(children.front());
-                               den = std::move(tmp);
-                           }
-                       },
-                       [&](Division &value) {
-                           num =
-                               makeNode<Multiplication>(std::move(num), std::move(value.m_children[1]));
-                           NodePtr tmp = std::move(value.m_children[0]);
-                           den = std::move(tmp);
-                           simplify(root);
-                       },
-                       [&](Negation &value) {
-                           NodePtr tmp = std::move(value.m_value);
-                           den = std::move(tmp);
-                           root = makeNode<Negation>(std::move(root));
-                           simplify(root);
-                       }},
-                   den->m_value);
-        // std::println("the simpilfied division node is {}", nodeToString(*root));
+        // 摘自 polynomialGcd 并修改
+
+        // 选择主元
+        std::optional<VariableView> main_var = getCommonVar(num, den); //< 主元
+
+        main_var
+            .transform([&](VariableView nested_main_var) {
+                // 转换
+                auto       poly1 = toPoly(std::move(num), nested_main_var);
+                auto       poly2 = toPoly(std::move(den), nested_main_var);
+                // std::println("converted");
+
+                // 计算
+                Polynomial result = polynomialGcd(clonePoly(poly1), clonePoly(poly2));
+                std::println("computed");
+
+                poly1 = divPoly(std::move(poly1), result);
+                poly2 = divPoly(std::move(poly2), result);
+                std::println("divided");
+
+                // 展平
+                num = toNodePtr(std::move(poly1), nested_main_var);
+                den = toNodePtr(std::move(poly2), nested_main_var);
+                std::println("reconverted");
+
+                return nested_main_var;
+            })
+            .or_else([&] -> std::optional<VariableView> {
+                // 没有相同的变量，除掉共同变量
+                IntegerConstantType gcdans = std::gcd(extractPolynomialIntegerCoefficient(num),
+                                                      extractPolynomialIntegerCoefficient(den));
+                dividePolynomialWithIntegerCoefficient(num, gcdans);
+                dividePolynomialWithIntegerCoefficient(den, gcdans);
+                return {};
+            });
+
+        if (std::holds_alternative<Monomial>(den->m_value)) {
+            auto &den_value = std::get<Monomial>(den->m_value);
+            // 消除分母的负数
+            if (den_value.m_coeff < 0) {
+                den_value.m_coeff = -den_value.m_coeff;
+                num = makeNode<Multiplication>(makeNode<Monomial>(-1), std::move(num));
+                simplify(num);
+            }
+            // 消除无意义的分母
+            if (den_value.m_coeff == 1 && den_value.m_var_exps.empty()) {
+                NodePtr tmp = std::move(num);
+                root = std::move(tmp);
+            }
+        }
+
+        // std::println("the simpilfied division node is {}", nodeToString(root));
     }
 
     void simplify(NodePtr &root) {
@@ -1181,33 +1264,42 @@ namespace tnrw::math::details {
             root->m_value);
     }
 
+    /**
+     * @brief 计算代数式的近似值
+     * @tparam FloatT 近似值的结果（浮点数）
+     * @param [in] root 代数式节点
+     * @param [in] converter 获取变量对应的近似值的函数，参数是变量的视图，返回值是变量对应的近似值
+     * @return FloatT 代数式的近似值
+     */
     template <std::floating_point FloatT>
-    FloatT calculateApproximation(const NodePtr &root, std::function<FloatT(VariableView)> converter) {
+    FloatT calculateApproximation(const NodePtr                             &root,
+                                  const std::function<FloatT(VariableView)> &converter) {
         return std::visit(
-            entt::overloaded{
-                [&](const IntegerConstant &value) { return static_cast<FloatT>(value.m_value); },
-                [&](const Variable &value) { return converter(value.m_value); },
-                [&](const Addition &value) {
-                    FloatT sum = 0;
-                    for (const auto &child : value.m_children) {
-                        sum += calculateApproximation<FloatT>(child, converter);
-                    }
-                    return sum;
-                },
-                [&](const Multiplication &value) {
-                    FloatT mul = 1;
-                    for (const auto &child : value.m_children) {
-                        mul *= calculateApproximation<FloatT>(child, converter);
-                    }
-                    return mul;
-                },
-                [&](const Division &value) {
-                    return calculateApproximation<FloatT>(value.m_children[0], converter)
-                           / calculateApproximation<FloatT>(value.m_children[1], converter);
-                },
-                [&](const Negation &value) {
-                    return -calculateApproximation<FloatT>(value.m_value, converter);
-                }},
+            entt::overloaded{[&](const Monomial &value) {
+                                 auto ret = static_cast<FloatT>(value.m_coeff);
+                                 for (const auto &[var, exp] : value.m_var_exps) {
+                                     ret *= std::pow(converter(var), exp);
+                                 }
+                                 return ret;
+                             },
+                             [&](const Addition &value) {
+                                 FloatT sum = 0;
+                                 for (const auto &child : value.m_children) {
+                                     sum += calculateApproximation<FloatT>(child, converter);
+                                 }
+                                 return sum;
+                             },
+                             [&](const Multiplication &value) {
+                                 FloatT mul = 1;
+                                 for (const auto &child : value.m_children) {
+                                     mul *= calculateApproximation<FloatT>(child, converter);
+                                 }
+                                 return mul;
+                             },
+                             [&](const Division &value) {
+                                 return calculateApproximation<FloatT>(value.m_children[0], converter)
+                                        / calculateApproximation<FloatT>(value.m_children[1], converter);
+                             }},
             root->m_value);
     }
 
@@ -1217,7 +1309,7 @@ namespace tnrw::math::details {
      * @param [in] rhs 常量
      */
     void plus(NodePtr &lhs, IntegerConstantType rhs) {
-        lhs = makeNode<Addition>(std::move(lhs), makeNode<IntegerConstant>(rhs));
+        lhs = makeNode<Addition>(std::move(lhs), makeNode<Monomial>(rhs));
         simplify(lhs);
     }
     /**
@@ -1226,7 +1318,7 @@ namespace tnrw::math::details {
      * @param [in] rhs 变量
      */
     void plus(NodePtr &lhs, VariableView rhs) {
-        lhs = makeNode<Addition>(std::move(lhs), makeNode<Variable>(VariableType(rhs)));
+        lhs = makeNode<Addition>(std::move(lhs), makeNode<Monomial>(1, Monomial::MapVarExp{{rhs, 1}}));
         simplify(lhs);
     }
     /**
@@ -1235,8 +1327,7 @@ namespace tnrw::math::details {
      * @param [in] rhs 变量
      */
     void minus(NodePtr &lhs, VariableView rhs) {
-        lhs = makeNode<Addition>(std::move(lhs),
-                                 makeNode<Negation>(makeNode<Variable>(VariableType(rhs))));
+        lhs = makeNode<Addition>(std::move(lhs), makeNode<Monomial>(-1, Monomial::MapVarExp{{rhs, 1}}));
         simplify(lhs);
     }
     /**
@@ -1245,7 +1336,7 @@ namespace tnrw::math::details {
      * @param [in] rhs 常量
      */
     void multiply(NodePtr &lhs, IntegerConstantType rhs) {
-        lhs = makeNode<Multiplication>(std::move(lhs), makeNode<IntegerConstant>(rhs));
+        lhs = makeNode<Multiplication>(std::move(lhs), makeNode<Monomial>(rhs));
         simplify(lhs);
     }
     /**
@@ -1254,7 +1345,8 @@ namespace tnrw::math::details {
      * @param [in] rhs 变量
      */
     void multiply(NodePtr &lhs, VariableView rhs) {
-        lhs = makeNode<Multiplication>(std::move(lhs), makeNode<Variable>(VariableType(rhs)));
+        lhs = makeNode<Multiplication>(std::move(lhs),
+                                       makeNode<Monomial>(1, Monomial::MapVarExp{{rhs, 1}}));
         simplify(lhs);
     }
     /**
@@ -1263,7 +1355,7 @@ namespace tnrw::math::details {
      * @param [in] rhs 常量
      */
     void divide(NodePtr &lhs, IntegerConstantType rhs) {
-        lhs = makeNode<Division>(std::move(lhs), makeNode<IntegerConstant>(rhs));
+        lhs = makeNode<Division>(std::move(lhs), makeNode<Monomial>(rhs));
         simplify(lhs);
     }
     /**
@@ -1272,7 +1364,7 @@ namespace tnrw::math::details {
      * @param [in] rhs 变量
      */
     void divide(NodePtr &lhs, VariableView rhs) {
-        lhs = makeNode<Division>(std::move(lhs), makeNode<Variable>(VariableType(rhs)));
+        lhs = makeNode<Division>(std::move(lhs), makeNode<Monomial>(1, Monomial::MapVarExp{{rhs, 1}}));
         simplify(lhs);
     }
 
@@ -1285,25 +1377,28 @@ namespace tnrw {
 
         // AlgebraicExpression类的成员定义
         [[nodiscard]] AlgebraicExpression::AlgebraicExpression() noexcept
-            : m_root(details::Node::createZero()) {}
+            : m_root(details::createZeroNode()) {}
 
         [[nodiscard]] AlgebraicExpression::AlgebraicExpression(IntegerConstantType constant) noexcept
-            : m_root(details::makeNode<details::IntegerConstant>(constant)) {}
+            : m_root(details::makeNode<details::Monomial>(constant)) {}
 
         [[nodiscard]] AlgebraicExpression::AlgebraicExpression(VariableView variable) noexcept
-            : m_root(details::makeNode<details::Variable>(VariableType(variable))) {}
+            : m_vars({std::make_shared<VariableType>(variable)}),
+              m_root(details::makeNode<details::Monomial>(
+                  1, details::Monomial::MapVarExp{{**m_vars.begin(), 1}})) {}
 
         AlgebraicExpression::~AlgebraicExpression() noexcept = default;
 
         [[nodiscard]] AlgebraicExpression::AlgebraicExpression(const AlgebraicExpression &rhs) noexcept
-            : m_root(std::make_unique<details::Node>(*rhs.m_root)) {}
+            : m_vars(rhs.m_vars), m_root(std::make_unique<details::Node>(*rhs.m_root)) {}
 
         [[nodiscard]] AlgebraicExpression::AlgebraicExpression(AlgebraicExpression &&rhs) noexcept
-            : m_root(std::move(rhs.m_root)) {}
+            : m_vars(std::move(rhs.m_vars)), m_root(std::move(rhs.m_root)) {}
 
         AlgebraicExpression &AlgebraicExpression::operator=(const AlgebraicExpression &rhs) & noexcept {
             if (this != &rhs) {
                 m_root = std::make_unique<details::Node>(*rhs.m_root);
+                m_vars = rhs.m_vars;
             }
             return *this;
         }
@@ -1311,6 +1406,7 @@ namespace tnrw {
         AlgebraicExpression &AlgebraicExpression::operator=(AlgebraicExpression &&rhs) & noexcept {
             if (this != &rhs) {
                 m_root = std::move(rhs.m_root);
+                m_vars = std::move(rhs.m_vars);
             }
             return *this;
         }
@@ -1321,7 +1417,8 @@ namespace tnrw {
         }
 
         AlgebraicExpression &AlgebraicExpression::operator+=(VariableView rhs) & noexcept {
-            details::plus(m_root, rhs);
+            const auto &var = *m_vars.insert(std::make_shared<VariableType>(rhs)).first;
+            details::plus(m_root, *var);
             return *this;
         }
 
@@ -1331,7 +1428,8 @@ namespace tnrw {
         }
 
         AlgebraicExpression &AlgebraicExpression::operator-=(VariableView rhs) & noexcept {
-            details::minus(m_root, rhs);
+            const auto &var = *m_vars.insert(std::make_shared<VariableType>(rhs)).first;
+            details::minus(m_root, *var);
             return *this;
         }
 
@@ -1341,7 +1439,8 @@ namespace tnrw {
         }
 
         AlgebraicExpression &AlgebraicExpression::operator*=(VariableView rhs) & noexcept {
-            details::multiply(m_root, rhs);
+            const auto &var = *m_vars.insert(std::make_shared<VariableType>(rhs)).first;
+            details::multiply(m_root, *var);
             return *this;
         }
 
@@ -1351,7 +1450,8 @@ namespace tnrw {
         }
 
         AlgebraicExpression &AlgebraicExpression::operator/=(VariableView rhs) & noexcept {
-            details::divide(m_root, rhs);
+            const auto &var = *m_vars.insert(std::make_shared<VariableType>(rhs)).first;
+            details::divide(m_root, *var);
             return *this;
         }
 
@@ -1387,14 +1487,17 @@ namespace tnrw {
 
         template <std::floating_point FloatT>
         [[nodiscard]] FloatT AlgebraicExpression::calculateApproximation(
-            std::function<FloatT(VariableView)> converter) const noexcept {
-            return details::calculateApproximation<FloatT>(m_root, std::move(converter));
+            const std::function<FloatT(VariableView)> &converter) const noexcept {
+            return details::calculateApproximation<FloatT>(m_root, converter);
         }
 
-        void                      AlgebraicExpression::clear() noexcept { details::clearNode(m_root); }
+        void AlgebraicExpression::clear() noexcept {
+            m_root = details::createZeroNode();
+            m_vars.clear();
+        }
 
         [[nodiscard]] std::string AlgebraicExpression::toString() const noexcept {
-            return details::nodeToString(*m_root);
+            return details::nodeToString(m_root);
         }
 
         [[nodiscard]] std::wstring AlgebraicExpression::toWString() const noexcept {
@@ -1514,6 +1617,7 @@ namespace tnrw {
             } else if constexpr (std::is_same_v<CharT, wchar_t>) {
                 out << std::format(L"{}", rhs);
             } else {
+                // 无能为力，自求多福
                 out << std::format("{}", rhs);
             }
             return out;
@@ -1521,10 +1625,10 @@ namespace tnrw {
 
         // NumericExpression类的成员定义
         [[nodiscard]] NumericExpression::NumericExpression() noexcept
-            : m_root(details::Node::createZero()) {}
+            : m_root(details::createZeroNode()) {}
 
         [[nodiscard]] NumericExpression::NumericExpression(const IntegerConstantType constant) noexcept
-            : m_root(std::make_unique<details::Node>(details::IntegerConstant{constant})) {}
+            : m_root(details::makeNode<details::Monomial>(constant)) {}
 
         NumericExpression::~NumericExpression() noexcept = default;
 
@@ -1587,7 +1691,7 @@ namespace tnrw {
 
         [[nodiscard]] NumericExpression NumericExpression::operator++(int) noexcept {
             NumericExpression copy_of_old(*this);
-            details::plus(m_root, 1_c);
+            details::plus(m_root, 1);
             return copy_of_old;
         }
         [[nodiscard]] NumericExpression NumericExpression::operator--(int) noexcept {
@@ -1605,10 +1709,10 @@ namespace tnrw {
                 });
         }
 
-        void                      NumericExpression::clear() noexcept { details::clearNode(m_root); }
+        void NumericExpression::clear() noexcept { m_root = details::createZeroNode(); }
 
         [[nodiscard]] std::string NumericExpression::toString() const noexcept {
-            return details::nodeToString(*m_root);
+            return details::nodeToString(m_root);
         }
 
         [[nodiscard]] std::wstring NumericExpression::toWString() const noexcept {
@@ -1684,6 +1788,7 @@ namespace tnrw {
             } else if constexpr (std::is_same_v<CharT, wchar_t>) {
                 out << std::format(L"{}", rhs);
             } else {
+                // 无能为力，自求多福
                 out << std::format("{}", rhs);
             }
             return out;
@@ -1695,11 +1800,11 @@ namespace tnrw {
         template std::basic_ostream<wchar_t> &
         operator<< <wchar_t>(std::basic_ostream<wchar_t> &out, const AlgebraicExpression &rhs) noexcept;
         template float AlgebraicExpression::calculateApproximation<float>(
-            std::function<float(VariableView)> converter) const noexcept;
+            const std::function<float(VariableView)> &converter) const noexcept;
         template double AlgebraicExpression::calculateApproximation<double>(
-            std::function<double(VariableView)> converter) const noexcept;
+            const std::function<double(VariableView)> &converter) const noexcept;
         template long double AlgebraicExpression::calculateApproximation<long double>(
-            std::function<long double(VariableView)> converter) const noexcept;
+            const std::function<long double(VariableView)> &converter) const noexcept;
 
         template std::basic_ostream<char> &operator<< <char>(std::basic_ostream<char> &out,
                                                              const NumericExpression  &rhs) noexcept;

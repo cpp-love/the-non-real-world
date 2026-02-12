@@ -7,7 +7,7 @@
 
 # expressions_base.hpp 版本历史
 
-***
+---
 
 ## [0.1.0-2] - 2026-01-17 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -23,7 +23,7 @@
 2. **BREAKING(不向下兼容):** 将 `tnrw::math::ConstantType` 改名为 `tnrw::math::IntegerConstantType`，
    以更清晰地显示为整型
 
-***
+---
 
 ## [0.1.0-1] - 2025-07-23 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -31,4 +31,4 @@
 
 1. 添加了为代数式服务的常量类型和变量类型及其自定义字面量
 
-***
+---

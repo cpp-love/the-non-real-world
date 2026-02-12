@@ -2,8 +2,8 @@
  * @file test_expressions.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief `tnrw::math::AlgebraicExpression` 与 `tnrw::math::NumericExpression` 类的测试用例或使用示例
- * @version 0.1.0-1
- * @date 2026-01-17
+ * @version 0.1.0-2
+ * @date 2026-02-12
  * 
  * @copyright cpp-love
  * 
@@ -44,7 +44,7 @@ using Handler = std::function<void(std::span<const std::string>)>;
  */
 [[nodiscard]] std::vector<std::string> splitLine(std::string_view line) {
     std::vector<std::string> out;
-    size_t                   pos = 0;
+    std::size_t              pos = 0;
     while (pos < line.size()) {
         while (pos < line.size() && (std::isspace(static_cast<unsigned char>(line[pos])) != 0)) {
             ++pos;
@@ -52,7 +52,7 @@ using Handler = std::function<void(std::span<const std::string>)>;
         if (pos >= line.size()) {
             break;
         }
-        size_t start = pos;
+        std::size_t start = pos;
         while (pos < line.size() && (std::isspace(static_cast<unsigned char>(line[pos])) == 0)) {
             ++pos;
         }
@@ -84,8 +84,8 @@ enum class StrToTypeResult : std::uint8_t { Invalid, OverLimit, Normal };
  */
 [[nodiscard]] StrToTypeResult tryStrToLL(const std::string &str, long long &result) {
     try {
-        size_t    pos = 0;
-        long long value = std::stoll(str, &pos);
+        std::size_t pos = 0;
+        long long   value = std::stoll(str, &pos);
         if (pos != str.size()) {
             return StrToTypeResult::Invalid;
         }
@@ -104,7 +104,7 @@ enum class StrToTypeResult : std::uint8_t { Invalid, OverLimit, Normal };
  */
 [[nodiscard]] StrToTypeResult tryStrToULL(const std::string &str, unsigned long long &result) {
     try {
-        size_t             pos = 0;
+        std::size_t        pos = 0;
         unsigned long long value = std::stoull(str, &pos);
         if (pos != str.size()) {
             return StrToTypeResult::Invalid;
@@ -124,8 +124,8 @@ enum class StrToTypeResult : std::uint8_t { Invalid, OverLimit, Normal };
  */
 [[nodiscard]] StrToTypeResult tryStrToDouble(const std::string &str, double &result) {
     try {
-        size_t pos = 0;
-        double value = std::stod(str, &pos);
+        std::size_t pos = 0;
+        double      value = std::stod(str, &pos);
         if (pos != str.size()) {
             return StrToTypeResult::Invalid;
         }
@@ -136,7 +136,7 @@ enum class StrToTypeResult : std::uint8_t { Invalid, OverLimit, Normal };
     } catch (const std::out_of_range &) { return StrToTypeResult::OverLimit; }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
 
 #ifdef _WIN32
     // 让Windows支持UTF-8
@@ -144,24 +144,82 @@ int main() {
     SetConsoleCP(CP_UTF8);
 #endif // _WIN32
 
+    if (argc > 2) {
+        std::println("error: 过多的命令行参数");
+        return 0;
+    }
+    bool print_verbose = true;
+    if (argc == 2) {
+        std::span<char *, 2> args(argv, argc);
+        if (std::string_view(args[1]) != std::string_view("--simplify-output")) {
+            std::println("error: 非法的命令行参数 {}", args[1]);
+            return 0;
+        }
+        print_verbose = false;
+    }
+
     std::vector<tnrw::math::AlgebraicExpression> algevec(1); //< 代数式数组
     std::vector<tnrw::math::NumericExpression>   numvec(1);  //< 无字母的代数式数组
 
-    std::println("想查看帮助，请键入 alge help 或 num help");
-    std::println("想要退出，请键入 quit 或 exit");
+    if (print_verbose) {
+        std::println("想查看帮助，请键入 help 或 alge help 或 num help");
+        std::println("想要退出，请键入 quit 或 exit");
+    }
 
-    const std::vector<std::string> cmds = {"help",       "new",    "delete",
-                                           "operator",   "clear",  "calculateApproximation",
-                                           "toOpposite", "compare"}; //< 命令
+    constexpr std::array<std::string_view, 8> cmds = {"help",       "new",    "delete",
+                                                      "operator",   "clear",  "calculateApproximation",
+                                                      "toOpposite", "compare"}; //< 命令
 
-    /**
-     * @brief 生成命令帮助的函数
-     * @param [in] type 命令帮助的大类型
-     */
-    auto                           make_type_help = [&](std::string_view type) {
-        std::println("{} 可用命令：", type);
-        for (const auto &cmd : cmds) { std::println("  {} {}", type, cmd); }
-    };
+    // 为 alge 与 num 分别准备简要与详细帮助信息
+    constexpr std::array<std::string_view, 8> alge_briefs{"提供帮助",
+                                                          "添加代数式",
+                                                          "删除代数式",
+                                                          "对一个代数式使用运算符",
+                                                          "清除一个代数式",
+                                                          "计算一个代数式的近似值",
+                                                          "对一个代数式取相反数",
+                                                          "比较两个代数式"};
+    constexpr std::array<std::string_view, 8> alge_details{
+        "- help\n  用于快速获取命令列表\n- help [command]\n  用于获取command命令的详细使用方式",
+        "- new [index]\n  用于在第index(从0开始)个代数式前添加一个代数式\n",
+        "- delete [index]\n  用于删除第index(从0开始)个代数式\n",
+        "- operator [index] [+= | -= | *= | /= ] [constant | variable] [value]\n  "
+        "用于对第index(从0开始)个代数式[+= | -= | *= | /=][常量 | 变量]的value\n- operaotor [index] [+ "
+        "| - | * | /] [constant | variable] [value]\n  用于获取第index(从0开始)个代数式[+ | - | * | "
+        "/][常量 | 变量]的value的结果\n- operator [index] [front++ | front--]\n  "
+        "用于获取第index(从0开始)个代数式前置[++ | --]的结果\n- operator [index] [back++ | back--]\n  "
+        "用于获取第index(从0开始)个代数式后置[++ | --]的结果\n- operator [index] [+ | -]\n  用于获取[+ "
+        "| -]第index(从0开始)个代数式的结果",
+        "- clear [index]\n  用于清空第index(从0开始)个代数式",
+        "- calculateApproximation [index] [[var] [value]]...\n  "
+        "用于将var替换为value，计算代数式的近似值",
+        "- toOpposite [index]\n  原因将第index(从0开始)个代数式改为相反数",
+        "- compare [index1] [index2]\n  "
+        "用于比较第index1(从0开始)个代数式和第index2(从0开始)个代数式是否相等"};
+
+    constexpr std::array<std::string_view, 8> num_briefs{"提供帮助",
+                                                         "添加无字母的代数式",
+                                                         "删除无字母的代数式",
+                                                         "对一个无字母的代数式使用运算符",
+                                                         "清除一个无字母的代数式",
+                                                         "计算一个无字母的代数式的近似值",
+                                                         "对一个无字母的代数式取相反数",
+                                                         "比较两个无字母的代数式"};
+    constexpr std::array<std::string_view, 8> num_details{
+        "- help\n  用于快速获取命令列表\n- help [command]\n  用于获取command命令的详细使用方式",
+        "- new [index]\n  用于在第index(从0开始)个无字母的代数式前添加一个无字母的代数式\n",
+        "- delete [index]\n  用于删除第index(从0开始)个无字母的代数式\n",
+        "- operator [index] [+= | -= | *= | /= ] [value]\n  用于对第index(从0开始)个无字母的代数式[+= | "
+        "-= | *= | /=]常量的value\n- operaotor [index] [+ | - | * | /] [value]\n  "
+        "用于获取第index(从0开始)个无字母的代数式[+ | - | * | /]常量的value的结果\n- operator [index] "
+        "[front++ | front--]\n  用于获取第index(从0开始)个无字母的代数式前置[++ | --]的结果\n- operator "
+        "[index] [back++ | back--]\n  用于获取第index(从0开始)个无字母的代数式后置[++ | --]的结果\n- "
+        "operator [index] [+ | -]\n  用于获取[+ | -]第index(从0开始)个无字母的代数式的结果",
+        "- clear [index]\n  用于清空第index(从0开始)个无字母的代数式",
+        "- calculateApproximation [index] \n  用于计算无字母的代数式的近似值",
+        "- toOpposite [index]\n  原因将第index(从0开始)个无字母的代数式改为相反数",
+        "- compare [index1] [index2]\n  "
+        "用于比较第index1(从0开始)个无字母的代数式和第index2(从0开始)个无字母的代数式是否相等"};
 
     std::unordered_map<std::string, std::unordered_map<std::string, Handler>>
                                                               table; //< 装载对应命令处理的映射
@@ -170,15 +228,26 @@ int main() {
 
     // 填充 table
     table["alge"]["help"] = [&](std::span<const std::string> rest_args) {
-        if (rest_args.empty()) {
-            make_type_help("alge");
+        if (rest_args.empty() || (rest_args.size() == 1 && rest_args[0] == "help")) {
+            std::println("如要详细查看某条命令的使用方式，请键入 alge help [command] 获取");
+            std::println("alge 子命令列表:");
+            for (const auto &[cmd, brief] : std::views::zip(cmds, alge_briefs)) {
+                std::println("  {}  {}", cmd, brief);
+            }
             return;
         }
-        if (rest_args.size() == 1 && rest_args[0] == "help") {
-            make_type_help("alge");
+        if (rest_args.size() == 1) {
+            // 输出某条命令的详细描述
+            for (const auto &[cmd, detail] : std::views::zip(cmds, alge_details)) {
+                if (rest_args[0] == cmd) {
+                    std::println("{}", detail);
+                    return;
+                }
+            }
+            std::println("未知命令：{}", rest_args[0]);
             return;
         }
-        std::println("alge help [command] 暂时支持同名命令列表");
+        std::println("用法: alge help [command]");
     };
 
     table["alge"]["new"] = [&](std::span<const std::string> rest_args) {
@@ -396,15 +465,25 @@ int main() {
     };
 
     table["num"]["help"] = [&](std::span<const std::string> rest_args) {
-        if (rest_args.empty()) {
-            make_type_help("num");
+        if (rest_args.empty() || (rest_args.size() == 1 && rest_args[0] == "help")) {
+            std::println("num 命令列表：");
+            std::println("如要详细查看某条命令的使用方式，请键入 num help [command] 获取");
+            for (const auto &[cmd, brief] : std::views::zip(cmds, num_briefs)) {
+                std::println("  {}  {}", cmd, brief);
+            }
             return;
         }
-        if (rest_args.size() == 1 && rest_args[0] == "help") {
-            make_type_help("num");
+        if (rest_args.size() == 1) {
+            for (const auto &[cmd, detail] : std::views::zip(cmds, num_details)) {
+                if (rest_args[0] == cmd) {
+                    std::println("{}", detail);
+                    return;
+                }
+            }
+            std::println("未知命令：{}", rest_args[0]);
             return;
         }
-        std::println("num help [command] 暂时支持同名命令列表");
+        std::println("用法: num help [command]");
     };
 
     table["num"]["new"] = [&](std::span<const std::string> rest_args) {
@@ -583,13 +662,23 @@ int main() {
 
     while (true) {
         // 输出数组
-        std::println("现在 alge 数组：");
+        if (print_verbose) {
+            std::println("现在 alge 数组：");
+        } else {
+            std::println("alge:");
+        }
         for (std::size_t i = 0; i < algevec.size(); ++i) { std::println("{}: {}", i, algevec[i]); }
-        std::println("现在 num 数组：");
+        if (print_verbose) {
+            std::println("现在 num 数组：");
+        } else {
+            std::println("num:");
+        }
         for (std::size_t i = 0; i < numvec.size(); ++i) { std::println("{}: {}", i, numvec[i]); }
 
         // 获取输入
-        std::print(">>> ");
+        if (print_verbose) {
+            std::print(">>> ");
+        }
         (void)std::fflush(stdout);
         auto args = getInputArgs();
         if (args.empty()) {
@@ -640,8 +729,8 @@ int main() {
         }
 
         // 若首 token 为别名，则展开（最多展开若干层以防循环）
-        const int max_expand = 8;
-        int       depth = 0;
+        constexpr int max_expand = 12;
+        int           depth = 0;
         for (auto iter = aliases.find(args[0]); depth < max_expand && iter != aliases.end();
              ++depth, iter = aliases.find(args[0])) {
             const auto &expand = iter->second;
@@ -659,13 +748,38 @@ int main() {
             continue;
         }
 
+        // 处理退出命令
         if (args.size() == 1 && (args[0] == "quit" || args[0] == "exit")) {
             break;
         }
+
+        // 处理 help 命令
         if (args[0] == "help") {
-            std::println("使用: alge ... 或 num ...，或 quit 退出 或 exit 退出");
+            if (args.size() == 1) {
+                std::println("目前的可用类型： alge  num");
+                std::println(
+                    "查看某个类型的命令列表与其帮助： help alge 或 help num 或 alge help 或 num help");
+                std::println("使用： alge ... 或 num ...");
+                std::println("退出： quit 或 exit");
+                continue;
+            }
+            // help [type] [command...]
+            const std::string &help_type = args[1];
+            auto               type_it = table.find(help_type);
+            if (type_it == table.end()) {
+                std::println("未知类型：{}", help_type);
+                continue;
+            }
+            auto help_it = type_it->second.find("help");
+            if (help_it == type_it->second.end()) {
+                std::println("该类型无帮助信息：{}", help_type);
+                continue;
+            }
+            // 将剩余参数传递给类型的 help 处理器（可能为空或含命令名）
+            help_it->second(std::span(&args[2], args.size() - 2));
             continue;
         }
+
         if (args.size() < 2) {
             std::println("命令格式: <alge|num> <command> ...");
             continue;

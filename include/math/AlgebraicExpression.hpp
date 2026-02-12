@@ -24,7 +24,10 @@
 #include <functional>
 #include <iosfwd>
 #include <locale>
+#include <memory>
+#include <set>
 #include <string>
+
 
 namespace tnrw {
 
@@ -40,13 +43,13 @@ namespace tnrw {
         class AlgebraicExpression {
             /// @cond INTERNAL
           private: /// @privatesection
-            // 成员变量
+            // 数据成员
+            std::set<std::shared_ptr<VariableType>, std::ranges::less> m_vars; ///< 统一存储变量的地方
             details::NodePtr m_root; ///< 私有实现指针，也是代数式树的根节点
 
             /// @endcond
           public: /// @publicsection
             // 友元声明
-
             friend bool operator==(const AlgebraicExpression &lhs,
                                    const AlgebraicExpression &rhs) noexcept;
             friend bool operator!=(const AlgebraicExpression &lhs,
@@ -185,17 +188,17 @@ namespace tnrw {
             /**
              * @brief 计算无字母的代数式的近似值
              * @tparam FloatT 返回类型
-             * @param [in] converter 获取变量对应的近似值的函数
+             * @param [in] converter 获取变量对应的近似值的函数，参数是变量的视图，返回值是变量对应的近似值
              * @return FloatT 无字母的代数式的近似值
              */
             template <std::floating_point FloatT>
             [[nodiscard]] FloatT
-                 calculateApproximation(std::function<FloatT(VariableView)> converter) const noexcept;
+            calculateApproximation(const std::function<FloatT(VariableView)> &converter) const noexcept;
             /**
              * @brief 清空代数式
              * @details 释放原代数式，重设为0
              */
-            void clear() noexcept;
+            void                       clear() noexcept;
             /**
              * @brief 将代数式转为人类可读的字符串
              * @return std::string 人类可读的字符串
@@ -435,7 +438,7 @@ struct std::formatter<tnrw::math::AlgebraicExpression, CharT> {
     typename FmtCtx::iterator format(const FmtType &alge, FmtCtx &ctx) const {
         std::string str = alge.toString();
         auto        out_it = ctx.out();
-        auto       &ctype = std::use_facet<std::ctype<CharT>>(ctx.locale());
+        auto       &ctype = std::use_facet<std::ctype<CharType>>(ctx.locale());
         for (char character : str) {
             *out_it = ctype.widen(character);
             ++out_it;

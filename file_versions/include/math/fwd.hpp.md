@@ -9,7 +9,7 @@
 
 # fwd.hpp 版本历史
 
-***
+---
 
 ## [0.1.0-2] - 2026-01-02 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -29,7 +29,7 @@
 1. `tnrw::math::gcd` （最大公约数）和 `tnrw::math::lcm` （最小公倍数）的函数的前向声明被移除，
    因为与标准库的 `std::gcd` 与 `std::lcm` 重复
 
-***
+---
 
 ## [0.1.0-1] - 2025-07-05 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -40,4 +40,4 @@
 3. `gcd` （最大公约数）和 `lcm` （最小公倍数）的函数的前向声明
 4. `ConstantType` 和 `VariableType` 别名的前向声明
 
-***
+---

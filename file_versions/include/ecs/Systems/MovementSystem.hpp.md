@@ -7,7 +7,7 @@
 
 # MovementSystem.hpp 版本历史
 
-***
+---
 
 ## [0.1.0-1] - 2025-11-15 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -15,4 +15,4 @@
 
 1. 声明了移动系统(`tnrw::MovementSystem`)及其基本功能
 
-***
+---
