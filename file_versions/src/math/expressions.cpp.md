@@ -9,6 +9,19 @@
 
 ---
 
+## [0.1.0-4] - 2026-02-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. 对 `math/AlgebraicExpression.hpp` 和 `math/NumericExpression.hpp` 新增的接口做了实现
+
+### Changed(修改)
+
+1. 完善了 `Addition` 节点中对于子节点 `Division` 的处理，
+   使 `Addition` 节点的 `Division` 子节点不会在化简后出现分母相同的两个节点
+
+---
+
 ## [0.1.0-3] - 2026-02-12 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)

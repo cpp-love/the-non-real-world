@@ -2,11 +2,16 @@
  * @file expressions.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 实现了代数式和无字母的代数式类的细节
- * @version 0.1.0-3
- * @date 2026-02-12
+ * @version 0.1.0-4
+ * @date 2026-02-14
  * 
  * @copyright cpp-love
  * 
+ * @details
+ *  - 通过3个节点 @ref Monomial @ref Addition @ref Division ,
+ *    一个辅助节点 @ref Multiplication 和一个别名 @ref Polynomial
+ *    来实现 @ref Node 节点
+ *  - 通过 std::visit 的访问来实现各种功能
  */
 
 #include "base/assert_msg.hpp"
@@ -262,9 +267,10 @@ namespace tnrw::math::details {
      * @return true 相等
      * @return false 不相等
      * @warning 这要求 root 节点被化简过
+     * @bug 此函数会将 1 + x 与 x + 1 判断为不相等， 1 + (1 / x) 与 (x + 1) / x 也会被判断为不相等。
+     *      计划通过规范化简步骤，实现相同代数式的化简结果一致来解决
      */
     bool isEqual(const NodePtr &lhs, const NodePtr &rhs) noexcept {
-        assert_msg(lhs != nullptr && rhs != nullptr, "参数 lhs 和/或 rhs 错误地为 nullptr");
         return std::visit(
             entt::overloaded{[&](const Monomial &value1, const Monomial &value2) -> bool {
                                  if (value1.m_coeff != value2.m_coeff) {
@@ -285,6 +291,29 @@ namespace tnrw::math::details {
                              },
                              [&](const auto & /*unused*/, const auto & /*unused*/) { return false; }},
             lhs->m_value, rhs->m_value);
+    }
+
+    /**
+     * @brief 判断代数式是否有指定变量
+     * @param [in] lhs 代数式节点
+     * @param [in] variable 指定变量，若为 `std::nullopt`，则查询是否有任意变量
+     * @return true 有指定变量
+     * @return false 没有指定变量
+     * @warning 这要求 root 节点被化简过
+     */
+    bool hasVariable(const NodePtr &lhs, std::optional<VariableView> variable = std::nullopt) noexcept {
+        return std::visit(entt::overloaded{[&](const Monomial &value) {
+                                               return variable.has_value()
+                                                          ? value.m_var_exps.contains(*variable)
+                                                          : !value.m_var_exps.empty();
+                                           },
+                                           [&](const auto &value) {
+                                               return std::ranges::any_of(
+                                                   value.m_children, [&](const NodePtr &sub_node) {
+                                                       return hasVariable(sub_node, variable);
+                                                   });
+                                           }},
+                          lhs->m_value);
     }
 
     /**
@@ -445,56 +474,137 @@ namespace tnrw::math::details {
             simplify(new_child);
 
             /// @todo 取消此处与上面重载的重复
-            std::visit(entt::overloaded{
-                           [&](Addition &value) {
-                               // 展开 Addition 节点
-                               auto &sub_children = value.m_children;
-                               for (NodePtr &sub : sub_children) {
-                                   // sub一定是 Monomial
-                                   assert_msg(std::holds_alternative<Monomial>(sub->m_value),
-                                              "猜想错误：sub 实际上不一定为 Monomial");
-                                   auto &sub_value = std::get<Monomial>(sub->m_value);
-                                   if (sub_value.m_var_exps.empty()) {
-                                       // 是常量
-                                       integer_augend += sub_value.m_coeff;
-                                       return;
-                                   }
-                                   // 是变量
-                                   IntegerConstantType coeff = std::exchange(sub_value.m_coeff, 1);
-                                   std::string         key = nodeToString(sub); //< 原始值的字符串
-                                   sub_value.m_coeff = coeff;
-                                   auto [iter, succeeded] =
-                                       monomials.try_emplace(key, std::move(sub_value));
-                                   if (!succeeded) {
-                                       // 已经存在，相加
-                                       iter->second.m_coeff += coeff;
-                                   }
-                               }
-                           },
-                           [&](Monomial &value) {
-                               if (value.m_var_exps.empty()) {
-                                   // 是常量
-                                   integer_augend += value.m_coeff;
-                                   return;
-                               }
-                               // 是变量
-                               IntegerConstantType coeff = std::exchange(value.m_coeff, 1);
-                               std::string         key = nodeToString(new_child); //< 原始值的字符串
-                               value.m_coeff = coeff;
-                               auto [iter, succeeded] = monomials.try_emplace(key, std::move(value));
-                               if (!succeeded) {
-                                   // 已经存在，相加
-                                   iter->second.m_coeff += coeff;
-                               }
-                           },
-                           [&](Multiplication & /*unused*/) {
-                               assert_msg(false, "化简后的节点不应为 Multiplication 节点");
-                           },
-                           [&](Division & /*unused*/) {
-                               // 添加
-                               children.push_back(std::move(new_child));
-                           }},
-                       new_child->m_value);
+
+            std::visit(
+                entt::overloaded{
+                    [&](Addition &value) {
+                        // 展开 Addition 节点
+                        auto &sub_children = value.m_children;
+                        for (NodePtr &sub : sub_children) {
+                            // sub一定是 Monomial
+                            assert_msg(std::holds_alternative<Monomial>(sub->m_value),
+                                       "猜想错误：sub 实际上不一定为 Monomial");
+                            auto &sub_value = std::get<Monomial>(sub->m_value);
+                            if (sub_value.m_var_exps.empty()) {
+                                // 是常量
+                                integer_augend += sub_value.m_coeff;
+                                continue;
+                            }
+                            // 是变量
+                            IntegerConstantType coeff = std::exchange(sub_value.m_coeff, 1);
+                            std::string         key = nodeToString(sub); //< 原始值的字符串
+                            sub_value.m_coeff = coeff;
+                            auto [iter, succeeded] = monomials.try_emplace(key, std::move(sub_value));
+                            if (!succeeded) {
+                                // 已经存在，相加
+                                iter->second.m_coeff += coeff;
+                            }
+                        }
+                    },
+                    [&](Monomial &value) {
+                        if (value.m_var_exps.empty()) {
+                            // 是常量
+                            integer_augend += value.m_coeff;
+                            return;
+                        }
+                        // 是变量
+                        IntegerConstantType coeff = std::exchange(value.m_coeff, 1);
+                        std::string         key = nodeToString(new_child); //< 原始值的字符串
+                        value.m_coeff = coeff;
+                        auto [iter, succeeded] = monomials.try_emplace(key, std::move(value));
+                        if (!succeeded) {
+                            // 已经存在，相加
+                            iter->second.m_coeff += coeff;
+                        }
+                    },
+                    [&](Multiplication & /*unused*/) {
+                        assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                    },
+                    [&](Division &value) {
+                        // 合并到前面的节点或添加
+                        auto merge_or_add = [&children, &integer_augend,
+                                             &monomials](this auto &&merge_or_add, Division &root_value,
+                                                         NodePtr &root) -> void {
+                            std::string key = nodeToString(root_value.m_children[1]);
+                            for (NodePtr &child : children) {
+                                assert_msg(std::holds_alternative<Division>(child->m_value),
+                                           "猜想错误：child 实际上不一定为 Division");
+                                auto &child_value = std::get<Division>(child->m_value);
+                                if (key != nodeToString(child_value.m_children[1])) {
+                                    continue;
+                                }
+                                child_value.m_children[0] =
+                                    makeNode<Addition>(std::move(child_value.m_children[0]),
+                                                       std::move(root_value.m_children[0]));
+                                simplify(child);
+                                NodePtr new_child = std::move(child);
+                                std::swap(child, children.back());
+                                children.pop_back();
+                                /// @todo 取消此处与上面重载的重复
+
+                                // 合并相同分母
+                                std::visit(
+                                    entt::overloaded{
+                                        [&](Addition &value) {
+                                            // 展开 Addition 节点
+                                            auto &sub_children = value.m_children;
+                                            for (NodePtr &sub : sub_children) {
+                                                // sub一定是 Monomial
+                                                assert_msg(
+                                                    std::holds_alternative<Monomial>(sub->m_value),
+                                                    "猜想错误：sub 实际上不一定为 Monomial");
+                                                auto &sub_value = std::get<Monomial>(sub->m_value);
+                                                if (sub_value.m_var_exps.empty()) {
+                                                    // 是常量
+                                                    integer_augend += sub_value.m_coeff;
+                                                    continue;
+                                                }
+                                                // 是变量
+                                                IntegerConstantType coeff =
+                                                    std::exchange(sub_value.m_coeff, 1);
+                                                std::string key = nodeToString(sub); //< 原始值的字符串
+                                                sub_value.m_coeff = coeff;
+                                                auto [iter, succeeded] =
+                                                    monomials.try_emplace(key, std::move(sub_value));
+                                                if (!succeeded) {
+                                                    // 已经存在，相加
+                                                    iter->second.m_coeff += coeff;
+                                                }
+                                            }
+                                        },
+                                        [&](Monomial &value) {
+                                            if (value.m_var_exps.empty()) {
+                                                // 是常量
+                                                integer_augend += value.m_coeff;
+                                                return;
+                                            }
+                                            // 是变量
+                                            IntegerConstantType coeff = std::exchange(value.m_coeff, 1);
+                                            std::string key = nodeToString(child); //< 原始值的字符串
+                                            value.m_coeff = coeff;
+                                            auto [iter, succeeded] =
+                                                monomials.try_emplace(key, std::move(value));
+                                            if (!succeeded) {
+                                                // 已经存在，相加
+                                                iter->second.m_coeff += coeff;
+                                            }
+                                        },
+                                        [&](Multiplication & /*unused*/) {
+                                            assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                                        },
+                                        [&](Division &value) {
+                                            // 继续递归，防止化简后还有相同分母的其他节点
+                                            merge_or_add(value, new_child);
+                                        }},
+                                    new_child->m_value);
+                                return;
+                            }
+                            // 没有相同分母
+                            children.push_back(std::move(root));
+                        };
+                        merge_or_add(value, new_child);
+                    }},
+                new_child->m_value);
         }
 
         // 重建 Monomial 节点
@@ -912,7 +1022,7 @@ namespace tnrw::math::details {
         }
 
         // 本原部分的 GCD（运用辗转相除法），需要提前调用 removeRedundantPoly 函数
-        auto gcd_primitive = [](this auto gcd_primitive, Polynomial poly1,
+        auto gcd_primitive = [](this auto &&gcd_primitive, Polynomial poly1,
                                 Polynomial poly2) -> Polynomial {
             // 保证 degree(poly1) >= degree(poly2)
             if (getDegreePoly(poly1) < getDegreePoly(poly2)) {
@@ -1215,16 +1325,16 @@ namespace tnrw::math::details {
 
                 // 计算
                 Polynomial result = polynomialGcd(clonePoly(poly1), clonePoly(poly2));
-                std::println("computed");
+                // std::println("computed");
 
                 poly1 = divPoly(std::move(poly1), result);
                 poly2 = divPoly(std::move(poly2), result);
-                std::println("divided");
+                // std::println("divided");
 
                 // 展平
                 num = toNodePtr(std::move(poly1), nested_main_var);
                 den = toNodePtr(std::move(poly2), nested_main_var);
-                std::println("reconverted");
+                // std::println("reconverted");
 
                 return nested_main_var;
             })
@@ -1383,22 +1493,30 @@ namespace tnrw {
             : m_root(details::makeNode<details::Monomial>(constant)) {}
 
         [[nodiscard]] AlgebraicExpression::AlgebraicExpression(VariableView variable) noexcept
-            : m_vars({std::make_shared<VariableType>(variable)}),
-              m_root(details::makeNode<details::Monomial>(
-                  1, details::Monomial::MapVarExp{{**m_vars.begin(), 1}})) {}
-
-        AlgebraicExpression::~AlgebraicExpression() noexcept = default;
+            : m_root(details::makeNode<details::Monomial>(
+                  1, details::Monomial::MapVarExp{{*m_vars.emplace(variable).first, 1}})) {}
+        AlgebraicExpression::AlgebraicExpression(NumericExpression num_expr) noexcept
+            : m_root(std::move(num_expr.m_root)) {}
 
         [[nodiscard]] AlgebraicExpression::AlgebraicExpression(const AlgebraicExpression &rhs) noexcept
-            : m_vars(rhs.m_vars), m_root(std::make_unique<details::Node>(*rhs.m_root)) {}
+            : m_root(std::make_unique<details::Node>(*rhs.m_root)) {}
 
         [[nodiscard]] AlgebraicExpression::AlgebraicExpression(AlgebraicExpression &&rhs) noexcept
-            : m_vars(std::move(rhs.m_vars)), m_root(std::move(rhs.m_root)) {}
+            : m_root(std::move(rhs.m_root)) {}
+
+        AlgebraicExpression &AlgebraicExpression::operator=(const IntegerConstantType &rhs) & noexcept {
+            m_root = details::makeNode<details::Monomial>(rhs);
+            return *this;
+        }
+        AlgebraicExpression &AlgebraicExpression::operator=(VariableView rhs) & noexcept {
+            VariableView var = *m_vars.emplace(rhs).first;
+            m_root = details::makeNode<details::Monomial>(1, details::Monomial::MapVarExp{{var, 1}});
+            return *this;
+        }
 
         AlgebraicExpression &AlgebraicExpression::operator=(const AlgebraicExpression &rhs) & noexcept {
             if (this != &rhs) {
                 m_root = std::make_unique<details::Node>(*rhs.m_root);
-                m_vars = rhs.m_vars;
             }
             return *this;
         }
@@ -1406,19 +1524,25 @@ namespace tnrw {
         AlgebraicExpression &AlgebraicExpression::operator=(AlgebraicExpression &&rhs) & noexcept {
             if (this != &rhs) {
                 m_root = std::move(rhs.m_root);
-                m_vars = std::move(rhs.m_vars);
             }
             return *this;
         }
+
+        AlgebraicExpression::~AlgebraicExpression() noexcept = default;
 
         AlgebraicExpression &AlgebraicExpression::operator+=(IntegerConstantType rhs) & noexcept {
             details::plus(m_root, rhs);
             return *this;
         }
-
         AlgebraicExpression &AlgebraicExpression::operator+=(VariableView rhs) & noexcept {
-            const auto &var = *m_vars.insert(std::make_shared<VariableType>(rhs)).first;
-            details::plus(m_root, *var);
+            VariableView var = *m_vars.emplace(rhs).first;
+            details::plus(m_root, var);
+            return *this;
+        }
+        AlgebraicExpression &AlgebraicExpression::operator+=(AlgebraicExpression rhs) & noexcept {
+            using namespace details;
+            m_root = makeNode<Addition>(std::move(m_root), std::move(rhs.m_root));
+            simplify(m_root);
             return *this;
         }
 
@@ -1426,10 +1550,17 @@ namespace tnrw {
             details::plus(m_root, -rhs);
             return *this;
         }
-
         AlgebraicExpression &AlgebraicExpression::operator-=(VariableView rhs) & noexcept {
-            const auto &var = *m_vars.insert(std::make_shared<VariableType>(rhs)).first;
-            details::minus(m_root, *var);
+            VariableView var = *m_vars.emplace(rhs).first;
+            details::minus(m_root, var);
+            return *this;
+        }
+        AlgebraicExpression &AlgebraicExpression::operator-=(AlgebraicExpression rhs) & noexcept {
+            using namespace details;
+            m_root =
+                makeNode<Addition>(std::move(m_root), makeNode<Multiplication>(makeNode<Monomial>(-1),
+                                                                               std::move(rhs.m_root)));
+            simplify(m_root);
             return *this;
         }
 
@@ -1437,10 +1568,15 @@ namespace tnrw {
             details::multiply(m_root, rhs);
             return *this;
         }
-
         AlgebraicExpression &AlgebraicExpression::operator*=(VariableView rhs) & noexcept {
-            const auto &var = *m_vars.insert(std::make_shared<VariableType>(rhs)).first;
-            details::multiply(m_root, *var);
+            VariableView var = *m_vars.emplace(rhs).first;
+            details::multiply(m_root, var);
+            return *this;
+        }
+        AlgebraicExpression &AlgebraicExpression::operator*=(AlgebraicExpression rhs) & noexcept {
+            using namespace details;
+            m_root = makeNode<Multiplication>(std::move(m_root), std::move(rhs.m_root));
+            simplify(m_root);
             return *this;
         }
 
@@ -1448,10 +1584,15 @@ namespace tnrw {
             details::divide(m_root, rhs);
             return *this;
         }
-
         AlgebraicExpression &AlgebraicExpression::operator/=(VariableView rhs) & noexcept {
-            const auto &var = *m_vars.insert(std::make_shared<VariableType>(rhs)).first;
-            details::divide(m_root, *var);
+            VariableView var = *m_vars.emplace(rhs).first;
+            details::divide(m_root, var);
+            return *this;
+        }
+        AlgebraicExpression &AlgebraicExpression::operator/=(AlgebraicExpression rhs) & noexcept {
+            using namespace details;
+            m_root = makeNode<Division>(std::move(m_root), std::move(rhs.m_root));
+            simplify(m_root);
             return *this;
         }
 
@@ -1491,10 +1632,7 @@ namespace tnrw {
             return details::calculateApproximation<FloatT>(m_root, converter);
         }
 
-        void AlgebraicExpression::clear() noexcept {
-            m_root = details::createZeroNode();
-            m_vars.clear();
-        }
+        void AlgebraicExpression::clear() noexcept { m_root = details::createZeroNode(); }
 
         [[nodiscard]] std::string AlgebraicExpression::toString() const noexcept {
             return details::nodeToString(m_root);
@@ -1506,6 +1644,38 @@ namespace tnrw {
 
         void AlgebraicExpression::changeToOpposite() noexcept { details::multiply(m_root, -1); }
 
+        [[nodiscard]] bool AlgebraicExpression::hasVariable() const noexcept {
+            if (m_vars.empty()) {
+                return false;
+            }
+            return details::hasVariable(m_root);
+        }
+
+        [[nodiscard]] bool AlgebraicExpression::hasVariable(VariableView variable) const noexcept {
+            if (!m_vars.contains(variable)) {
+                return false;
+            }
+            return details::hasVariable(m_root, variable);
+        }
+        [[nodiscard]] std::optional<NumericExpression>
+        AlgebraicExpression::toNumericExpression() const & noexcept {
+            if (hasVariable()) {
+                return std::nullopt;
+            }
+            NumericExpression ret;
+            ret.m_root = std::make_unique<details::Node>(*m_root);
+            return ret;
+        }
+        [[nodiscard]] std::optional<NumericExpression>
+        AlgebraicExpression::toNumericExpression() && noexcept {
+            if (hasVariable()) {
+                return std::nullopt;
+            }
+            NumericExpression ret;
+            ret.m_root = std::move(m_root);
+            return ret;
+        }
+
         [[nodiscard]] AlgebraicExpression operator+(const AlgebraicExpression &lhs,
                                                     const IntegerConstantType  rhs) noexcept {
             AlgebraicExpression cpy(lhs);
@@ -1516,7 +1686,6 @@ namespace tnrw {
             AlgebraicExpression cpy(rhs);
             return cpy += lhs;
         }
-
         [[nodiscard]] AlgebraicExpression operator+(const AlgebraicExpression &lhs,
                                                     VariableView               rhs) noexcept {
             AlgebraicExpression cpy(lhs);
@@ -1527,6 +1696,11 @@ namespace tnrw {
             AlgebraicExpression cpy(rhs);
             return cpy += lhs;
         }
+        [[nodiscard]] AlgebraicExpression operator+(const AlgebraicExpression &lhs,
+                                                    const AlgebraicExpression &rhs) noexcept {
+            AlgebraicExpression cpy(lhs);
+            return cpy += rhs;
+        }
 
         [[nodiscard]] AlgebraicExpression operator-(const AlgebraicExpression &lhs,
                                                     const IntegerConstantType  rhs) noexcept {
@@ -1535,10 +1709,9 @@ namespace tnrw {
         }
         [[nodiscard]] AlgebraicExpression operator-(const IntegerConstantType  lhs,
                                                     const AlgebraicExpression &rhs) noexcept {
-            AlgebraicExpression cpy(rhs);
-            return cpy -= lhs;
+            AlgebraicExpression cpy(-rhs);
+            return cpy += lhs;
         }
-
         [[nodiscard]] AlgebraicExpression operator-(const AlgebraicExpression &lhs,
                                                     VariableView               rhs) noexcept {
             AlgebraicExpression cpy(lhs);
@@ -1546,8 +1719,13 @@ namespace tnrw {
         }
         [[nodiscard]] AlgebraicExpression operator-(VariableView               lhs,
                                                     const AlgebraicExpression &rhs) noexcept {
-            AlgebraicExpression cpy(rhs);
-            return cpy -= lhs;
+            AlgebraicExpression cpy(-rhs);
+            return cpy += lhs;
+        }
+        [[nodiscard]] AlgebraicExpression operator-(const AlgebraicExpression &lhs,
+                                                    const AlgebraicExpression &rhs) noexcept {
+            AlgebraicExpression cpy(lhs);
+            return cpy -= rhs;
         }
 
         [[nodiscard]] AlgebraicExpression operator*(const AlgebraicExpression &lhs,
@@ -1560,7 +1738,6 @@ namespace tnrw {
             AlgebraicExpression cpy(rhs);
             return cpy *= lhs;
         }
-
         [[nodiscard]] AlgebraicExpression operator*(const AlgebraicExpression &lhs,
                                                     VariableView               rhs) noexcept {
             AlgebraicExpression cpy(lhs);
@@ -1571,6 +1748,11 @@ namespace tnrw {
             AlgebraicExpression cpy(rhs);
             return cpy *= lhs;
         }
+        [[nodiscard]] AlgebraicExpression operator*(const AlgebraicExpression &lhs,
+                                                    const AlgebraicExpression &rhs) noexcept {
+            AlgebraicExpression cpy(lhs);
+            return cpy *= rhs;
+        }
 
         [[nodiscard]] AlgebraicExpression operator/(const AlgebraicExpression &lhs,
                                                     const IntegerConstantType  rhs) noexcept {
@@ -1579,10 +1761,9 @@ namespace tnrw {
         }
         [[nodiscard]] AlgebraicExpression operator/(const IntegerConstantType  lhs,
                                                     const AlgebraicExpression &rhs) noexcept {
-            AlgebraicExpression cpy(rhs);
-            return cpy /= lhs;
+            AlgebraicExpression cpy(lhs);
+            return cpy /= rhs;
         }
-
         [[nodiscard]] AlgebraicExpression operator/(const AlgebraicExpression &lhs,
                                                     VariableView               rhs) noexcept {
             AlgebraicExpression cpy(lhs);
@@ -1590,8 +1771,13 @@ namespace tnrw {
         }
         [[nodiscard]] AlgebraicExpression operator/(VariableView               lhs,
                                                     const AlgebraicExpression &rhs) noexcept {
-            AlgebraicExpression cpy(rhs);
-            return cpy /= lhs;
+            AlgebraicExpression cpy(lhs);
+            return cpy /= rhs;
+        }
+        [[nodiscard]] AlgebraicExpression operator/(const AlgebraicExpression &lhs,
+                                                    const AlgebraicExpression &rhs) noexcept {
+            AlgebraicExpression cpy(lhs);
+            return cpy /= rhs;
         }
 
         [[nodiscard]] bool operator==(const AlgebraicExpression &lhs,
@@ -1656,9 +1842,23 @@ namespace tnrw {
             details::plus(m_root, rhs);
             return *this;
         }
+        NumericExpression &NumericExpression::operator+=(const NumericExpression &rhs) & noexcept {
+            using namespace details;
+            m_root = makeNode<Addition>(std::move(m_root), std::make_unique<Node>(*rhs.m_root));
+            simplify(m_root);
+            return *this;
+        }
 
         NumericExpression &NumericExpression::operator-=(const IntegerConstantType rhs) & noexcept {
             details::plus(m_root, -rhs);
+            return *this;
+        }
+        NumericExpression &NumericExpression::operator-=(const NumericExpression &rhs) & noexcept {
+            using namespace details;
+            m_root = makeNode<Addition>(
+                std::move(m_root),
+                makeNode<Multiplication>(makeNode<Monomial>(-1), std::make_unique<Node>(*rhs.m_root)));
+            details::simplify(m_root);
             return *this;
         }
 
@@ -1666,9 +1866,21 @@ namespace tnrw {
             details::multiply(m_root, rhs);
             return *this;
         }
+        NumericExpression &NumericExpression::operator*=(const NumericExpression &rhs) & noexcept {
+            using namespace details;
+            m_root = makeNode<Multiplication>(std::move(m_root), std::make_unique<Node>(*rhs.m_root));
+            simplify(m_root);
+            return *this;
+        }
 
         NumericExpression &NumericExpression::operator/=(const IntegerConstantType rhs) & noexcept {
             details::divide(m_root, rhs);
+            return *this;
+        }
+        NumericExpression &NumericExpression::operator/=(const NumericExpression &rhs) & noexcept {
+            using namespace details;
+            m_root = makeNode<Division>(std::move(m_root), std::make_unique<Node>(*rhs.m_root));
+            simplify(m_root);
             return *this;
         }
 
@@ -1731,6 +1943,11 @@ namespace tnrw {
             NumericExpression cpy(rhs);
             return cpy += lhs;
         }
+        [[nodiscard]] NumericExpression operator+(const NumericExpression &lhs,
+                                                  const NumericExpression &rhs) noexcept {
+            NumericExpression cpy(lhs);
+            return cpy += rhs;
+        }
 
         [[nodiscard]] NumericExpression operator-(const NumericExpression  &lhs,
                                                   const IntegerConstantType rhs) noexcept {
@@ -1741,6 +1958,11 @@ namespace tnrw {
                                                   const NumericExpression  &rhs) noexcept {
             NumericExpression cpy(rhs);
             return cpy -= lhs;
+        }
+        [[nodiscard]] NumericExpression operator-(const NumericExpression &lhs,
+                                                  const NumericExpression &rhs) noexcept {
+            NumericExpression cpy(lhs);
+            return cpy -= rhs;
         }
 
         [[nodiscard]] NumericExpression operator*(const NumericExpression  &lhs,
@@ -1753,6 +1975,11 @@ namespace tnrw {
             NumericExpression cpy(rhs);
             return cpy *= lhs;
         }
+        [[nodiscard]] NumericExpression operator*(const NumericExpression &lhs,
+                                                  const NumericExpression &rhs) noexcept {
+            NumericExpression cpy(lhs);
+            return cpy *= rhs;
+        }
 
         [[nodiscard]] NumericExpression operator/(const NumericExpression  &lhs,
                                                   const IntegerConstantType rhs) noexcept {
@@ -1763,6 +1990,11 @@ namespace tnrw {
                                                   const NumericExpression  &rhs) noexcept {
             NumericExpression cpy(rhs);
             return cpy /= lhs;
+        }
+        [[nodiscard]] NumericExpression operator/(const NumericExpression &lhs,
+                                                  const NumericExpression &rhs) noexcept {
+            NumericExpression cpy(lhs);
+            return cpy /= rhs;
         }
 
         [[nodiscard]] bool operator==(const NumericExpression &lhs,

@@ -45,6 +45,7 @@ def filter_invalid_path(
 
 def generate_data(exec: Path, input_file: Path, ans_file: Path):
     """
+    生成一次测试数据
 
     :param exec: 可执行文件路径
     :type exec: Path
@@ -65,9 +66,10 @@ def generate_data(exec: Path, input_file: Path, ans_file: Path):
             "operator",
             "clear",
             "calculateApproximation",
-            "toOpposite",
+            "changeToOpposite",
             "compare",
         ]
+        # todo : 添加其他命令
         unary_operators: list[str] = ["front++", "front--", "back++", "back--"]
         special_operators: list[str] = ["+", "-"]
         operators: list[str] = [
@@ -92,7 +94,7 @@ def generate_data(exec: Path, input_file: Path, ans_file: Path):
             type_str: str = random.choice(types)
             cmd_str: str = random.choice(cmds + ["operator" for i in range(15)])
 
-            if cmd_str in ["new", "delete", "clear", "toOpposite"]:
+            if cmd_str in ["new", "delete", "clear", "changeToOpposite"]:
                 if cmd_str == "delete" and expression_cnts[type_str] == 0:
                     continue
                 f.write(
@@ -117,7 +119,9 @@ def generate_data(exec: Path, input_file: Path, ans_file: Path):
                     f.write(f"{type_str} {cmd_str} {index} {op}\n")
                 else:  # 是二元操作符
                     if type_str == "alge":
-                        var_type: str = random.choice(["constant", "variable"])
+                        var_type: str = random.choice(
+                            ["constant", "variable", "algeexpr"]
+                        )
                         if var_type == "constant":
                             constant: int = random.randint(0, 100)
                             if op in ["/", "/="]:
@@ -126,7 +130,7 @@ def generate_data(exec: Path, input_file: Path, ans_file: Path):
                             f.write(
                                 f"{type_str} {cmd_str} {index} {op} {var_type} {constant}\n"
                             )
-                        else:
+                        elif var_type == "variable":
                             variable: str = (
                                 "".join(
                                     random.choices(
@@ -145,12 +149,26 @@ def generate_data(exec: Path, input_file: Path, ans_file: Path):
                             f.write(
                                 f"{type_str} {cmd_str} {index} {op} {var_type} {variable}\n"
                             )
+                        else:
+                            expridx: int = random.randint(0, expression_cnts[type_str])
+                            # todo : 添加除以0的错误检查
+                            f.write(
+                                f"{type_str} {cmd_str} {index} {op} {var_type} {expridx}\n"
+                            )
                     else:
-                        constant: int = random.randint(0, 100)
-                        if op in ["/", "/="]:
-                            if constant == 0:
-                                constant = random.randint(0, 100)
-                        f.write(f"{type_str} {cmd_str} {index} {op} {constant}\n")
+                        should_be_expr: bool = bool(random.getrandbits(1))
+                        if should_be_expr:
+                            expridx: int = random.randint(0, expression_cnts[type_str])
+                            # todo : 添加除以0的错误检查
+                            f.write(
+                                f"{type_str} {cmd_str} {index} {op} numexpr {expridx}\n"
+                            )
+                        else:
+                            constant: int = random.randint(0, 100)
+                            if op in ["/", "/="]:
+                                if constant == 0:
+                                    constant = random.randint(0, 100)
+                            f.write(f"{type_str} {cmd_str} {index} {op} {constant}\n")
             else:  # cmd_str == "calculateApproximation"
                 index: int = random.randint(0, expression_cnts[type_str])
                 if type_str == "alge":
@@ -217,11 +235,12 @@ def main():
             Path(args.output_directory), PathType.DIRECTORY
         )
 
-        for i in range(0, args.times):
+        for i in range(1, args.times + 1):
+            print(f"正在生成第{i}组数据 ...")
             generate_data(
                 exec,
-                output_directory / f"tests{i + 1}.in",
-                output_directory / f"tests{i + 1}.ans",
+                output_directory / f"tests{i}.in",
+                output_directory / f"tests{i}.ans",
             )
     except Exception as e:
         print(f"error: {e}")

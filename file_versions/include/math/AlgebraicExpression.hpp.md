@@ -9,6 +9,17 @@
 
 ---
 
+## [0.1.0-3] - 2026-02-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. 添加了 `AlgebraicExpression` 对自己的加减乘除运算
+2. 添加了 `hasVariable` 方法，用于判断代数式是否有指定变量或任意变量
+3. 添加了 `toNumericExpression` 方法，用于将代数式转换成无字母的代数式
+4. 添加了从 `tnrw::math::NumericExpression` 构造的转换构造函数，用于将无字母的代数式转换成代数式
+
+---
+
 ## [0.1.0-2] - 2026-01-17 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)

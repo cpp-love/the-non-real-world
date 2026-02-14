@@ -2,8 +2,8 @@
  * @file test_expressions.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief `tnrw::math::AlgebraicExpression` 与 `tnrw::math::NumericExpression` 类的测试用例或使用示例
- * @version 0.1.0-2
- * @date 2026-02-12
+ * @version 0.1.0-3
+ * @date 2026-02-14
  * 
  * @copyright cpp-love
  * 
@@ -15,6 +15,7 @@
  *  - num operator 0 + 5
  *  - alge operator 0 += constant 3
  *  - alge operator 0 + variable x
+ *  - alge operator 0 += algeexpr 1
  */
 
 #include "math/AlgebraicExpression.hpp"
@@ -166,60 +167,113 @@ int main(int argc, char *argv[]) {
         std::println("想要退出，请键入 quit 或 exit");
     }
 
-    constexpr std::array<std::string_view, 8> cmds = {"help",       "new",    "delete",
-                                                      "operator",   "clear",  "calculateApproximation",
-                                                      "toOpposite", "compare"}; //< 命令
+    constexpr std::array<std::string_view, 10> alge_cmds = {"help",
+                                                            "new",
+                                                            "delete",
+                                                            "operator",
+                                                            "clear",
+                                                            "calculateApproximation",
+                                                            "changeToOpposite",
+                                                            "compare",
+                                                            "hasVariable",
+                                                            "toNum"};
+    constexpr std::array<std::string_view, 10> alge_briefs{"提供帮助",
+                                                           "添加代数式",
+                                                           "删除代数式",
+                                                           "对一个代数式使用运算符",
+                                                           "清除一个代数式",
+                                                           "计算一个代数式的近似值",
+                                                           "对一个代数式取相反数",
+                                                           "比较两个代数式",
+                                                           "判断一个代数式是否有指定变量",
+                                                           "将一个代数式转换成一个无字母的代数式"};
+    constexpr std::array<std::string_view, 10> alge_details{
+        "- help\n"
+        "  用于快速获取命令列表\n"
+        "- help [command]\n"
+        "  用于获取command命令的详细使用方式",
+        "- new [index]\n"
+        "  用于在第index(从0开始)个代数式前添加一个代数式",
+        "- delete [index]\n"
+        "  用于删除第index(从0开始)个代数式",
+        "- operator [index] [+= | -= | *= | /= ] [constant | variable] [value]\n"
+        "  用于对第index(从0开始)个代数式[+= | -= | *= | /=][常量 | 变量]value\n"
+        "- operator [index1] [+= | -= | *= | /= ] algeexpr [index2]\n"
+        "  用于对第index1(从0开始)个代数式[+= | -= | *= | /=]第index2(从0开始)个代数式\n"
+        "- operaotor [index] [+ | - | * | /] [constant | variable] [value]\n"
+        "  用于获取第index(从0开始)个代数式[+ | - | * | /][常量 | 变量]value的结果\n"
+        "- operator [index1] [+ | - | * | / ] algeexpr [index2]\n"
+        "  用于获取第index1(从0开始)个代数式[+ | - | * | /]第index2(从0开始)个代数式的结果\n"
+        "- operator [index] [front++ | front--]\n"
+        "  用于获取第index(从0开始)个代数式前置[++ | --]的结果\n"
+        "- operator [index] [back++ | back--]\n"
+        "  用于获取第index(从0开始)个代数式后置[++ | --]的结果\n"
+        "- operator [index] [+ | -]\n"
+        "  用于获取[+ | -]第index(从0开始)个代数式的结果",
+        "- clear [index]\n"
+        "  用于清空第index(从0开始)个代数式",
+        "- calculateApproximation [index] [[var] [value]]...\n"
+        "  用于将var替换为value，计算代数式的近似值",
+        "- changeToOpposite [index]\n"
+        "  用于将第index(从0开始)个代数式改为相反数",
+        "- compare [index1] [index2]\n"
+        "  用于比较第index1(从0开始)个代数式和第index2(从0开始)个代数式是否相等",
+        "- hasVariable [index]\n"
+        "  用于判断第index(从0开始)个代数式是否有变量\n"
+        "- hasVariable [index] [var]\n"
+        "  用于判断第index(从0开始)个代数式是否有指定变量var",
+        "- toNum [index1] [index2]\n"
+        "  用于尝试删除第index1(从0开始)个代数式，将其转换成无字母的代数式，"
+        "并在第index2(从0开始)个无字母的代数式前添加；"
+        "如果失败，输出错误信息"};
 
-    // 为 alge 与 num 分别准备简要与详细帮助信息
-    constexpr std::array<std::string_view, 8> alge_briefs{"提供帮助",
-                                                          "添加代数式",
-                                                          "删除代数式",
-                                                          "对一个代数式使用运算符",
-                                                          "清除一个代数式",
-                                                          "计算一个代数式的近似值",
-                                                          "对一个代数式取相反数",
-                                                          "比较两个代数式"};
-    constexpr std::array<std::string_view, 8> alge_details{
-        "- help\n  用于快速获取命令列表\n- help [command]\n  用于获取command命令的详细使用方式",
-        "- new [index]\n  用于在第index(从0开始)个代数式前添加一个代数式\n",
-        "- delete [index]\n  用于删除第index(从0开始)个代数式\n",
-        "- operator [index] [+= | -= | *= | /= ] [constant | variable] [value]\n  "
-        "用于对第index(从0开始)个代数式[+= | -= | *= | /=][常量 | 变量]的value\n- operaotor [index] [+ "
-        "| - | * | /] [constant | variable] [value]\n  用于获取第index(从0开始)个代数式[+ | - | * | "
-        "/][常量 | 变量]的value的结果\n- operator [index] [front++ | front--]\n  "
-        "用于获取第index(从0开始)个代数式前置[++ | --]的结果\n- operator [index] [back++ | back--]\n  "
-        "用于获取第index(从0开始)个代数式后置[++ | --]的结果\n- operator [index] [+ | -]\n  用于获取[+ "
-        "| -]第index(从0开始)个代数式的结果",
-        "- clear [index]\n  用于清空第index(从0开始)个代数式",
-        "- calculateApproximation [index] [[var] [value]]...\n  "
-        "用于将var替换为value，计算代数式的近似值",
-        "- toOpposite [index]\n  原因将第index(从0开始)个代数式改为相反数",
-        "- compare [index1] [index2]\n  "
-        "用于比较第index1(从0开始)个代数式和第index2(从0开始)个代数式是否相等"};
-
-    constexpr std::array<std::string_view, 8> num_briefs{"提供帮助",
+    constexpr std::array<std::string_view, 9> num_cmds = {
+        "help",    "new",   "delete", "operator", "clear", "calculateApproximation", "changeToOpposite",
+        "compare", "toAlge"};
+    constexpr std::array<std::string_view, 9> num_briefs{"提供帮助",
                                                          "添加无字母的代数式",
                                                          "删除无字母的代数式",
                                                          "对一个无字母的代数式使用运算符",
                                                          "清除一个无字母的代数式",
                                                          "计算一个无字母的代数式的近似值",
                                                          "对一个无字母的代数式取相反数",
-                                                         "比较两个无字母的代数式"};
-    constexpr std::array<std::string_view, 8> num_details{
-        "- help\n  用于快速获取命令列表\n- help [command]\n  用于获取command命令的详细使用方式",
-        "- new [index]\n  用于在第index(从0开始)个无字母的代数式前添加一个无字母的代数式\n",
-        "- delete [index]\n  用于删除第index(从0开始)个无字母的代数式\n",
-        "- operator [index] [+= | -= | *= | /= ] [value]\n  用于对第index(从0开始)个无字母的代数式[+= | "
-        "-= | *= | /=]常量的value\n- operaotor [index] [+ | - | * | /] [value]\n  "
-        "用于获取第index(从0开始)个无字母的代数式[+ | - | * | /]常量的value的结果\n- operator [index] "
-        "[front++ | front--]\n  用于获取第index(从0开始)个无字母的代数式前置[++ | --]的结果\n- operator "
-        "[index] [back++ | back--]\n  用于获取第index(从0开始)个无字母的代数式后置[++ | --]的结果\n- "
-        "operator [index] [+ | -]\n  用于获取[+ | -]第index(从0开始)个无字母的代数式的结果",
-        "- clear [index]\n  用于清空第index(从0开始)个无字母的代数式",
-        "- calculateApproximation [index] \n  用于计算无字母的代数式的近似值",
-        "- toOpposite [index]\n  原因将第index(从0开始)个无字母的代数式改为相反数",
-        "- compare [index1] [index2]\n  "
-        "用于比较第index1(从0开始)个无字母的代数式和第index2(从0开始)个无字母的代数式是否相等"};
+                                                         "比较两个无字母的代数式",
+                                                         "将一个无字母的代数式转换成一个代数式"};
+    constexpr std::array<std::string_view, 9> num_details{
+        "- help\n"
+        "  用于快速获取命令列表\n"
+        "- help [command]\n"
+        "  用于获取command命令的详细使用方式",
+        "- new [index]\n"
+        "  用于在第index(从0开始)个无字母的代数式前添加一个无字母的代数式",
+        "- delete [index]\n"
+        "  用于删除第index(从0开始)个无字母的代数式",
+        "- operator [index] [+= | -= | *= | /= ] [value]\n"
+        "  用于对第index(从0开始)个无字母的代数式[+= | -= | *= | /=]常量的value\n"
+        "- operator [index1] [+= | -= | *= | /= ] numexpr [index2]\n"
+        "  用于对第index1(从0开始)个无字母的代数式[+= | -= | *= | /=]第index2(从0开始)个无字母的代数式\n"
+        "- operator [index] [+ | - | * | /] [value]\n"
+        "  用于获取第index(从0开始)个无字母的代数式[+ | - | * | /]常量的value的结果\n"
+        "- operator [index1] [+ | - | * | / ] numexpr [index2]\n"
+        "  用于获取第index1(从0开始)个无字母的代数式[+ | - | * | "
+        "/]第index2(从0开始)个无字母的代数式的结果\n"
+        "- operator [index] [front++ | front--]\n"
+        "  用于获取第index(从0开始)个无字母的代数式前置[++ | --]的结果\n"
+        "- operator [index] [back++ | back--]\n"
+        "  用于获取第index(从0开始)个无字母的代数式后置[++ | --]的结果\n"
+        "- operator [index] [+ | -]\n"
+        "  用于获取[+ | -]第index(从0开始)个无字母的代数式的结果",
+        "- clear [index]\n"
+        "  用于清空第index(从0开始)个无字母的代数式",
+        "- calculateApproximation [index]\n"
+        "  用于计算无字母的代数式的近似值",
+        "- changeToOpposite [index]\n"
+        "  用于将第index(从0开始)个无字母的代数式改为相反数",
+        "- compare [index1] [index2]\n"
+        "  用于比较第index1(从0开始)个无字母的代数式和第index2(从0开始)个无字母的代数式是否相等",
+        "- toAlge [index1] [index2]\n"
+        "  用于删除第index1(从0开始)个无字母的代数式，将其转换成代数式，"
+        "并在第index2(从0开始)个代数式前添加"};
 
     std::unordered_map<std::string, std::unordered_map<std::string, Handler>>
                                                               table; //< 装载对应命令处理的映射
@@ -231,14 +285,14 @@ int main(int argc, char *argv[]) {
         if (rest_args.empty() || (rest_args.size() == 1 && rest_args[0] == "help")) {
             std::println("如要详细查看某条命令的使用方式，请键入 alge help [command] 获取");
             std::println("alge 子命令列表:");
-            for (const auto &[cmd, brief] : std::views::zip(cmds, alge_briefs)) {
+            for (const auto &[cmd, brief] : std::views::zip(alge_cmds, alge_briefs)) {
                 std::println("  {}  {}", cmd, brief);
             }
             return;
         }
         if (rest_args.size() == 1) {
             // 输出某条命令的详细描述
-            for (const auto &[cmd, detail] : std::views::zip(cmds, alge_details)) {
+            for (const auto &[cmd, detail] : std::views::zip(alge_cmds, alge_details)) {
                 if (rest_args[0] == cmd) {
                     std::println("{}", detail);
                     return;
@@ -301,9 +355,9 @@ int main(int argc, char *argv[]) {
         algevec[idx].clear();
     };
 
-    table["alge"]["toOpposite"] = [&](std::span<const std::string> rest_args) {
+    table["alge"]["changeToOpposite"] = [&](std::span<const std::string> rest_args) {
         if (rest_args.size() != 1) {
-            std::println("用法: alge toOpposite [index]");
+            std::println("用法: alge changeToOpposite [index]");
             return;
         }
         std::size_t idx = 0;
@@ -379,8 +433,8 @@ int main(int argc, char *argv[]) {
             }
         }
         if (rest_args.size() != 4) {
-            std::println(
-                "用法: alge operator [index] [+(=)|-(=)|*(=)|/(=)|...] [constant|variable] [value]");
+            std::println("用法: alge operator [index] [+(=)|-(=)|*(=)|/(=)|...] "
+                         "[constant|variable|algeexpr] [value]");
             return;
         }
         const std::string &kind = rest_args[2];
@@ -430,6 +484,35 @@ int main(int argc, char *argv[]) {
             } else {
                 std::println("不支持的操作：{}", oper);
             }
+        } else if (kind == "algeexpr") {
+            std::size_t idx2 = 0;
+            if (tryStrToULL(rest_args[3], idx2) != StrToTypeResult::Normal) {
+                std::println("index 非法");
+                return;
+            }
+            if (idx2 >= algevec.size()) {
+                std::println("index 越界");
+                return;
+            }
+            if (oper == "+") {
+                std::println("结果：{}", algevec[idx] + algevec[idx2]);
+            } else if (oper == "-") {
+                std::println("结果：{}", algevec[idx] - algevec[idx2]);
+            } else if (oper == "*") {
+                std::println("结果：{}", algevec[idx] * algevec[idx2]);
+            } else if (oper == "/") {
+                std::println("结果：{}", algevec[idx] / algevec[idx2]);
+            } else if (oper == "+=") {
+                algevec[idx] += algevec[idx2];
+            } else if (oper == "-=") {
+                algevec[idx] -= algevec[idx2];
+            } else if (oper == "*=") {
+                algevec[idx] *= algevec[idx2];
+            } else if (oper == "/=") {
+                algevec[idx] /= algevec[idx2];
+            } else {
+                std::println("不支持的操作：{}", oper);
+            }
         } else {
             std::println("未知的 operand 类型：{}", kind);
         }
@@ -438,6 +521,7 @@ int main(int argc, char *argv[]) {
     table["alge"]["calculateApproximation"] = [&](std::span<const std::string> rest_args) {
         if ((rest_args.size() & 1u) != 1) {
             std::println("用法: alge calculateApproximation [index] [[var] [value]]...");
+            return;
         }
         std::size_t idx = 0;
         if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
@@ -464,17 +548,71 @@ int main(int argc, char *argv[]) {
                                      [&](tnrw::math::VariableView var) { return var_values[var]; }));
     };
 
+    table["alge"]["hasVariable"] = [&](std::span<const std::string> rest_args) {
+        if (rest_args.size() > 2 || rest_args.empty()) {
+            std::println("用法: alge hasVariable [index] 或 alge hasVariable [index] [variable]");
+            return;
+        }
+        std::size_t idx = 0;
+        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+            std::println("index 非法");
+            return;
+        }
+        if (idx >= algevec.size()) {
+            std::println("index 越界");
+            return;
+        }
+        if (rest_args.size() == 1) {
+            std::println("结果：{}", algevec[idx].hasVariable());
+        } else {
+            std::println("结果：{}", algevec[idx].hasVariable(rest_args[1]));
+        }
+    };
+
+    table["alge"]["toNum"] = [&](std::span<const std::string> rest_args) {
+        if (rest_args.size() != 2) {
+            std::println("用法: alge toNum [index1] [index2]");
+            return;
+        }
+        std::size_t idx1 = 0;
+        if (tryStrToULL(rest_args[0], idx1) != StrToTypeResult::Normal) {
+            std::println("index1 非法");
+            return;
+        }
+        if (idx1 >= algevec.size()) {
+            std::println("index1 越界");
+            return;
+        }
+        std::size_t idx2 = 0;
+        if (tryStrToULL(rest_args[1], idx2) != StrToTypeResult::Normal) {
+            std::println("index2 非法");
+            return;
+        }
+        if (idx2 > numvec.size()) {
+            std::println("index2 越界");
+            return;
+        }
+
+        if (algevec[idx1].hasVariable()) {
+            std::println("error: 第{}个代数式有变量，无法转换", idx1);
+        } else {
+            numvec.emplace(numvec.begin() + static_cast<long long>(idx2),
+                           *std::move(algevec[idx1]).toNumericExpression());
+            algevec.erase(algevec.begin() + static_cast<long long>(idx1));
+        }
+    };
+
     table["num"]["help"] = [&](std::span<const std::string> rest_args) {
         if (rest_args.empty() || (rest_args.size() == 1 && rest_args[0] == "help")) {
             std::println("num 命令列表：");
             std::println("如要详细查看某条命令的使用方式，请键入 num help [command] 获取");
-            for (const auto &[cmd, brief] : std::views::zip(cmds, num_briefs)) {
+            for (const auto &[cmd, brief] : std::views::zip(num_cmds, num_briefs)) {
                 std::println("  {}  {}", cmd, brief);
             }
             return;
         }
         if (rest_args.size() == 1) {
-            for (const auto &[cmd, detail] : std::views::zip(cmds, num_details)) {
+            for (const auto &[cmd, detail] : std::views::zip(num_cmds, num_details)) {
                 if (rest_args[0] == cmd) {
                     std::println("{}", detail);
                     return;
@@ -537,9 +675,9 @@ int main(int argc, char *argv[]) {
         numvec[idx].clear();
     };
 
-    table["num"]["toOpposite"] = [&](std::span<const std::string> rest_args) {
+    table["num"]["changeToOpposite"] = [&](std::span<const std::string> rest_args) {
         if (rest_args.size() != 1) {
-            std::println("用法: num toOpposite [index]");
+            std::println("用法: num changeToOpposite [index]");
             return;
         }
         std::size_t idx = 0;
@@ -615,32 +753,72 @@ int main(int argc, char *argv[]) {
             }
         }
         if (rest_args.size() < 3) {
-            std::println("用法: num operator [index] [op] [value]");
+            std::println("用法: num operator [index] [op] [value] 或 "
+                         "num operator [index1] [op] numexpr [index2]");
             return;
         }
-        long long val = 0;
-        if (tryStrToLL(rest_args[2], val) != StrToTypeResult::Normal) {
-            std::println("value 非法");
-            return;
-        }
-        if (oper == "+") {
-            std::println("结果：{}", numvec[idx] + val);
-        } else if (oper == "-") {
-            std::println("结果：{}", numvec[idx] - val);
-        } else if (oper == "*") {
-            std::println("结果：{}", numvec[idx] * val);
-        } else if (oper == "/") {
-            std::println("结果：{}", numvec[idx] / val);
-        } else if (oper == "+=") {
-            numvec[idx] += val;
-        } else if (oper == "-=") {
-            numvec[idx] -= val;
-        } else if (oper == "*=") {
-            numvec[idx] *= val;
-        } else if (oper == "/=") {
-            numvec[idx] /= val;
+        if (rest_args[2] == "numexpr") {
+            if (rest_args.size() != 4) {
+                std::println("用法: num operator [index1] [op] numexpr [index2]");
+                return;
+            }
+            std::size_t idx2 = 0;
+            if (tryStrToULL(rest_args[3], idx2) != StrToTypeResult::Normal) {
+                std::println("index 非法");
+                return;
+            }
+            if (idx2 >= numvec.size()) {
+                std::println("index 越界");
+                return;
+            }
+            if (oper == "+") {
+                std::println("结果：{}", numvec[idx] + numvec[idx2]);
+            } else if (oper == "-") {
+                std::println("结果：{}", numvec[idx] - numvec[idx2]);
+            } else if (oper == "*") {
+                std::println("结果：{}", numvec[idx] * numvec[idx2]);
+            } else if (oper == "/") {
+                std::println("结果：{}", numvec[idx] / numvec[idx2]);
+            } else if (oper == "+=") {
+                numvec[idx] += numvec[idx2];
+            } else if (oper == "-=") {
+                numvec[idx] -= numvec[idx2];
+            } else if (oper == "*=") {
+                numvec[idx] *= numvec[idx2];
+            } else if (oper == "/=") {
+                numvec[idx] /= numvec[idx2];
+            } else {
+                std::println("不支持的操作：{}", oper);
+            }
         } else {
-            std::println("不支持的操作：{}", oper);
+            if (rest_args.size() != 3) {
+                std::println("用法: num operator [index] [op] [value]");
+                return;
+            }
+            long long val = 0;
+            if (tryStrToLL(rest_args[2], val) != StrToTypeResult::Normal) {
+                std::println("value 非法");
+                return;
+            }
+            if (oper == "+") {
+                std::println("结果：{}", numvec[idx] + val);
+            } else if (oper == "-") {
+                std::println("结果：{}", numvec[idx] - val);
+            } else if (oper == "*") {
+                std::println("结果：{}", numvec[idx] * val);
+            } else if (oper == "/") {
+                std::println("结果：{}", numvec[idx] / val);
+            } else if (oper == "+=") {
+                numvec[idx] += val;
+            } else if (oper == "-=") {
+                numvec[idx] -= val;
+            } else if (oper == "*=") {
+                numvec[idx] *= val;
+            } else if (oper == "/=") {
+                numvec[idx] /= val;
+            } else {
+                std::println("不支持的操作：{}", oper);
+            }
         }
     };
 
@@ -658,6 +836,33 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::println("结果：{}", numvec[idx].calculateApproximation<double>());
+    };
+    table["num"]["toAlge"] = [&](std::span<const std::string> rest_args) {
+        if (rest_args.size() != 2) {
+            std::println("用法: num toAlge [index1] [index2]");
+            return;
+        }
+        std::size_t idx1 = 0;
+        if (tryStrToULL(rest_args[0], idx1) != StrToTypeResult::Normal) {
+            std::println("index1 非法");
+            return;
+        }
+        if (idx1 >= numvec.size()) {
+            std::println("index1 越界");
+            return;
+        }
+        std::size_t idx2 = 0;
+        if (tryStrToULL(rest_args[1], idx2) != StrToTypeResult::Normal) {
+            std::println("index2 非法");
+            return;
+        }
+        if (idx2 > algevec.size()) {
+            std::println("index2 越界");
+            return;
+        }
+
+        algevec.emplace(algevec.begin() + static_cast<long long>(idx2), std::move(numvec[idx1]));
+        numvec.erase(numvec.begin() + static_cast<long long>(idx1));
     };
 
     while (true) {

@@ -9,6 +9,14 @@
 
 ---
 
+## [0.1.0-3] - 2026-02-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. 添加了 `NumericExpression` 对自己的加减乘除运算
+
+---
+
 ## [0.1.0-2] - 2026-01-17 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)

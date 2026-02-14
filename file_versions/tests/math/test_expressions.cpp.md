@@ -9,6 +9,19 @@
 
 ---
 
+## [0.1.0-3] - 2026-02-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. 添加了命令 `alge operator [index1] [op] algeexpr [index2]`,
+             `alge hasVariable [index]`,
+             `alge hasVariable [index] [var]`,
+             `alge toNum [index1] [index2]`,
+             `num operator [index1] [op] numexpr [index2]`,
+             `num toAlge [index1] [index2]`
+
+---
+
 ## [0.1.0-2] - 2026-02-12 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)
