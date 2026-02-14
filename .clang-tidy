@@ -1,16 +1,18 @@
 Checks: >
   -*,
-  clang-analyzer-*,
   bugprone-*,
-  performance-*,
-  modernize-*,
-  -modernize-use-trailing-return-type,
-  readability-*,
-  -readability-uppercase-literal-suffix,
-  -readability-magic-numbers,
+  cert-*,
+  clang-analyzer-*,
   cppcoreguidelines-*,
   hicpp-*,
-  -hicpp-uppercase-literal-suffix
+  -hicpp-uppercase-literal-suffix,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-magic-numbers,
+  -readability-uppercase-literal-suffix
 
 WarningsAsErrors: ""
 HeaderFilterRegex: ".*"
@@ -18,12 +20,15 @@ FormatStyle: file
 UseColor: true
 
 CheckOptions:
-  - key: modernize-use-auto.MinTypeNameLength
-    value: "5"
-  - key: modernize-raw-string-literal.ShortStringLength
-    value: "10"
   - key: cppcoreguidelines-pro-type-vararg.AllowedTypes
     value: "printf scanf"
+  - key: modernize-use-auto.MinTypeNameLength
+    value: 5
+  - key: modernize-raw-string-literal.ShortStringLength
+    value: 10
+  - key: readability-function-cognitive-complexity.Threshold
+    value: 50
+
   # 关于命名
   - key: readability-identifier-naming.NamespaceCase
     value: "lower_case"

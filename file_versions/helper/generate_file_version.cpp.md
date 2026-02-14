@@ -7,7 +7,7 @@
 
 # generate_file_version.cpp 版本历史
 
-***
+---
 
 ## [0.1.0-5] -2025-11-8 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -15,7 +15,7 @@
 
 1. 修改了文件内部的一些代码，使其更加现代与安全
 
-***
+---
 
 ## [0.1.0-4] -2025-09-20 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -27,7 +27,7 @@
 
 1. 将文件的默认日期从当前日期改为尝试使用文件 `Doxygen` 注释的日期，如果没有找到，则为默认日期
 
-***
+---
 
 ## [0.1.0-3] - 2025-07-27 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -44,7 +44,7 @@
    - 生成的文件将保存在 `file_versions/<file_relative>`
    - 生成的文件内容将基于 `<workspace_folder>/helper/file_version.template.md` 模板文件
 
-***
+---
 
 ## [0.1.0-2] - 2025-07-06 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -56,7 +56,7 @@
 
 1. **BREAKING(不向下兼容):** 将模板文件改名为`template/file_version.template.md`
 
-***
+---
 
 ## [0.1.0-1] - 2025-07-05 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
@@ -69,4 +69,4 @@
    - 生成的文件将保存在 `file_versions/<file_directory>/<file_name>`
    - 生成的文件内容将基于 `template/file_version_template.md` 模板文件
 
-***
+---

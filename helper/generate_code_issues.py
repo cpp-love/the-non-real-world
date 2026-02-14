@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 输出C/C++代码问题（使用clang-tidy）到文件的脚本
 使用方法：
-见 `python generate_code_issues.py --help` 的结果
+见 `python3 generate_code_issues.py --help` 的结果
+version: 0.1.0-1
 """
 
 import subprocess
@@ -74,11 +75,11 @@ def filter_invalid_build_path(build_path: Path) -> Path:
 
     if not build_path.exists():
         raise Exception(
-            f"路径 {build_path} 不存在，无法获取 `compile_commands.json` 文件"
+            f"路径 {build_path} 不存在，无法获取 compile_commands.json 文件"
         )
 
     if not build_path.is_file() or build_path.name != "compile_commands.json":
-        raise Exception("路径不是 `compile_commands.json` 文件，无法获取")
+        raise Exception("路径不是 compile_commands.json 文件，无法获取")
     return build_path
 
 
@@ -168,7 +169,7 @@ def main():
             description="输出C/C++代码问题（使用clang-tidy）到文件的脚本"
         )
         parser.add_argument(
-            "-p", "--build_path", type=str, help="`compile_commands.json` 的路径位置"
+            "-p", "--build-path", type=str, help="compile_commands.json 的路径位置"
         )
         parser.add_argument(
             "-ea",

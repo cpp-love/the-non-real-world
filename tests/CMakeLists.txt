@@ -134,25 +134,17 @@ if(TNRW_BUILD_MATH_TESTS)
     # 构建程序
 
     # 设置链接文件
-    add_executable(test_alge_expr ${CMAKE_CURRENT_SOURCE_DIR}/math/testAlgeExpr.cpp)
-    add_executable(test_num_expr ${CMAKE_CURRENT_SOURCE_DIR}/math/testNumExpr.cpp)
+    add_executable(test_expressions ${CMAKE_CURRENT_SOURCE_DIR}/math/test_expressions.cpp)
 
     # 链接第三方库
-    target_link_libraries(test_alge_expr
-        PUBLIC
-        tnrw_compiler_flags
-        tnrw
-    )
-
-    target_link_libraries(test_num_expr
+    target_link_libraries(test_expressions
         PUBLIC
         tnrw_compiler_flags
         tnrw
     )
 
     # 添加安装支持
-    install(TARGETS test_alge_expr test_num_expr DESTINATION bin/tests)
+    install(TARGETS test_expressions DESTINATION bin/tests)
 
     # todo : 添加测试支持
-
 endif()

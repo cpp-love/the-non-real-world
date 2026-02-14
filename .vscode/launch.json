@@ -45,6 +45,16 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+        {
+            "name": "C/C++: lldb.exe 调试活动文件（可选择）",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.buildDirectory}/bin/${input:selectExe}",
+            "args": [],
+            "stopOnEntry": false,
+            "cwd": "${command:cmake.buildDirectory}/bin",
+            "console": "integratedTerminal"
         }
     ]
 }

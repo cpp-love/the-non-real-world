@@ -44,3 +44,9 @@ log/**
 
 # issue files
 code_issues/**
+
+# files for tests
+test_data/**
+
+# temporary files
+tmp/**

@@ -84,7 +84,8 @@ bool generateOneFile(const std::filesystem::path &workspace_folder, const std::f
     const auto file_ext = file.extension();
     if (std::filesystem::exists(output_file)
         || (file_ext != ".cpp" && file_ext != ".hpp" && file_ext != ".c" && file_ext != ".h"
-            && file_ext != ".cc" && file_ext != ".hh" && file_ext != ".cxx" && file_ext != ".hxx")) {
+            && file_ext != ".cc" && file_ext != ".hh" && file_ext != ".cxx" && file_ext != ".hxx"
+            && file_ext != ".py")) {
         // 避免覆盖文件和生成无关文件
         return true;
     }

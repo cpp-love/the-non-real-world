@@ -1,19 +1,28 @@
 {
     "clangd.arguments": [
         "--background-index",
+        "--background-index-priority=low",
         "--clang-tidy",
         "--query-driver=clang++",
         "--completion-style=detailed",
-        "--header-insertion=never",
+        "--header-insertion=iwyu",
         "--compile-commands-dir=${workspaceFolder}/out/build/BuildAll",
     ],
     "clangd.enable": true,
     "C_Cpp.intelliSenseEngine": "disabled",
     "C_Cpp.autocomplete": "disabled",
     "C_Cpp.formatting": "disabled",
+    "C_Cpp.errorSquiggles": "disabled",
+    "C_Cpp.enhancedColorization": "disabled",
+    "[cpp]": {
+        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+    },
     "files.associations": {
+        ".clang-tidy": "yaml",
+        ".clangd": "yaml",
         ".clang-format": "yaml",
         "Doxyfile": "doxyfile",
+        "CMakeLists.txt": "cmake",
         "*.cpp": "cpp",
         "*.tcc": "cpp",
         "*.hpp": "cpp",
