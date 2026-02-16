@@ -392,7 +392,7 @@ int main(int argc, char *argv[]) {
     };
 
     table["alge"]["operator"] = [&](std::span<const std::string> rest_args) {
-        if (rest_args.size() < 1) {
+        if (rest_args.empty()) {
             std::println("用法: alge operator [index] ...");
             return;
         }
@@ -712,7 +712,7 @@ int main(int argc, char *argv[]) {
     };
 
     table["num"]["operator"] = [&](std::span<const std::string> rest_args) {
-        if (rest_args.size() < 1) {
+        if (rest_args.empty()) {
             std::println("用法: num operator [index] ...");
             return;
         }

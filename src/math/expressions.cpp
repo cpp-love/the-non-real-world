@@ -15,6 +15,7 @@
  */
 
 #include "base/assert_msg.hpp"
+#include "base/overload.hpp"
 #include "math/AlgebraicExpression.hpp"
 #include "math/NumericExpression.hpp"
 #include "math/expressions_base.hpp"
@@ -24,7 +25,6 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdlib>
-#include <entt/core/utility.hpp>
 #include <format>
 #include <functional>
 #include <iostream>
@@ -271,26 +271,26 @@ namespace tnrw::math::details {
      *      计划通过规范化简步骤，实现相同代数式的化简结果一致来解决
      */
     bool isEqual(const NodePtr &lhs, const NodePtr &rhs) noexcept {
-        return std::visit(
-            entt::overloaded{[&](const Monomial &value1, const Monomial &value2) -> bool {
-                                 if (value1.m_coeff != value2.m_coeff) {
-                                     return false;
-                                 }
-                                 return value1.m_var_exps == value2.m_var_exps;
-                             },
-                             [&]<typename T>(const T &value1, const T &value2) -> bool {
-                                 if (value1.m_children.size() != value2.m_children.size()) {
-                                     return false;
-                                 }
-                                 return std::ranges::all_of(
-                                     std::views::zip(value1.m_children, value2.m_children),
-                                     [](const auto &elem) {
-                                         const auto &[ch1, ch2] = elem;
-                                         return isEqual(ch1, ch2);
-                                     });
-                             },
-                             [&](const auto & /*unused*/, const auto & /*unused*/) { return false; }},
-            lhs->m_value, rhs->m_value);
+        return std::visit(makeOverloaded(
+                              [&](const Monomial &value1, const Monomial &value2) -> bool {
+                                  if (value1.m_coeff != value2.m_coeff) {
+                                      return false;
+                                  }
+                                  return value1.m_var_exps == value2.m_var_exps;
+                              },
+                              [&]<typename T>(const T &value1, const T &value2) -> bool {
+                                  if (value1.m_children.size() != value2.m_children.size()) {
+                                      return false;
+                                  }
+                                  return std::ranges::all_of(
+                                      std::views::zip(value1.m_children, value2.m_children),
+                                      [](const auto &elem) {
+                                          const auto &[ch1, ch2] = elem;
+                                          return isEqual(ch1, ch2);
+                                      });
+                              },
+                              [&](const auto & /*unused*/, const auto & /*unused*/) { return false; }),
+                          lhs->m_value, rhs->m_value);
     }
 
     /**
@@ -302,17 +302,17 @@ namespace tnrw::math::details {
      * @warning 这要求 root 节点被化简过
      */
     bool hasVariable(const NodePtr &lhs, std::optional<VariableView> variable = std::nullopt) noexcept {
-        return std::visit(entt::overloaded{[&](const Monomial &value) {
-                                               return variable.has_value()
-                                                          ? value.m_var_exps.contains(*variable)
-                                                          : !value.m_var_exps.empty();
-                                           },
-                                           [&](const auto &value) {
-                                               return std::ranges::any_of(
-                                                   value.m_children, [&](const NodePtr &sub_node) {
-                                                       return hasVariable(sub_node, variable);
-                                                   });
-                                           }},
+        return std::visit(makeOverloaded(
+                              [&](const Monomial &value) {
+                                  return variable.has_value() ? value.m_var_exps.contains(*variable)
+                                                              : !value.m_var_exps.empty();
+                              },
+                              [&](const auto &value) {
+                                  return std::ranges::any_of(value.m_children,
+                                                             [&](const NodePtr &sub_node) {
+                                                                 return hasVariable(sub_node, variable);
+                                                             });
+                              }),
                           lhs->m_value);
     }
 
@@ -323,49 +323,49 @@ namespace tnrw::math::details {
      * @attention 建议 root 节点被化简过
      */
     std::string nodeToString(const NodePtr &root) {
-        return std::visit(
-            entt::overloaded{[](const Monomial &value) {
-                                 std::string str;
-                                 str += std::format("{}", value.m_coeff);
-                                 for (const auto &[var, exp] : value.m_var_exps) {
-                                     if (exp == 1) {
-                                         str += std::format("*{}", var);
-                                     } else {
-                                         str += std::format("*{}^{}", var, exp);
-                                     }
-                                 }
-                                 if (str.size() > 2 && value.m_coeff == 1) {
-                                     return std::move(str).substr(2);
-                                 }
-                                 return str;
-                             },
-                             [](const Addition &value) {
-                                 std::string str = "(";
-                                 for (std::size_t i = 0; i < value.m_children.size(); ++i) {
-                                     if (i) {
-                                         str += ")+(";
-                                     }
-                                     str += nodeToString(value.m_children[i]);
-                                 }
-                                 str += ")";
-                                 return str;
-                             },
-                             [](const Multiplication &value) {
-                                 std::string str = "(";
-                                 for (std::size_t i = 0; i < value.m_children.size(); ++i) {
-                                     if (i) {
-                                         str += ")*(";
-                                     }
-                                     str += nodeToString(value.m_children[i]);
-                                 }
-                                 str += ")";
-                                 return str;
-                             },
-                             [](const Division &value) {
-                                 return std::format("({})/({})", nodeToString(value.m_children[0]),
-                                                    nodeToString(value.m_children[1]));
-                             }},
-            root->m_value);
+        return std::visit(makeOverloaded(
+                              [](const Monomial &value) {
+                                  std::string str;
+                                  str += std::format("{}", value.m_coeff);
+                                  for (const auto &[var, exp] : value.m_var_exps) {
+                                      if (exp == 1) {
+                                          str += std::format("*{}", var);
+                                      } else {
+                                          str += std::format("*{}^{}", var, exp);
+                                      }
+                                  }
+                                  if (str.size() > 2 && value.m_coeff == 1) {
+                                      return std::move(str).substr(2);
+                                  }
+                                  return str;
+                              },
+                              [](const Addition &value) {
+                                  std::string str = "(";
+                                  for (std::size_t i = 0; i < value.m_children.size(); ++i) {
+                                      if (i) {
+                                          str += ")+(";
+                                      }
+                                      str += nodeToString(value.m_children[i]);
+                                  }
+                                  str += ")";
+                                  return str;
+                              },
+                              [](const Multiplication &value) {
+                                  std::string str = "(";
+                                  for (std::size_t i = 0; i < value.m_children.size(); ++i) {
+                                      if (i) {
+                                          str += ")*(";
+                                      }
+                                      str += nodeToString(value.m_children[i]);
+                                  }
+                                  str += ")";
+                                  return str;
+                              },
+                              [](const Division &value) {
+                                  return std::format("({})/({})", nodeToString(value.m_children[0]),
+                                                     nodeToString(value.m_children[1]));
+                              }),
+                          root->m_value);
     }
 
     /**
@@ -428,7 +428,7 @@ namespace tnrw::math::details {
             // 对每个子节点化简
             simplify(cur);
 
-            std::visit(entt::overloaded{
+            std::visit(makeOverloaded(
                            [&](Addition &value) {
                                // 展开 Addition 节点
                                auto &sub_children = value.m_children;
@@ -463,7 +463,7 @@ namespace tnrw::math::details {
                                iter->second.m_children[0] =
                                    makeNode<Addition>(std::move(value.m_children[0]),
                                                       std::move(iter->second.m_children[0]));
-                           }},
+                           }),
                        cur->m_value);
         }
         children.clear();
@@ -476,7 +476,7 @@ namespace tnrw::math::details {
             /// @todo 取消此处与上面重载的重复
 
             std::visit(
-                entt::overloaded{
+                makeOverloaded(
                     [&](Addition &value) {
                         // 展开 Addition 节点
                         auto &sub_children = value.m_children;
@@ -544,7 +544,7 @@ namespace tnrw::math::details {
 
                                 // 合并相同分母
                                 std::visit(
-                                    entt::overloaded{
+                                    makeOverloaded(
                                         [&](Addition &value) {
                                             // 展开 Addition 节点
                                             auto &sub_children = value.m_children;
@@ -595,7 +595,7 @@ namespace tnrw::math::details {
                                         [&](Division &value) {
                                             // 继续递归，防止化简后还有相同分母的其他节点
                                             merge_or_add(value, new_child);
-                                        }},
+                                        }),
                                     new_child->m_value);
                                 return;
                             }
@@ -603,7 +603,7 @@ namespace tnrw::math::details {
                             children.push_back(std::move(root));
                         };
                         merge_or_add(value, new_child);
-                    }},
+                    }),
                 new_child->m_value);
         }
 
@@ -650,48 +650,48 @@ namespace tnrw::math::details {
             NodePtr cur = std::move(*iter);
             simplify(cur);
             bool finished = false; //< 是否结束
-            std::visit(entt::overloaded{[&](Monomial &value) {
-                                            // 合并
-                                            new_node.m_coeff *= value.m_coeff;
-                                            new_node.m_var_exps.merge(value.m_var_exps);
-                                            for (auto &[var, exp] : value.m_var_exps) {
-                                                new_node.m_var_exps[var] += exp;
-                                            }
-                                        },
-                                        [&](Multiplication & /*unused*/) {
-                                            assert_msg(false, "化简后的节点不应为 Multiplication 节点");
-                                        },
-                                        [&](Addition &value) {
-                                            // 乘进去
-                                            Multiplication rest{makeNode<Monomial>(
-                                                std::move(new_node))}; //< 目前剩余的节点
-                                            ++iter;
-                                            for (; iter != children.end(); ++iter) {
-                                                rest.m_children.push_back(std::move(*iter));
-                                            }
-                                            for (NodePtr &sub_ch : value.m_children) {
-                                                Multiplication cpy = rest;
-                                                cpy.m_children.push_back(std::move(sub_ch));
-                                                sub_ch = makeNode<Multiplication>(std::move(cpy));
-                                            }
-                                            root = makeNode<Addition>(std::move(value));
-                                            simplify(root);
-                                            finished = true;
-                                        },
-                                        [&](Division &value) {
-                                            // 乘进去
-                                            Multiplication rest{
-                                                makeNode<Monomial>(std::move(new_node)),
-                                                std::move(value.m_children[0])}; //< 目前剩余的节点
-                                            ++iter;
-                                            for (; iter != children.end(); ++iter) {
-                                                rest.m_children.push_back(std::move(*iter));
-                                            }
-                                            value.m_children[0] = makeNode<Multiplication>(rest);
-                                            root = makeNode<Division>(std::move(value));
-                                            simplify(root);
-                                            finished = true;
-                                        }},
+            std::visit(makeOverloaded(
+                           [&](Monomial &value) {
+                               // 合并
+                               new_node.m_coeff *= value.m_coeff;
+                               new_node.m_var_exps.merge(value.m_var_exps);
+                               for (auto &[var, exp] : value.m_var_exps) {
+                                   new_node.m_var_exps[var] += exp;
+                               }
+                           },
+                           [&](Multiplication & /*unused*/) {
+                               assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                           },
+                           [&](Addition &value) {
+                               // 乘进去
+                               Multiplication rest{
+                                   makeNode<Monomial>(std::move(new_node))}; //< 目前剩余的节点
+                               ++iter;
+                               for (; iter != children.end(); ++iter) {
+                                   rest.m_children.push_back(std::move(*iter));
+                               }
+                               for (NodePtr &sub_ch : value.m_children) {
+                                   Multiplication cpy = rest;
+                                   cpy.m_children.push_back(std::move(sub_ch));
+                                   sub_ch = makeNode<Multiplication>(std::move(cpy));
+                               }
+                               root = makeNode<Addition>(std::move(value));
+                               simplify(root);
+                               finished = true;
+                           },
+                           [&](Division &value) {
+                               // 乘进去
+                               Multiplication rest{makeNode<Monomial>(std::move(new_node)),
+                                                   std::move(value.m_children[0])}; //< 目前剩余的节点
+                               ++iter;
+                               for (; iter != children.end(); ++iter) {
+                                   rest.m_children.push_back(std::move(*iter));
+                               }
+                               value.m_children[0] = makeNode<Multiplication>(rest);
+                               root = makeNode<Division>(std::move(value));
+                               simplify(root);
+                               finished = true;
+                           }),
                        cur->m_value);
             if (finished) {
                 return;
@@ -727,7 +727,7 @@ namespace tnrw::math::details {
      */
     Polynomial toPoly(NodePtr root, VariableView main_var) {
         return std::visit(
-            entt::overloaded{
+            makeOverloaded(
                 [&](Monomial &value) {
                     auto                iter = value.m_var_exps.find(main_var);
                     IntegerConstantType exp = (iter == value.m_var_exps.end()) ? 0 : iter->second;
@@ -772,7 +772,7 @@ namespace tnrw::math::details {
                 [&](Division & /*unused*/) {
                     assert_msg(false, "多项式节点中不应有 Division 节点");
                     return Polynomial{};
-                }},
+                }),
             root->m_value);
     };
 
@@ -1090,50 +1090,48 @@ namespace tnrw::math::details {
     std::optional<VariableView> getCommonVar(const NodePtr &root1, const NodePtr &root2) {
         std::optional<VariableView> main_var; //< 主元
         std::set<VariableView>      vars;     //< 变量集
-        std::visit(entt::overloaded{[&](const Monomial &value) {
-                                        for (const auto &[var, exp] : value.m_var_exps) {
-                                            vars.insert(var);
-                                        }
-                                    },
-                                    [&](const Addition &value) {
-                                        for (const NodePtr &child : value.m_children) {
-                                            const auto &value = std::get<Monomial>(child->m_value);
-                                            for (const auto &[var, exp] : value.m_var_exps) {
-                                                vars.insert(var);
-                                            }
-                                        }
-                                    },
-                                    [&](const Multiplication & /*unused*/) {
-                                        assert_msg(false, "化简后的节点不应为 Multiplication 节点");
-                                    },
-                                    [&](const Division & /*unused*/) {
-                                        assert_msg(false, "多项式节点中不应有 Division 节点");
-                                    }},
+        std::visit(makeOverloaded(
+                       [&](const Monomial &value) {
+                           for (const auto &[var, exp] : value.m_var_exps) { vars.insert(var); }
+                       },
+                       [&](const Addition &value) {
+                           for (const NodePtr &child : value.m_children) {
+                               const auto &value = std::get<Monomial>(child->m_value);
+                               for (const auto &[var, exp] : value.m_var_exps) { vars.insert(var); }
+                           }
+                       },
+                       [&](const Multiplication & /*unused*/) {
+                           assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                       },
+                       [&](const Division & /*unused*/) {
+                           assert_msg(false, "多项式节点中不应有 Division 节点");
+                       }),
                    root1->m_value);
 
-        std::visit(entt::overloaded{[&](const Monomial &value) {
-                                        for (const auto &[var, exp] : value.m_var_exps) {
-                                            if (vars.contains(var)) {
-                                                main_var = var;
-                                                return;
-                                            }
-                                        }
-                                    },
-                                    [&](const Addition &value) {
-                                        for (const NodePtr &child : value.m_children) {
-                                            const auto &value = std::get<Monomial>(child->m_value);
-                                            for (const auto &[var, exp] : value.m_var_exps) {
-                                                main_var = var;
-                                                return;
-                                            }
-                                        }
-                                    },
-                                    [&](const Multiplication & /*unused*/) {
-                                        assert_msg(false, "化简后的节点不应为 Multiplication 节点");
-                                    },
-                                    [&](const Division & /*unused*/) {
-                                        assert_msg(false, "多项式节点中不应有 Division 节点");
-                                    }},
+        std::visit(makeOverloaded(
+                       [&](const Monomial &value) {
+                           for (const auto &[var, exp] : value.m_var_exps) {
+                               if (vars.contains(var)) {
+                                   main_var = var;
+                                   return;
+                               }
+                           }
+                       },
+                       [&](const Addition &value) {
+                           for (const NodePtr &child : value.m_children) {
+                               const auto &value = std::get<Monomial>(child->m_value);
+                               for (const auto &[var, exp] : value.m_var_exps) {
+                                   main_var = var;
+                                   return;
+                               }
+                           }
+                       },
+                       [&](const Multiplication & /*unused*/) {
+                           assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                       },
+                       [&](const Division & /*unused*/) {
+                           assert_msg(false, "多项式节点中不应有 Division 节点");
+                       }),
                    root2->m_value);
         return main_var;
     }
@@ -1148,29 +1146,29 @@ namespace tnrw::math::details {
      */
     IntegerConstantType extractPolynomialIntegerCoefficient(const NodePtr &root) {
         return std::visit(
-            entt::overloaded{[&](const Monomial &value) { return std::abs(value.m_coeff); },
-                             [&](const Addition &value) {
-                                 std::optional<IntegerConstantType> coeff = std::nullopt;
-                                 for (const NodePtr &child : value.m_children) {
-                                     assert_msg(std::holds_alternative<Monomial>(child->m_value),
-                                                "猜想错误：child 实际上不一定为 Monomial");
-                                     auto &mono = std::get<Monomial>(child->m_value);
-                                     coeff = coeff
-                                                 .transform([&](IntegerConstantType nested_coeff) {
-                                                     return std::gcd(nested_coeff, mono.m_coeff);
-                                                 })
-                                                 .or_else([&] { return std::optional{mono.m_coeff}; });
-                                 }
-                                 return coeff.value_or(1);
-                             },
-                             [&](const Multiplication & /*unused*/) -> IntegerConstantType {
-                                 assert_msg(false, "化简后的节点不应为 Multiplication 节点");
-                                 return 0;
-                             },
-                             [&](const Division & /*unused*/) -> IntegerConstantType {
-                                 assert_msg(false, "多项式节点中不应有 Division 节点");
-                                 return 0;
-                             }},
+            makeOverloaded([&](const Monomial &value) { return std::abs(value.m_coeff); },
+                           [&](const Addition &value) {
+                               std::optional<IntegerConstantType> coeff = std::nullopt;
+                               for (const NodePtr &child : value.m_children) {
+                                   assert_msg(std::holds_alternative<Monomial>(child->m_value),
+                                              "猜想错误：child 实际上不一定为 Monomial");
+                                   auto &mono = std::get<Monomial>(child->m_value);
+                                   coeff = coeff
+                                               .transform([&](IntegerConstantType nested_coeff) {
+                                                   return std::gcd(nested_coeff, mono.m_coeff);
+                                               })
+                                               .or_else([&] { return std::optional{mono.m_coeff}; });
+                               }
+                               return coeff.value_or(1);
+                           },
+                           [&](const Multiplication & /*unused*/) -> IntegerConstantType {
+                               assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                               return 0;
+                           },
+                           [&](const Division & /*unused*/) -> IntegerConstantType {
+                               assert_msg(false, "多项式节点中不应有 Division 节点");
+                               return 0;
+                           }),
             root->m_value);
     }
 
@@ -1183,21 +1181,21 @@ namespace tnrw::math::details {
      * @warning 这要求 root 节点能整除 coeff
      */
     void dividePolynomialWithIntegerCoefficient(NodePtr &root, IntegerConstantType coeff) {
-        std::visit(entt::overloaded{[&](Monomial &value) { value.m_coeff /= coeff; },
-                                    [&](Addition &value) {
-                                        for (const NodePtr &child : value.m_children) {
-                                            assert_msg(std::holds_alternative<Monomial>(child->m_value),
-                                                       "猜想错误：child 实际上不一定为 Monomial");
-                                            auto &mono = std::get<Monomial>(child->m_value);
-                                            mono.m_coeff /= coeff;
-                                        }
-                                    },
-                                    [&](Multiplication & /*unused*/) {
-                                        assert_msg(false, "化简后的节点不应为 Multiplication 节点");
-                                    },
-                                    [&](Division & /*unused*/) {
-                                        assert_msg(false, "多项式节点中不应有 Division 节点");
-                                    }},
+        std::visit(makeOverloaded([&](Monomial &value) { value.m_coeff /= coeff; },
+                                  [&](Addition &value) {
+                                      for (const NodePtr &child : value.m_children) {
+                                          assert_msg(std::holds_alternative<Monomial>(child->m_value),
+                                                     "猜想错误：child 实际上不一定为 Monomial");
+                                          auto &mono = std::get<Monomial>(child->m_value);
+                                          mono.m_coeff /= coeff;
+                                      }
+                                  },
+                                  [&](Multiplication & /*unused*/) {
+                                      assert_msg(false, "化简后的节点不应为 Multiplication 节点");
+                                  },
+                                  [&](Division & /*unused*/) {
+                                      assert_msg(false, "多项式节点中不应有 Division 节点");
+                                  }),
                    root->m_value);
     }
 
@@ -1384,33 +1382,34 @@ namespace tnrw::math::details {
     template <std::floating_point FloatT>
     FloatT calculateApproximation(const NodePtr                             &root,
                                   const std::function<FloatT(VariableView)> &converter) {
-        return std::visit(
-            entt::overloaded{[&](const Monomial &value) {
-                                 auto ret = static_cast<FloatT>(value.m_coeff);
-                                 for (const auto &[var, exp] : value.m_var_exps) {
-                                     ret *= std::pow(converter(var), exp);
-                                 }
-                                 return ret;
-                             },
-                             [&](const Addition &value) {
-                                 FloatT sum = 0;
-                                 for (const auto &child : value.m_children) {
-                                     sum += calculateApproximation<FloatT>(child, converter);
-                                 }
-                                 return sum;
-                             },
-                             [&](const Multiplication &value) {
-                                 FloatT mul = 1;
-                                 for (const auto &child : value.m_children) {
-                                     mul *= calculateApproximation<FloatT>(child, converter);
-                                 }
-                                 return mul;
-                             },
-                             [&](const Division &value) {
-                                 return calculateApproximation<FloatT>(value.m_children[0], converter)
-                                        / calculateApproximation<FloatT>(value.m_children[1], converter);
-                             }},
-            root->m_value);
+        return std::visit(makeOverloaded(
+                              [&](const Monomial &value) {
+                                  auto ret = static_cast<FloatT>(value.m_coeff);
+                                  for (const auto &[var, exp] : value.m_var_exps) {
+                                      ret *= std::pow(converter(var), exp);
+                                  }
+                                  return ret;
+                              },
+                              [&](const Addition &value) {
+                                  FloatT sum = 0;
+                                  for (const auto &child : value.m_children) {
+                                      sum += calculateApproximation<FloatT>(child, converter);
+                                  }
+                                  return sum;
+                              },
+                              [&](const Multiplication &value) {
+                                  FloatT mul = 1;
+                                  for (const auto &child : value.m_children) {
+                                      mul *= calculateApproximation<FloatT>(child, converter);
+                                  }
+                                  return mul;
+                              },
+                              [&](const Division &value) {
+                                  return calculateApproximation<FloatT>(value.m_children[0], converter)
+                                         / calculateApproximation<FloatT>(value.m_children[1],
+                                                                          converter);
+                              }),
+                          root->m_value);
     }
 
     /**

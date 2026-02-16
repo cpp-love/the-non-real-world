@@ -23,6 +23,7 @@ if(TNRW_BUILD_BASE_TESTS)
     add_executable(test_string_convert ${CMAKE_CURRENT_SOURCE_DIR}/base/test_string_convert.cpp)
     add_executable(test_floating_point_compare ${CMAKE_CURRENT_SOURCE_DIR}/base/test_floating_point_compare.cpp)
     add_executable(test_SFML_formatter ${CMAKE_CURRENT_SOURCE_DIR}/base/test_SFML_formatter.cpp)
+    add_executable(test_overload ${CMAKE_CURRENT_SOURCE_DIR}/base/test_overload.cpp)
 
     # 链接第三方库
     target_link_libraries(test_assert_msg
@@ -49,8 +50,14 @@ if(TNRW_BUILD_BASE_TESTS)
         tnrw
     )
 
+    target_link_libraries(test_overload
+        PUBLIC
+        tnrw_compiler_flags
+        tnrw
+    )
+
     # 添加安装支持
-    install(TARGETS test_assert_msg test_string_convert test_floating_point_compare DESTINATION bin/tests)
+    install(TARGETS test_assert_msg test_string_convert test_floating_point_compare test_SFML_formatter test_overload DESTINATION bin/tests)
 
     # 添加测试支持
     add_test(NAME RunTestBase1 COMMAND test_string_convert)
