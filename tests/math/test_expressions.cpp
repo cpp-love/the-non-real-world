@@ -18,8 +18,8 @@
  *  - alge operator 0 += algeexpr 1
  */
 
-#include "math/AlgebraicExpression.hpp"
-#include "math/NumericExpression.hpp"
+#include "math/algebraic_expression.hpp"
+#include "math/numeric_expression.hpp"
 #include "math/expressions_base.hpp"
 #include <cstddef>
 #include <functional>

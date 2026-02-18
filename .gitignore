@@ -38,15 +38,18 @@ docs/**
 build/**
 out/**
 
-# log files
+# Log files
 *.log
 log/**
 
-# issue files
+# Files for issues
 code_issues/**
 
-# files for tests
+# Files for tests
 test_data/**
 
-# temporary files
+# Temporary files
 tmp/**
+
+# Python cache
+**/__pycache__/**

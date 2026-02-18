@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
 输出C/C++代码问题（使用clang-tidy）到文件的脚本
+
 使用方法：
 见 `python3 generate_code_issues.py --help` 的结果
-version: 0.1.0-1
+
+:version: 0.1.0-2
 """
 
 import subprocess
 import shutil
+import helper_base
 import re
 import os
 import json
@@ -26,11 +29,9 @@ def get_default_compiler_include_directories(compiler: Path) -> list[str]:
     """
 
     includes: list[str] = []
-    if re.match(r"gcc.*|g\+\+.*", compiler.absolute().resolve().name) or re.match(
-        r"clang.*", compiler.absolute().resolve().name
-    ):
+    if compiler.resolve().stem in ["gcc", "g++", "clang", "clang++"]:
         process: subprocess.Popen = subprocess.Popen(
-            [str(compiler.absolute().resolve()), "-v", "-x", "c++", "-E", "-"],
+            [str(compiler.resolve()), "-v", "-x", "c++", "-E", "-"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -52,7 +53,7 @@ def get_default_compiler_include_directories(compiler: Path) -> list[str]:
                 if capturing:
                     path = line.strip()
                     if path and Path(path).exists():
-                        includes.append(str(Path(path).absolute().resolve()))
+                        includes.append(str(Path(path).resolve()))
         finally:
             if process.poll() is None:
                 process.kill()
@@ -102,16 +103,7 @@ def process_paths(paths: list[str]) -> list[Path]:
             continue
 
         if path.is_file():
-            if (
-                path.suffix == ".cpp"
-                or path.suffix == ".hpp"
-                or path.suffix == ".c"
-                or path.suffix == ".h"
-                or path.suffix == ".cc"
-                or path.suffix == ".hh"
-                or path.suffix == ".cxx"
-                or path.suffix == ".hxx"
-            ):
+            if path.suffix in helper_base.C_CPP_FILE_EXTENSION:
                 files.append(path)
             else:
                 print(f"warning: 路径 {path} 不是C/C++文件，跳过")
@@ -212,10 +204,10 @@ def main():
         add_include_directories_to_new_build_path(
             old_build_path,
             new_build_path,
-            ["-stdlib=libc++"] + args.extra_arg,
+            args.extra_arg,
         )
 
-        print(f"检查 {len(files)} 个文件，输出到 {output_file.absolute().resolve()}")
+        print(f"检查 {len(files)} 个文件，输出到 {output_file.resolve()}")
 
         # 清空输出文件
         with open(output_file, "w", encoding="utf-8"):
@@ -233,13 +225,13 @@ def main():
                 command: list[str] = [
                     "clang-tidy",
                     "-p",
-                    str(new_build_path.absolute().resolve()),
+                    str(new_build_path.resolve()),
                     '-header-filter=".*"',
                 ]
                 if args.verbose:
                     command.append("-extra-arg=-v")
                 for file in subfiles:
-                    command.append(str(file.absolute().resolve()))
+                    command.append(str(file.resolve()))
                 print(f"正在检查第{i}至第{min(len(files), i + step)}文件的问题...")
                 result = subprocess.run(
                     command,

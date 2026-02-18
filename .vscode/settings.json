@@ -144,5 +144,6 @@
         "xtree": "cpp",
         "stack": "cpp",
         "functexcept.h": "c"
-    }
+    },
+    "python.analysis.autoImportCompletions": false
 }

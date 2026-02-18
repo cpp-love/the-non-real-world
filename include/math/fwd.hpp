@@ -33,7 +33,7 @@ namespace tnrw {
         // Algebraicexpression.hpp
         class AlgebraicExpression;
 
-        // NumericExpression.hpp
+        // numeric_expression.hpp
         class NumericExpression;
 
     } // namespace math
@@ -62,7 +62,7 @@ namespace tnrw {
 
         } // namespace algebraic_expression_literals
 
-        // NumericExpression.hpp
+        // numeric_expression.hpp
         inline namespace numeric_expression_literals {
 
             [[nodiscard]] math::NumericExpression

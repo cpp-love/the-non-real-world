@@ -34,7 +34,7 @@
 using namespace std::string_literals;
 
 /// @brief 处理大小不合适的参数
-void processUnsuitedArgs() {
+void process_unsuited_args() {
     std::println(":: 错误：参数过多或过少，请输入正确数量的参数，参数的正确顺序为<workspace_folder> "
                  "<file> <authors>");
 }
@@ -45,7 +45,7 @@ void processUnsuitedArgs() {
  * @return std::string 文件的创建日期，如果获取不到则为空
  * @note 此函数是根据文件头的 `Doxygen` 注释中的 `@date` 推导出来的
  */
-std::string getCreateDate(const std::filesystem::path &file) {
+std::string get_create_date(const std::filesystem::path &file) {
     std::ifstream fin(file);
     if (!fin) {
         return {};
@@ -75,8 +75,8 @@ std::string getCreateDate(const std::filesystem::path &file) {
  * @return true 生成成功
  * @return false 生成失败
  */
-bool generateOneFile(const std::filesystem::path &workspace_folder, const std::filesystem::path &file,
-                     std::string_view authors, std::string_view file_string_view) {
+bool generate_one_file(const std::filesystem::path &workspace_folder, const std::filesystem::path &file,
+                       std::string_view authors, std::string_view file_string_view) {
     std::filesystem::path output_file(
         workspace_folder / "file_versions"s
         / std::filesystem::relative(file, workspace_folder).concat(".md"s)); //< 输出文件目录
@@ -106,7 +106,7 @@ bool generateOneFile(const std::filesystem::path &workspace_folder, const std::f
     }
 
     // 获得当前日期（根据文件或当前日期）
-    std::string date_string = getCreateDate(file);
+    std::string date_string = get_create_date(file);
     if (date_string.empty()) {
         std::chrono::zoned_time time(std::chrono::current_zone(), std::chrono::system_clock::now());
         date_string = std::format("{:%F}", time);
@@ -127,16 +127,16 @@ bool generateOneFile(const std::filesystem::path &workspace_folder, const std::f
  * @return true 生成成功
  * @return false 生成失败
  */
-bool generateOneDirectory(
+bool generate_one_directory(
     const std::filesystem::path &workspace_folder, // NOLINT(bugprone-easily-swappable-parameters)
     const std::filesystem::path &directory, std::string_view authors,
     std::string_view file_string_view) {
     auto process_entry = [&](const std::filesystem::directory_entry &entry) -> bool {
         if (entry.is_directory()) {
-            return generateOneDirectory(workspace_folder, entry.path(), authors, file_string_view);
+            return generate_one_directory(workspace_folder, entry.path(), authors, file_string_view);
         }
         if (entry.is_regular_file()) {
-            return generateOneFile(workspace_folder, entry.path(), authors, file_string_view);
+            return generate_one_file(workspace_folder, entry.path(), authors, file_string_view);
         }
         std::println(":: 错误：{} 不是文件（夹）", entry.path().generic_string());
         return false;
@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
         }
         authors = args[3];
     } else {
-        processUnsuitedArgs();
+        process_unsuited_args();
         return -1;
     }
     if (!std::filesystem::is_directory(workspace_folder)) {
@@ -221,12 +221,12 @@ int main(int argc, char *argv[]) {
 
     if (is_file) {
         // 是单个文件
-        if (!generateOneFile(workspace_folder, file, authors, file_string_view)) {
+        if (!generate_one_file(workspace_folder, file, authors, file_string_view)) {
             return -1;
         }
     } else {
         // 是目录
-        if (!generateOneDirectory(workspace_folder, file, authors, file_string_view)) {
+        if (!generate_one_directory(workspace_folder, file, authors, file_string_view)) {
             return -1;
         }
     }

@@ -16,6 +16,7 @@
                 "${workspaceFolder}/helper/generate_code_issues.py",
                 "-p",
                 "${command:cmake.buildDirectory}/compile_commands.json",
+                "-ea=-stdlib=libc++",
                 "-ea=-idirafter",
                 "-ea=C:/msys64/ucrt64/include",
                 "-fd",

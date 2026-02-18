@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 添加了 `tnrw::ecs` 命名空间的前向声明（包含 `Components/fwd.hpp` 和 `Systems/fwd.hpp`）
+1. 添加了 `tnrw::ecs` 命名空间的前向声明（包含 `components/fwd.hpp` 和 `systems/fwd.hpp`）
 
 ---

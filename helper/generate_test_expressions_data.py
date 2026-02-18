@@ -1,46 +1,17 @@
 #!/usr/bin/env python3
 """
 生成 test_expressions.cpp 的测试数据的脚本
+
 使用方法：
 见 `python3 generate_test_expressions_data.py --help` 的结果
-version: 0.1.0-1
+
+:version: 0.1.0-2
 """
 
 from pathlib import Path
-from enum import IntFlag
 import string
 import subprocess
-
-
-class PathType(IntFlag):
-    DIRECTORY = 1 << 0  # 文件夹
-    FILE = 1 << 1  # 文件
-    SYMLINK = 1 << 2  # 链接
-    ALL = DIRECTORY | FILE | SYMLINK  # 都可能
-
-
-def filter_invalid_path(
-    path: Path, path_type_should_be: PathType = PathType.ALL
-) -> Path:
-    """
-    过滤非法的路径
-
-    :param path: 路径
-    :type path: Path
-    :return: 保证合法的路径
-    :rtype: Path
-    """
-
-    if not path.exists():
-        raise Exception(f"路径 {path} 不存在")
-
-    if (PathType.DIRECTORY in path_type_should_be) and (not path.is_dir()):
-        raise Exception("路径不是文件夹")
-    if (PathType.FILE in path_type_should_be) and (not path.is_file()):
-        raise Exception("路径不是文件")
-    if (PathType.SYMLINK in path_type_should_be) and (not path.is_symlink()):
-        raise Exception("路径不是链接")
-    return path.absolute().resolve()
+import helper_base
 
 
 def generate_data(exec: Path, input_file: Path, ans_file: Path):
@@ -222,17 +193,12 @@ def main():
             default=1,
             help="生成命令集和答案的次数",
         )
-        parser.add_argument(
-            "-v",
-            "--verbose",
-            action="store_true",
-            default=False,
-            help="用于添加详细输出",
-        )
         args = parser.parse_args()
-        exec: Path = filter_invalid_path(Path(args.exec_file), PathType.FILE)
-        output_directory: Path = filter_invalid_path(
-            Path(args.output_directory), PathType.DIRECTORY
+        exec: Path = helper_base.filter_invalid_path(
+            Path(args.exec_file), helper_base.PathType.FILE
+        )
+        output_directory: Path = helper_base.filter_invalid_path(
+            Path(args.output_directory), helper_base.PathType.DIRECTORY
         )
 
         for i in range(1, args.times + 1):

@@ -13,7 +13,7 @@
 
 ### Added(新增)
 
-1. 对 `math/AlgebraicExpression.hpp` 和 `math/NumericExpression.hpp` 新增的接口做了实现
+1. 对 `math/algebraic_expression.hpp` 和 `math/numeric_expression.hpp` 新增的接口做了实现
 
 ### Changed(修改)
 
@@ -55,7 +55,7 @@
 
 ### Added(新增)
 
-1. 添加了 `math/AlgebraicExpression.hpp` 和 `math/NumericExpression.hpp` 的实现
+1. 添加了 `math/algebraic_expression.hpp` 和 `math/numeric_expression.hpp` 的实现
 2. 采用 **树** 作为其实现方式，两个类的树的节点均为 `tnrw::math::details::Node`
 
 ---

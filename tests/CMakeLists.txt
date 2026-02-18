@@ -84,10 +84,10 @@ if(TNRW_BUILD_ECS_TESTS)
     # 构建程序
 
     # 设置链接文件
-    add_executable(test_game_state_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/Systems/testGameStateSystem.cpp)
-    add_executable(test_scene_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/Systems/testSceneSystem.cpp)
-    add_executable(test_render_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/Systems/testRenderSystem.cpp)
-    add_executable(test_movement_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/Systems/testMovementSystem.cpp)
+    add_executable(test_game_state_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/systems/test_game_state_system.cpp)
+    add_executable(test_scene_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/systems/test_scene_system.cpp)
+    add_executable(test_render_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/systems/test_render_system.cpp)
+    add_executable(test_movement_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/systems/test_movement_system.cpp)
 
     # 链接第三方库
     target_link_libraries(test_game_state_system

@@ -12,8 +12,8 @@
 #ifndef TNRW_ECS_FWD_HPP
 #define TNRW_ECS_FWD_HPP
 
-#include "ecs/Components/fwd.hpp"
-#include "ecs/Systems/fwd.hpp"
+#include "ecs/components/fwd.hpp"
+#include "ecs/systems/fwd.hpp"
 
 /**
  * @brief ecs系统相关的命名空间
