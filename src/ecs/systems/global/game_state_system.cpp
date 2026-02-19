@@ -16,76 +16,77 @@
 
 namespace tnrw::ecs {
 
-    bool GameStateSystem::createGameState(entt::registry &registry) noexcept {
-        if (registry.ctx().contains<GameState>()) {
+    bool game_state_system::create_game_state(entt::registry &registry) noexcept {
+        if (registry.ctx().contains<game_state>()) {
             return false;
         }
         spdlog::info("游戏状态组件创建");
-        registry.ctx().emplace<GameState>();
+        registry.ctx().emplace<game_state>();
         return true;
     }
 
-    void GameStateSystem::pushTopState(entt::registry &registry, const GameState::State state) noexcept {
-        assert_msg(registry.ctx().contains<GameState>(),
+    void game_state_system::push_top_state(entt::registry         &registry,
+                                           const game_state::state state) noexcept {
+        assert_msg(registry.ctx().contains<game_state>(),
                    "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
-        auto &val = registry.ctx().get<GameState>();
-        spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(state));
+        auto &val = registry.ctx().get<game_state>();
+        spdlog::info("添加游戏状态：{}", tnrw::ecs::game_state::to_string(state));
         val.m_states.push_back(state);
     }
-    void GameStateSystem::popTopState(entt::registry &registry) noexcept {
-        assert_msg(registry.ctx().contains<GameState>(),
+    void game_state_system::pop_top_state(entt::registry &registry) noexcept {
+        assert_msg(registry.ctx().contains<game_state>(),
                    "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
-        auto &val = registry.ctx().get<GameState>();
-        spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(val.m_states.back()));
+        auto &val = registry.ctx().get<game_state>();
+        spdlog::info("添加游戏状态：{}", tnrw::ecs::game_state::to_string(val.m_states.back()));
         val.m_states.pop_back();
     }
-    [[nodiscard]] GameState::State
-    GameStateSystem::getTopState(const entt::registry &registry) noexcept {
-        assert_msg(registry.ctx().contains<GameState>(),
+    [[nodiscard]] game_state::state
+    game_state_system::get_top_state(const entt::registry &registry) noexcept {
+        assert_msg(registry.ctx().contains<game_state>(),
                    "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
-        const auto &val = registry.ctx().get<GameState>();
+        const auto &val = registry.ctx().get<game_state>();
         return val.m_states.back();
     }
-    [[nodiscard]] const std::vector<GameState::State> &
-    GameStateSystem::getStates(const entt::registry &registry) noexcept {
-        assert_msg(registry.ctx().contains<GameState>(),
+    [[nodiscard]] const std::vector<game_state::state> &
+    game_state_system::get_states(const entt::registry &registry) noexcept {
+        assert_msg(registry.ctx().contains<game_state>(),
                    "参数 `registry` 没有 `tnrw::ecs::GameState` 组件");
-        return registry.ctx().get<GameState>().m_states;
+        return registry.ctx().get<game_state>().m_states;
     }
 
-    [[nodiscard]] bool GameStateSystem::tryPushTopState(entt::registry        &registry,
-                                                        const GameState::State state) noexcept {
-        if (!registry.ctx().contains<GameState>()) {
+    [[nodiscard]] bool game_state_system::try_push_top_state(entt::registry         &registry,
+                                                             const game_state::state state) noexcept {
+        if (!registry.ctx().contains<game_state>()) {
             return false;
         }
-        auto &val = registry.ctx().get<GameState>();
-        spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(state));
+        auto &val = registry.ctx().get<game_state>();
+        spdlog::info("添加游戏状态：{}", tnrw::ecs::game_state::to_string(state));
         val.m_states.push_back(state);
         return true;
     }
-    [[nodiscard]] bool GameStateSystem::tryPopTopState(entt::registry &registry) noexcept {
-        if (!registry.ctx().contains<GameState>()) {
+    [[nodiscard]] bool game_state_system::try_pop_top_state(entt::registry &registry) noexcept {
+        if (!registry.ctx().contains<game_state>()) {
             return false;
         }
-        auto &val = registry.ctx().get<GameState>();
-        spdlog::info("添加游戏状态：{}", tnrw::ecs::GameState::toString(val.m_states.back()));
+        auto &val = registry.ctx().get<game_state>();
+        spdlog::info("添加游戏状态：{}", tnrw::ecs::game_state::to_string(val.m_states.back()));
         val.m_states.pop_back();
         return true;
     }
-    [[nodiscard]] std::optional<GameState::State>
-    GameStateSystem::tryGetTopState(const entt::registry &registry) noexcept {
-        if (!registry.ctx().contains<GameState>()) {
+    [[nodiscard]] std::optional<game_state::state>
+    game_state_system::try_get_top_state(const entt::registry &registry) noexcept {
+        if (!registry.ctx().contains<game_state>()) {
             return std::nullopt;
         }
-        const auto &val = registry.ctx().get<GameState>();
+        const auto &val = registry.ctx().get<game_state>();
         return val.m_states.back();
     }
-    [[nodiscard]] const std::vector<GameState::State> *
-    GameStateSystem::tryGetStates(const entt::registry &registry) noexcept {
-        if (!registry.ctx().contains<GameState>()) {
+    [[nodiscard]] const std::vector<game_state::state> *
+    game_state_system::try_get_states(const entt::registry &registry) noexcept {
+        if (!registry.ctx().contains<game_state>()) {
             return nullptr;
         }
-        return &registry.ctx().get<GameState>().m_states;
+        return &registry.ctx().get<game_state>().m_states;
     }
 
 } // namespace tnrw::ecs

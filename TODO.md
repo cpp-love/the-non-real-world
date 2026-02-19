@@ -15,7 +15,7 @@
 
 ## 模块 ecs
 
-1. [ ] refactor(ecs): SceneSystem 去模板
+1. [ ] refactor(ecs): scene_system 去模板
 
 ## 模块 math
 

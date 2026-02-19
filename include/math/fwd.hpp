@@ -26,15 +26,15 @@ namespace tnrw {
     namespace math {
 
         // expressions_base.hpp
-        using IntegerConstantType = long long;
-        using VariableType = std::string;
-        using VariableView = std::string_view;
+        using integer_constant_type = long long;
+        using variable_type = std::string;
+        using variable_view = std::string_view;
 
         // Algebraicexpression.hpp
-        class AlgebraicExpression;
+        class algebraic_expression;
 
         // numeric_expression.hpp
-        class NumericExpression;
+        class numeric_expression;
 
     } // namespace math
 
@@ -43,29 +43,29 @@ namespace tnrw {
         // expressions_base.hpp
         inline namespace expressions_base_literals {
 
-            [[nodiscard]] constexpr math::IntegerConstantType
-                                             operator""_c(unsigned long long constant) noexcept;
-            [[nodiscard]] math::VariableType operator""_v(const char *variable,
-                                                          std::size_t len) noexcept;
-            [[nodiscard]] math::VariableView operator""_vv(const char *variable,
+            [[nodiscard]] constexpr math::integer_constant_type
+                                              operator""_c(unsigned long long constant) noexcept;
+            [[nodiscard]] math::variable_type operator""_v(const char *variable,
                                                            std::size_t len) noexcept;
+            [[nodiscard]] math::variable_view operator""_vv(const char *variable,
+                                                            std::size_t len) noexcept;
 
         } // namespace expressions_base_literals
 
         // Algebraicexpression.hpp
         inline namespace algebraic_expression_literals {
 
-            [[nodiscard]] math::AlgebraicExpression
+            [[nodiscard]] math::algebraic_expression
             operator""_cAlgeExpr(unsigned long long constant) noexcept;
-            [[nodiscard]] math::AlgebraicExpression operator""_vAlgeExpr(const char *variable,
-                                                                         std::size_t len) noexcept;
+            [[nodiscard]] math::algebraic_expression operator""_vAlgeExpr(const char *variable,
+                                                                          std::size_t len) noexcept;
 
         } // namespace algebraic_expression_literals
 
         // numeric_expression.hpp
         inline namespace numeric_expression_literals {
 
-            [[nodiscard]] math::NumericExpression
+            [[nodiscard]] math::numeric_expression
             operator""_cNumExpr(unsigned long long constant) noexcept;
 
         } // namespace numeric_expression_literals

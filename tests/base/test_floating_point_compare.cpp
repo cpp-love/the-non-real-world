@@ -15,21 +15,21 @@
 int main() {
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
-    tnrw::FastFloatf value1{0.f};
-    tnrw::FastFloatf value2{0.1f};
-    tnrw::FastFloatf value3{-0.1f};
-    tnrw::FastFloatf value4{-0.6f};
-    tnrw::SafeFloatf value5{std::numeric_limits<float>::quiet_NaN()};
-    tnrw::SafeFloatf value6{std::numeric_limits<float>::infinity()};
-    assert_msg(tnrw::FastFloatf{value5} != tnrw::FastFloatf{value6}); // 可以，但不要这样做
-    assert_msg(value1 != tnrw::FastFloatf{value6});                   // 也可以，但不推荐这么做
+    tnrw::fast_floatf value1{0.f};
+    tnrw::fast_floatf value2{0.1f};
+    tnrw::fast_floatf value3{-0.1f};
+    tnrw::fast_floatf value4{-0.6f};
+    tnrw::safe_floatf value5{std::numeric_limits<float>::quiet_NaN()};
+    tnrw::safe_floatf value6{std::numeric_limits<float>::infinity()};
+    assert_msg(tnrw::fast_floatf{value5} != tnrw::fast_floatf{value6}); // 可以，但不要这样做
+    assert_msg(value1 != tnrw::fast_floatf{value6});                    // 也可以，但不推荐这么做
     assert_msg(value1 == value2);
     assert_msg(value1 == value3);
     assert_msg(value4 != value3);
     assert_msg(value4 < value1);
-    assert_msg(tnrw::SafeFloatf(value1) != value5);
-    assert_msg(tnrw::SafeFloatf(value1) != value6);
-    assert_msg(tnrw::SafeFloatf(value1) == tnrw::SafeFloatf(value2));
+    assert_msg(tnrw::safe_floatf(value1) != value5);
+    assert_msg(tnrw::safe_floatf(value1) != value6);
+    assert_msg(tnrw::safe_floatf(value1) == tnrw::safe_floatf(value2));
     // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
     return 0;

@@ -26,68 +26,68 @@ namespace tnrw {
          * @warning 该类是私有的，用户不应直接访问
          */
         template <std::floating_point T>
-        struct [[nodiscard]] FloatWrapper {
-            using ValueType = T;                                              ///< 浮点数值类型
-            ValueType                  value;                                 ///< 浮点数值
-            static constexpr ValueType epsilon = static_cast<ValueType>(0.5); ///< 浮点比较最小阈值
+        struct [[nodiscard]] float_wrapper {
+            using value_type = T;                                               ///< 浮点数值类型
+            value_type                  value;                                  ///< 浮点数值
+            static constexpr value_type epsilon = static_cast<value_type>(0.5); ///< 浮点比较最小阈值
 
             // 构造、赋值、析构
-            constexpr explicit FloatWrapper(ValueType rhs) noexcept : value(rhs) {}
+            constexpr explicit float_wrapper(value_type rhs) noexcept : value(rhs) {}
 
             /**
              * @brief 转换到原始类型( `ValueType` )的运算符重载
              * @return ValueType 转换后的类型
              * @details 与使用 `.value` 获取类型相同
              */
-            constexpr explicit operator ValueType() const noexcept { return value; }
+            constexpr explicit operator value_type() const noexcept { return value; }
         };
 
     } // namespace details
 
     template <std::floating_point T>
-    struct [[nodiscard]] SafeFloat; // 前向声明
+    struct [[nodiscard]] safe_float; // 前向声明
 
     /**
      * @brief 快速比较的浮点类型，不含非法值（ `inf` 和 `nan` ）
      * @tparam T 原始浮点类型
      */
     template <std::floating_point T>
-    struct [[nodiscard]] FastFloat : public details::FloatWrapper<T> {
+    struct [[nodiscard]] fast_float : public details::float_wrapper<T> {
       private: /// @privatesection
         // using别名
-        using Base = details::FloatWrapper<T>; ///< 基类别名
+        using base = details::float_wrapper<T>; ///< 基类别名
 
       public: /// @publicsection
         // using解决模板依赖
-        using Base::Base;
-        using typename Base::ValueType;
-        using SafeType = SafeFloat<ValueType>;
+        using base::base;
+        using typename base::value_type;
+        using safe_type = safe_float<value_type>;
 
         // 构造、赋值、析构
-        constexpr explicit FastFloat(SafeType rhs) noexcept : Base(rhs.value) {}
+        constexpr explicit fast_float(safe_type rhs) noexcept : base(rhs.value) {}
     };
-    using FastFloatf = FastFloat<float>;
+    using fast_floatf = fast_float<float>;
 
     /**
      * @brief 快速比较的浮点类型，含非法值（ `inf` 和 `nan` ）
      * @tparam T 原始浮点类型
      */
     template <std::floating_point T>
-    struct [[nodiscard]] SafeFloat : public details::FloatWrapper<T> {
+    struct [[nodiscard]] safe_float : public details::float_wrapper<T> {
       private: /// @privatesection
         // using别名
-        using Base = details::FloatWrapper<T>; ///< 基类别名
+        using base = details::float_wrapper<T>; ///< 基类别名
 
       public: /// @publicsection
         // using解决模板依赖
-        using Base::Base;
-        using typename Base::ValueType;
-        using FastType = FastFloat<ValueType>;
+        using base::base;
+        using typename base::value_type;
+        using fast_type = fast_float<value_type>;
 
         // 构造、赋值、析构
-        constexpr explicit SafeFloat(FastType rhs) noexcept : Base(rhs.value) {}
+        constexpr explicit safe_float(fast_type rhs) noexcept : base(rhs.value) {}
     };
-    using SafeFloatf = SafeFloat<float>;
+    using safe_floatf = safe_float<float>;
 
     /**
      * @brief 浮点数相等比较运算符重载，不含非法值（ `inf` 和 `nan` ）
@@ -99,8 +99,8 @@ namespace tnrw {
      * @return false 不相等
      */
     template <std::floating_point T1, std::floating_point T2>
-    constexpr bool operator==(FastFloat<T1> lhs, FastFloat<T2> rhs) {
-        return std::abs(lhs.value - rhs.value) < FastFloat<decltype(lhs.value - rhs.value)>::epsilon;
+    constexpr bool operator==(fast_float<T1> lhs, fast_float<T2> rhs) {
+        return std::abs(lhs.value - rhs.value) < fast_float<decltype(lhs.value - rhs.value)>::epsilon;
     }
 
     /**
@@ -113,14 +113,14 @@ namespace tnrw {
      * @return false 不相等
      */
     template <std::floating_point T1, std::floating_point T2>
-    constexpr bool operator==(SafeFloat<T1> lhs, SafeFloat<T2> rhs) {
+    constexpr bool operator==(safe_float<T1> lhs, safe_float<T2> rhs) {
         if (std::isnan(lhs.value) || std::isnan(rhs.value)) {
             return false;
         }
         if (std::isinf(lhs.value) || std::isinf(rhs.value)) {
             return lhs.value == rhs.value;
         }
-        return static_cast<FastFloat<T1>>(lhs) == static_cast<FastFloat<T2>>(rhs);
+        return static_cast<fast_float<T1>>(lhs) == static_cast<fast_float<T2>>(rhs);
     }
 
     /**
@@ -132,8 +132,8 @@ namespace tnrw {
     * @return std::paritial_ordering 比较结果
     */
     template <std::floating_point T1, std::floating_point T2>
-    constexpr std::partial_ordering operator<=>(FastFloat<T1> lhs, FastFloat<T2> rhs) {
-        if (std::abs(lhs.value - rhs.value) < FastFloat<decltype(lhs.value - rhs.value)>::epsilon) {
+    constexpr std::partial_ordering operator<=>(fast_float<T1> lhs, fast_float<T2> rhs) {
+        if (std::abs(lhs.value - rhs.value) < fast_float<decltype(lhs.value - rhs.value)>::epsilon) {
             return std::partial_ordering::equivalent;
         }
         return lhs.value <=> rhs.value;
@@ -148,12 +148,12 @@ namespace tnrw {
      * @return std::paritial_ordering 比较结果
      */
     template <std::floating_point T1, std::floating_point T2>
-    constexpr std::partial_ordering operator<=>(SafeFloat<T1> lhs, SafeFloat<T2> rhs) {
+    constexpr std::partial_ordering operator<=>(safe_float<T1> lhs, safe_float<T2> rhs) {
         if (std::isnan(lhs.value) || std::isnan(rhs.value) || std::isinf(lhs.value)
             || std::isinf(rhs.value)) {
             return lhs.value <=> rhs.value;
         }
-        return static_cast<FastFloat<T1>>(lhs) <=> static_cast<FastFloat<T2>>(rhs);
+        return static_cast<fast_float<T1>>(lhs) <=> static_cast<fast_float<T2>>(rhs);
     }
 
 } // namespace tnrw

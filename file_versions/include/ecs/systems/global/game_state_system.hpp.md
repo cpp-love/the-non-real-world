@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 添加了游戏状态系统(`tnrw::ecs::GameStateSystem`)及其基本功能
+1. 添加了游戏状态系统(`tnrw::ecs::game_state_system`)及其基本功能
 
 ---

@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 声明了移动系统(`tnrw::MovementSystem`)及其基本功能
+1. 声明了移动系统(`tnrw::movement_system`)及其基本功能
 
 ---

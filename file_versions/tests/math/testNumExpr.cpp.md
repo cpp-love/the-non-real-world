@@ -21,7 +21,7 @@
 
 ### Added(新增)
 
-1. `calculateApproximation` 用于计算无字母的代数式的近似值
+1. `calculate_approximation` 用于计算无字母的代数式的近似值
 
 ### Deprecated(废弃)
 
@@ -30,7 +30,7 @@
 
 ### Removed(移除)
 
-1. 移除无用命令 `isZero` 和 `getValue`，`getValue` 可用 `calculateApproximation` 代替
+1. 移除无用命令 `isZero` 和 `getValue`，`getValue` 可用 `calculate_approximation` 代替
 
 ---
 
@@ -38,7 +38,7 @@
 
 ### Added(新增)
 
-1. 添加了 `tnrw::math::NumericExpression` 的使用样例和测试用例，
+1. 添加了 `tnrw::math::numeric_expression` 的使用样例和测试用例，
    具体使用方式请使用此程序键入 `help` 来获取帮助
 
 ---

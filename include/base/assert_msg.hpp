@@ -32,8 +32,8 @@ namespace tnrw::details {
      * @param [in] loc 断言位置
      * @param [in] message 断言失败时输出的消息（如果没有，为 std::nullopt)
      */
-    [[noreturn]] constexpr void assertFail(std::string_view expr, const std::source_location &loc,
-                                           std::optional<std::string> message = std::nullopt) {
+    [[noreturn]] constexpr void assert_fail(std::string_view expr, const std::source_location &loc,
+                                            std::optional<std::string> message = std::nullopt) {
         // 输出信息
         if (message != std::nullopt) {
             spdlog::critical("Assertion failed at {}:{}:{} (in function :{}):\n>> Expression: "
@@ -62,12 +62,12 @@ namespace tnrw::details {
      * @param [in] args 格式化字符串参数
      */
     template <typename... Args>
-    constexpr void assertCheck(bool condition, std::string_view expr, const std::source_location &loc,
-                               std::format_string<Args...> fmt, Args &&...args) {
+    constexpr void assert_check(bool condition, std::string_view expr, const std::source_location &loc,
+                                std::format_string<Args...> fmt, Args &&...args) {
         if (condition) {
             return;
         }
-        assertFail(expr, loc, std::format(fmt, std::forward<Args>(args)...));
+        assert_fail(expr, loc, std::format(fmt, std::forward<Args>(args)...));
     }
     /**
      * @brief 断言检查函数
@@ -79,12 +79,12 @@ namespace tnrw::details {
      * @param [in] args 格式化字符串参数
      */
     template <typename... Args>
-    constexpr void assertCheck(bool condition, std::string_view expr, const std::source_location &loc,
-                               std::wformat_string<Args...> fmt, Args &&...args) {
+    constexpr void assert_check(bool condition, std::string_view expr, const std::source_location &loc,
+                                std::wformat_string<Args...> fmt, Args &&...args) {
         if (condition) {
             return;
         }
-        assertFail(expr, loc, std::format(fmt, std::forward<Args>(args)...));
+        assert_fail(expr, loc, std::format(fmt, std::forward<Args>(args)...));
     }
     /**
      * @brief 断言检查函数
@@ -92,11 +92,11 @@ namespace tnrw::details {
      * @param [in] expr 断言表达式
      * @param [in] loc 断言位置
      */
-    constexpr void assertCheck(bool condition, std::string_view expr, const std::source_location &loc) {
+    constexpr void assert_check(bool condition, std::string_view expr, const std::source_location &loc) {
         if (condition) {
             return;
         }
-        assertFail(expr, loc);
+        assert_fail(expr, loc);
     }
 } // namespace tnrw::details
 /// @endcond
@@ -110,7 +110,8 @@ namespace tnrw::details {
  * @note 当定义宏 `NDEBUG` 时与标准库的 `assert` 行为相同，都不启用
  */
 #define assert_msg(expr, ...)                                                                           \
-    ::tnrw::details::assertCheck(expr, #expr, std::source_location::current() __VA_OPT__(, ) __VA_ARGS__)
+    ::tnrw::details::assert_check(expr, #expr,                                                          \
+                                  std::source_location::current() __VA_OPT__(, ) __VA_ARGS__)
 // NOLINTEND(readability-identifier-naming)
 
 #endif // NDEBUG

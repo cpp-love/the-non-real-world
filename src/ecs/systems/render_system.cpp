@@ -18,24 +18,24 @@
 namespace tnrw::ecs {
 
     namespace {
-        void drawer(sf::RenderTarget &render, const Shape::Line &line) noexcept {
+        void drawer(sf::RenderTarget &render, const shape::line &line) noexcept {
             std::array<sf::Vertex, 2> draw_line{line.start, line.end};
             render.draw(draw_line.data(), draw_line.size(), sf::PrimitiveType::Lines);
         }
-        std::size_t &getPointCountRef() noexcept {
+        std::size_t &get_point_count_ref() noexcept {
             // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
             static std::size_t point_count = 30;
             return point_count;
         }
-        void drawer(sf::RenderTarget &render, const Shape::Circle &circle) noexcept {
-            sf::CircleShape draw_circle(circle.radius, getPointCountRef());
+        void drawer(sf::RenderTarget &render, const shape::circle &circle) noexcept {
+            sf::CircleShape draw_circle(circle.radius, get_point_count_ref());
             draw_circle.setPosition(circle.center - sf::Vector2f{circle.radius, circle.radius});
             draw_circle.setFillColor(circle.fill_color);
             draw_circle.setOutlineThickness(circle.outline_thickness);
             draw_circle.setOutlineColor(circle.outline_color);
             render.draw(draw_circle);
         }
-        void drawer(sf::RenderTarget &render, const Shape::Rectangle &rect) noexcept {
+        void drawer(sf::RenderTarget &render, const shape::rectangle &rect) noexcept {
             sf::RectangleShape draw_rect(rect.size);
             draw_rect.setPosition(rect.position);
             draw_rect.setFillColor(rect.fill_color);
@@ -56,17 +56,20 @@ namespace tnrw::ecs {
         // }
     } // namespace
 
-    [[nodiscard]] std::size_t RenderSystem::getCirclePointCount() noexcept { return getPointCountRef(); }
-    void                      RenderSystem::setCirclePointCount(std::size_t new_cnt) noexcept {
-        getPointCountRef() = new_cnt;
+    [[nodiscard]] std::size_t render_system::get_circle_point_count() noexcept {
+        return get_point_count_ref();
     }
-    void RenderSystem::draw(const entt::registry &registry, sf::RenderTarget &render,
-                            std::function<bool(entt::entity)>
-                                check_if_valid) noexcept { // NOLINT(performance-unnecessary-value-param)
-        auto should_render = registry.view<ShouldRender>();
+    void render_system::set_circle_point_count(std::size_t new_cnt) noexcept {
+        get_point_count_ref() = new_cnt;
+    }
+    void
+    render_system::draw(const entt::registry &registry, sf::RenderTarget &render,
+                        std::function<bool(entt::entity)>
+                            check_if_valid) noexcept { // NOLINT(performance-unnecessary-value-param)
+        auto should_render = registry.view<struct should_render>();
         for (const auto &entity : should_render) {
             if (check_if_valid(entity)) {
-                const auto *result = registry.try_get<Shape>(entity);
+                const auto *result = registry.try_get<shape>(entity);
                 if (result != nullptr) {
                     std::visit([&render](auto drawable) { drawer(render, drawable); }, result->shape);
                 }

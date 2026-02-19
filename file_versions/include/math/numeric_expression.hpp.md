@@ -13,7 +13,7 @@
 
 ### Added(新增)
 
-1. 添加了 `NumericExpression` 对自己的加减乘除运算
+1. 添加了 `numeric_expression` 对自己的加减乘除运算
 
 ---
 
@@ -21,8 +21,8 @@
 
 ### Added(新增)
 
-1. `calculateApproximation` 方法，用于计算近似值
-2. `std::formatter` 对 `tnrw::math::NumericExpression` 的特化，
+1. `calculate_approximation` 方法，用于计算近似值
+2. `std::formatter` 对 `tnrw::math::numeric_expression` 的特化，
    用于支持 `std::format` 和 `std::print(ln)` 函数的格式化
 
 ### Changed(修改)
@@ -32,10 +32,10 @@
 
 ### Removed(移除)
 
-1. 无用的方法 `isZero` 与 `getValue` 被移除，
-   `getValue` 可使用 `calculateApproximation` 代替
+1. 无用的方法 `is_zero` 与 `getValue` 被移除，
+   `getValue` 可使用 `calculate_approximation` 代替
 2. 多余的模板方法 `toBasicString` 被移除，
-   若字符类型是 `char` 或 `wchar_t` 可用 `toString` 和 `toWString` 代替，
+   若字符类型是 `char` 或 `wchar_t` 可用 `to_string` 或 `to_wstring` 代替，
    若不是，可用 `std::format` 或 `std::ostringstream` 来达到类似的效果
 
 ---
@@ -44,7 +44,7 @@
 
 ### Added(新增)
 
-1. 添加了代数式类型 `tnrw::math::NumericExpression`
+1. 添加了代数式类型 `tnrw::math::numeric_expression`
    和基本的无字母的代数式与常量和变量类型的操作
    和无字母的代数式类型的自定义字面量
 

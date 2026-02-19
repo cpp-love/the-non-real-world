@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 添加了基本的速度组件，用于 `tnrw::MovementSystem` 类的静态方法
+1. 添加了基本的速度组件，用于 `tnrw::movement_system` 类的静态方法
 
 ---

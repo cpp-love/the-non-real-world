@@ -13,14 +13,14 @@
 
 ### Added(新增)
 
-1. `tnrw::math::VariableView` 别名的定义及其自定义字面量
-2. `tnrw::math::details::Node` 及 `tnrw::math::details::NodePtr` 的声明
+1. `tnrw::math::variable_view` 别名的定义及其自定义字面量
+2. `tnrw::math::details::node` 及 `tnrw::math::details::node_ptr` 的声明
 
 ### Changed(修改)
 
-1. **BREAKING(不向下兼容):** 将 `tnrw::math::VariableType` 别名的类型从 `char` 转为 `std::string`，
+1. **BREAKING(不向下兼容):** 将 `tnrw::math::variable_type` 别名的类型从 `char` 转为 `std::string`，
    以支持字符串变量，并将 `_v` 自定义字面量的声明该为使用字符串字面量为参数
-2. **BREAKING(不向下兼容):** 将 `tnrw::math::ConstantType` 改名为 `tnrw::math::IntegerConstantType`，
+2. **BREAKING(不向下兼容):** 将 `tnrw::math::ConstantType` 改名为 `tnrw::math::integer_constant_type`，
    以更清晰地显示为整型
 
 ---

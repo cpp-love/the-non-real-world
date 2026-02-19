@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 添加了几个基本的与场景有关的组件 `tnrw::ecs::GlobalScenes`, `tnrw::ecs::Scene`, `tnrw::ecs::FatherScenes`
+1. 添加了几个基本的与场景有关的组件 `tnrw::ecs::global_scenes`, `tnrw::ecs::scene`, `tnrw::ecs::father_scenes`
 
 ---

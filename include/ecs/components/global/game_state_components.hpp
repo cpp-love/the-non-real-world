@@ -22,22 +22,22 @@
 namespace tnrw::ecs {
 
     /// @brief 游戏状态的组件
-    class [[nodiscard]] GameState {
+    class [[nodiscard]] game_state {
       public: /// @publicsection
         /// @brief 游戏的状态枚举
-        enum class State : std::uint8_t {
-            Settings = 0, ///< 设置
-            Mainpage = 1, ///< 主页
-            Game = 2      ///< 游戏界面
+        enum class state : std::uint8_t {
+            settings = 0, ///< 设置
+            mainpage = 1, ///< 主页
+            game = 2      ///< 游戏界面
         };
         // 友元声明
-        friend class GameStateSystem; ///< 仅其对应系统才可访问其成员，防止篡改
+        friend class game_state_system; ///< 仅其对应系统才可访问其成员，防止篡改
 
-        static constexpr std::string_view toString(State state) {
+        static constexpr std::string_view to_string(state state) {
             switch (state) {
-                case State::Settings: return "Settings";
-                case State::Game: return "Game";
-                case State::Mainpage: return "Mainpage";
+                case state::settings: return "Settings";
+                case state::game: return "Game";
+                case state::mainpage: return "Mainpage";
                 default:
                     assert_msg(false, "参数 `state` （整数形式为：{}）有无法转换为字符串的状态",
                                static_cast<std::uint8_t>(state));
@@ -48,7 +48,7 @@ namespace tnrw::ecs {
         /// @cond INTERNAL
       private: /// @privatesection
         // 成员
-        std::vector<State> m_states; ///< 游戏状态集
+        std::vector<state> m_states; ///< 游戏状态集
         /// @endcond
     };
 

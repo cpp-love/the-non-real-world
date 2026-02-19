@@ -17,10 +17,13 @@
 namespace tnrw::ecs {
 
     // global/game_state_system.hpp
-    class GameStateSystem;
+    class game_state_system;
 
     // render_system.hpp
-    class RenderSystem;
+    class render_system;
+
+    // movement_system.hpp
+    class movement_system;
 
 } // namespace tnrw::ecs
 

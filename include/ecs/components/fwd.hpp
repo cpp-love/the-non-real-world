@@ -13,19 +13,21 @@
 #define TNRW_ECS_COMPONENTS_FWD_HPP
 
 #include "ecs/components/global/scene_components.hpp"
+#include "ecs/components/movement_components.hpp"
 #include <SFML/System/Vector2.hpp>
 
 namespace tnrw::ecs {
 
     // global/GameState.hpp
-    class GameState;
+    class game_state;
 
     // shape_components.hpp
-    struct Line;
-    struct Circle;
-    struct Rectangle;
-    struct ShouldRender;
-    struct ShouldCollide;
+    struct shape;
+    struct should_render;
+    struct should_collide;
+
+    // movement_components.hpp
+    struct velocity;
 
 } // namespace tnrw::ecs
 

@@ -1,7 +1,7 @@
 /**
  * @file test_expressions.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
- * @brief `tnrw::math::AlgebraicExpression` 与 `tnrw::math::NumericExpression` 类的测试用例或使用示例
+ * @brief `tnrw::math::algebraic_expression` 与 `tnrw::math::numeric_expression` 类的测试用例或使用示例
  * @version 0.1.0-3
  * @date 2026-02-14
  * 
@@ -19,8 +19,8 @@
  */
 
 #include "math/algebraic_expression.hpp"
-#include "math/numeric_expression.hpp"
 #include "math/expressions_base.hpp"
+#include "math/numeric_expression.hpp"
 #include <cstddef>
 #include <functional>
 #include <iostream>
@@ -36,14 +36,14 @@
 #include <windows.h>
 #endif // _WIN32
 
-using Handler = std::function<void(std::span<const std::string>)>;
+using handler = std::function<void(std::span<const std::string>)>;
 
 /**
  * @brief 将字符以空白为分隔符，分为多个子字符串
  * @param [in] line 字符串
  * @return std::vector<std::string> 子字符串列表
  */
-[[nodiscard]] std::vector<std::string> splitLine(std::string_view line) {
+[[nodiscard]] std::vector<std::string> split_line(std::string_view line) {
     std::vector<std::string> out;
     std::size_t              pos = 0;
     while (pos < line.size()) {
@@ -66,75 +66,75 @@ using Handler = std::function<void(std::span<const std::string>)>;
  * @brief 获取一行输入参数
  * @return std::vector<std::string> 输入参数
  */
-[[nodiscard]] std::vector<std::string> getInputArgs() {
+[[nodiscard]] std::vector<std::string> get_input_args() {
     std::string line;
     if (!std::getline(std::cin, line)) {
         return {};
     }
-    return splitLine(line);
+    return split_line(line);
 }
 
 /// @brief 字符串类型转换的结果
-enum class StrToTypeResult : std::uint8_t { Invalid, OverLimit, Normal };
+enum class str_to_type_result : std::uint8_t { invalid, over_limit, normal };
 
 /**
  * @brief 字符串转为 `long long` 类型
  * @param [in] str 字符串
  * @param [out] result 转换的类型的结果
- * @return StrToTypeResult 转换是否成功的结果
+ * @return str_to_type_result 转换是否成功的结果
  */
-[[nodiscard]] StrToTypeResult tryStrToLL(const std::string &str, long long &result) {
+[[nodiscard]] str_to_type_result try_str_to_ll(const std::string &str, long long &result) {
     try {
         std::size_t pos = 0;
         long long   value = std::stoll(str, &pos);
         if (pos != str.size()) {
-            return StrToTypeResult::Invalid;
+            return str_to_type_result::invalid;
         }
         result = value;
-        return StrToTypeResult::Normal;
+        return str_to_type_result::normal;
     } catch (const std::invalid_argument &) {
-        return StrToTypeResult::Invalid;
-    } catch (const std::out_of_range &) { return StrToTypeResult::OverLimit; }
+        return str_to_type_result::invalid;
+    } catch (const std::out_of_range &) { return str_to_type_result::over_limit; }
 }
 
 /**
  * @brief 字符串转为 `unsigned long long` 类型
  * @param [in] str 字符串
  * @param [out] result 转换的类型的结果
- * @return StrToTypeResult 转换是否成功的结果
+ * @return str_to_type_result 转换是否成功的结果
  */
-[[nodiscard]] StrToTypeResult tryStrToULL(const std::string &str, unsigned long long &result) {
+[[nodiscard]] str_to_type_result try_str_to_ull(const std::string &str, unsigned long long &result) {
     try {
         std::size_t        pos = 0;
         unsigned long long value = std::stoull(str, &pos);
         if (pos != str.size()) {
-            return StrToTypeResult::Invalid;
+            return str_to_type_result::invalid;
         }
         result = value;
-        return StrToTypeResult::Normal;
+        return str_to_type_result::normal;
     } catch (const std::invalid_argument &) {
-        return StrToTypeResult::Invalid;
-    } catch (const std::out_of_range &) { return StrToTypeResult::OverLimit; }
+        return str_to_type_result::invalid;
+    } catch (const std::out_of_range &) { return str_to_type_result::over_limit; }
 }
 
 /**
  * @brief 字符串转为 `double` 类型
  * @param [in] str 字符串
  * @param [out] result 转换的类型的结果
- * @return StrToTypeResult 转换是否成功的结果
+ * @return str_to_type_result 转换是否成功的结果
  */
-[[nodiscard]] StrToTypeResult tryStrToDouble(const std::string &str, double &result) {
+[[nodiscard]] str_to_type_result try_str_to_double(const std::string &str, double &result) {
     try {
         std::size_t pos = 0;
         double      value = std::stod(str, &pos);
         if (pos != str.size()) {
-            return StrToTypeResult::Invalid;
+            return str_to_type_result::invalid;
         }
         result = value;
-        return StrToTypeResult::Normal;
+        return str_to_type_result::normal;
     } catch (const std::invalid_argument &) {
-        return StrToTypeResult::Invalid;
-    } catch (const std::out_of_range &) { return StrToTypeResult::OverLimit; }
+        return str_to_type_result::invalid;
+    } catch (const std::out_of_range &) { return str_to_type_result::over_limit; }
 }
 
 int main(int argc, char *argv[]) {
@@ -159,8 +159,8 @@ int main(int argc, char *argv[]) {
         print_verbose = false;
     }
 
-    std::vector<tnrw::math::AlgebraicExpression> algevec(1); //< 代数式数组
-    std::vector<tnrw::math::NumericExpression>   numvec(1);  //< 无字母的代数式数组
+    std::vector<tnrw::math::algebraic_expression> algevec(1); //< 代数式数组
+    std::vector<tnrw::math::numeric_expression>   numvec(1);  //< 无字母的代数式数组
 
     if (print_verbose) {
         std::println("想查看帮助，请键入 help 或 alge help 或 num help");
@@ -172,10 +172,10 @@ int main(int argc, char *argv[]) {
                                                             "delete",
                                                             "operator",
                                                             "clear",
-                                                            "calculateApproximation",
-                                                            "changeToOpposite",
+                                                            "calculate_approximation",
+                                                            "change_to_opposite",
                                                             "compare",
-                                                            "hasVariable",
+                                                            "has_variable",
                                                             "toNum"};
     constexpr std::array<std::string_view, 10> alge_briefs{"提供帮助",
                                                            "添加代数式",
@@ -212,24 +212,30 @@ int main(int argc, char *argv[]) {
         "  用于获取[+ | -]第index(从0开始)个代数式的结果",
         "- clear [index]\n"
         "  用于清空第index(从0开始)个代数式",
-        "- calculateApproximation [index] [[var] [value]]...\n"
+        "- calculate_approximation [index] [[var] [value]]...\n"
         "  用于将var替换为value，计算代数式的近似值",
-        "- changeToOpposite [index]\n"
+        "- change_to_opposite [index]\n"
         "  用于将第index(从0开始)个代数式改为相反数",
         "- compare [index1] [index2]\n"
         "  用于比较第index1(从0开始)个代数式和第index2(从0开始)个代数式是否相等",
-        "- hasVariable [index]\n"
+        "- has_variable [index]\n"
         "  用于判断第index(从0开始)个代数式是否有变量\n"
-        "- hasVariable [index] [var]\n"
+        "- has_variable [index] [var]\n"
         "  用于判断第index(从0开始)个代数式是否有指定变量var",
         "- toNum [index1] [index2]\n"
         "  用于尝试删除第index1(从0开始)个代数式，将其转换成无字母的代数式，"
         "并在第index2(从0开始)个无字母的代数式前添加；"
         "如果失败，输出错误信息"};
 
-    constexpr std::array<std::string_view, 9> num_cmds = {
-        "help",    "new",   "delete", "operator", "clear", "calculateApproximation", "changeToOpposite",
-        "compare", "toAlge"};
+    constexpr std::array<std::string_view, 9> num_cmds = {"help",
+                                                          "new",
+                                                          "delete",
+                                                          "operator",
+                                                          "clear",
+                                                          "calculate_approximation",
+                                                          "change_to_opposite",
+                                                          "compare",
+                                                          "toAlge"};
     constexpr std::array<std::string_view, 9> num_briefs{"提供帮助",
                                                          "添加无字母的代数式",
                                                          "删除无字母的代数式",
@@ -265,9 +271,9 @@ int main(int argc, char *argv[]) {
         "  用于获取[+ | -]第index(从0开始)个无字母的代数式的结果",
         "- clear [index]\n"
         "  用于清空第index(从0开始)个无字母的代数式",
-        "- calculateApproximation [index]\n"
+        "- calculate_approximation [index]\n"
         "  用于计算无字母的代数式的近似值",
-        "- changeToOpposite [index]\n"
+        "- change_to_opposite [index]\n"
         "  用于将第index(从0开始)个无字母的代数式改为相反数",
         "- compare [index1] [index2]\n"
         "  用于比较第index1(从0开始)个无字母的代数式和第index2(从0开始)个无字母的代数式是否相等",
@@ -275,7 +281,7 @@ int main(int argc, char *argv[]) {
         "  用于删除第index1(从0开始)个无字母的代数式，将其转换成代数式，"
         "并在第index2(从0开始)个代数式前添加"};
 
-    std::unordered_map<std::string, std::unordered_map<std::string, Handler>>
+    std::unordered_map<std::string, std::unordered_map<std::string, handler>>
                                                               table; //< 装载对应命令处理的映射
     // 别名映射：name -> 替换的 token 列表
     std::unordered_map<std::string, std::vector<std::string>> aliases;
@@ -310,7 +316,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -327,7 +333,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -344,7 +350,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -355,13 +361,13 @@ int main(int argc, char *argv[]) {
         algevec[idx].clear();
     };
 
-    table["alge"]["changeToOpposite"] = [&](std::span<const std::string> rest_args) {
+    table["alge"]["change_to_opposite"] = [&](std::span<const std::string> rest_args) {
         if (rest_args.size() != 1) {
-            std::println("用法: alge changeToOpposite [index]");
+            std::println("用法: alge change_to_opposite [index]");
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -369,7 +375,7 @@ int main(int argc, char *argv[]) {
             std::println("index 越界");
             return;
         }
-        algevec[idx].changeToOpposite();
+        algevec[idx].change_to_opposite();
     };
 
     table["alge"]["compare"] = [&](std::span<const std::string> rest_args) {
@@ -379,8 +385,8 @@ int main(int argc, char *argv[]) {
         }
         std::size_t first = 0;
         std::size_t second = 0;
-        if (tryStrToULL(rest_args[0], first) != StrToTypeResult::Normal
-            || tryStrToULL(rest_args[1], second) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], first) != str_to_type_result::normal
+            || try_str_to_ull(rest_args[1], second) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -397,7 +403,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -440,7 +446,7 @@ int main(int argc, char *argv[]) {
         const std::string &kind = rest_args[2];
         if (kind == "constant") {
             long long val = 0;
-            if (tryStrToLL(rest_args[3], val) != StrToTypeResult::Normal) {
+            if (try_str_to_ll(rest_args[3], val) != str_to_type_result::normal) {
                 std::println("常量非法");
                 return;
             }
@@ -486,7 +492,7 @@ int main(int argc, char *argv[]) {
             }
         } else if (kind == "algeexpr") {
             std::size_t idx2 = 0;
-            if (tryStrToULL(rest_args[3], idx2) != StrToTypeResult::Normal) {
+            if (try_str_to_ull(rest_args[3], idx2) != str_to_type_result::normal) {
                 std::println("index 非法");
                 return;
             }
@@ -518,13 +524,13 @@ int main(int argc, char *argv[]) {
         }
     };
 
-    table["alge"]["calculateApproximation"] = [&](std::span<const std::string> rest_args) {
+    table["alge"]["calculate_approximation"] = [&](std::span<const std::string> rest_args) {
         if ((rest_args.size() & 1u) != 1) {
-            std::println("用法: alge calculateApproximation [index] [[var] [value]]...");
+            std::println("用法: alge calculate_approximation [index] [[var] [value]]...");
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -532,10 +538,10 @@ int main(int argc, char *argv[]) {
             std::println("index 越界");
             return;
         }
-        std::unordered_map<tnrw::math::VariableView, double> var_values; //< 变量对应的近似值的键值对
+        std::unordered_map<tnrw::math::variable_view, double> var_values; //< 变量对应的近似值的键值对
         for (std::size_t i = 1; i + 1 < rest_args.size(); i += 2) {
             double value = 0;
-            if (tryStrToDouble(rest_args[i + 1], value) != StrToTypeResult::Normal) {
+            if (try_str_to_double(rest_args[i + 1], value) != str_to_type_result::normal) {
                 std::println("近似值非法：{}", value);
                 return;
             }
@@ -544,17 +550,17 @@ int main(int argc, char *argv[]) {
                 return;
             }
         }
-        std::println("结果：{}", algevec[idx].calculateApproximation<double>(
-                                     [&](tnrw::math::VariableView var) { return var_values[var]; }));
+        std::println("结果：{}", algevec[idx].calculate_approximation<double>(
+                                     [&](tnrw::math::variable_view var) { return var_values[var]; }));
     };
 
-    table["alge"]["hasVariable"] = [&](std::span<const std::string> rest_args) {
+    table["alge"]["has_variable"] = [&](std::span<const std::string> rest_args) {
         if (rest_args.size() > 2 || rest_args.empty()) {
-            std::println("用法: alge hasVariable [index] 或 alge hasVariable [index] [variable]");
+            std::println("用法: alge has_variable [index] 或 alge has_variable [index] [variable]");
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -563,9 +569,9 @@ int main(int argc, char *argv[]) {
             return;
         }
         if (rest_args.size() == 1) {
-            std::println("结果：{}", algevec[idx].hasVariable());
+            std::println("结果：{}", algevec[idx].has_variable());
         } else {
-            std::println("结果：{}", algevec[idx].hasVariable(rest_args[1]));
+            std::println("结果：{}", algevec[idx].has_variable(rest_args[1]));
         }
     };
 
@@ -575,7 +581,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx1 = 0;
-        if (tryStrToULL(rest_args[0], idx1) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx1) != str_to_type_result::normal) {
             std::println("index1 非法");
             return;
         }
@@ -584,7 +590,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx2 = 0;
-        if (tryStrToULL(rest_args[1], idx2) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[1], idx2) != str_to_type_result::normal) {
             std::println("index2 非法");
             return;
         }
@@ -593,11 +599,11 @@ int main(int argc, char *argv[]) {
             return;
         }
 
-        if (algevec[idx1].hasVariable()) {
+        if (algevec[idx1].has_variable()) {
             std::println("error: 第{}个代数式有变量，无法转换", idx1);
         } else {
             numvec.emplace(numvec.begin() + static_cast<long long>(idx2),
-                           *std::move(algevec[idx1]).toNumericExpression());
+                           *std::move(algevec[idx1]).to_numeric_expression());
             algevec.erase(algevec.begin() + static_cast<long long>(idx1));
         }
     };
@@ -630,7 +636,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -647,7 +653,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -664,7 +670,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -675,13 +681,13 @@ int main(int argc, char *argv[]) {
         numvec[idx].clear();
     };
 
-    table["num"]["changeToOpposite"] = [&](std::span<const std::string> rest_args) {
+    table["num"]["change_to_opposite"] = [&](std::span<const std::string> rest_args) {
         if (rest_args.size() != 1) {
-            std::println("用法: num changeToOpposite [index]");
+            std::println("用法: num change_to_opposite [index]");
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -689,7 +695,7 @@ int main(int argc, char *argv[]) {
             std::println("index 越界");
             return;
         }
-        numvec[idx].changeToOpposite();
+        numvec[idx].change_to_opposite();
     };
 
     table["num"]["compare"] = [&](std::span<const std::string> rest_args) {
@@ -699,8 +705,8 @@ int main(int argc, char *argv[]) {
         }
         std::size_t first = 0;
         std::size_t second = 0;
-        if (tryStrToULL(rest_args[0], first) != StrToTypeResult::Normal
-            || tryStrToULL(rest_args[1], second) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], first) != str_to_type_result::normal
+            || try_str_to_ull(rest_args[1], second) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -717,7 +723,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -763,7 +769,7 @@ int main(int argc, char *argv[]) {
                 return;
             }
             std::size_t idx2 = 0;
-            if (tryStrToULL(rest_args[3], idx2) != StrToTypeResult::Normal) {
+            if (try_str_to_ull(rest_args[3], idx2) != str_to_type_result::normal) {
                 std::println("index 非法");
                 return;
             }
@@ -796,7 +802,7 @@ int main(int argc, char *argv[]) {
                 return;
             }
             long long val = 0;
-            if (tryStrToLL(rest_args[2], val) != StrToTypeResult::Normal) {
+            if (try_str_to_ll(rest_args[2], val) != str_to_type_result::normal) {
                 std::println("value 非法");
                 return;
             }
@@ -822,12 +828,12 @@ int main(int argc, char *argv[]) {
         }
     };
 
-    table["num"]["calculateApproximation"] = [&](std::span<const std::string> rest_args) {
+    table["num"]["calculate_approximation"] = [&](std::span<const std::string> rest_args) {
         if (rest_args.size() != 1) {
-            std::println("用法: num calculateApproximation [index]");
+            std::println("用法: num calculate_approximation [index]");
         }
         std::size_t idx = 0;
-        if (tryStrToULL(rest_args[0], idx) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx) != str_to_type_result::normal) {
             std::println("index 非法");
             return;
         }
@@ -835,7 +841,7 @@ int main(int argc, char *argv[]) {
             std::println("index 越界");
             return;
         }
-        std::println("结果：{}", numvec[idx].calculateApproximation<double>());
+        std::println("结果：{}", numvec[idx].calculate_approximation<double>());
     };
     table["num"]["toAlge"] = [&](std::span<const std::string> rest_args) {
         if (rest_args.size() != 2) {
@@ -843,7 +849,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx1 = 0;
-        if (tryStrToULL(rest_args[0], idx1) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[0], idx1) != str_to_type_result::normal) {
             std::println("index1 非法");
             return;
         }
@@ -852,7 +858,7 @@ int main(int argc, char *argv[]) {
             return;
         }
         std::size_t idx2 = 0;
-        if (tryStrToULL(rest_args[1], idx2) != StrToTypeResult::Normal) {
+        if (try_str_to_ull(rest_args[1], idx2) != str_to_type_result::normal) {
             std::println("index2 非法");
             return;
         }
@@ -885,7 +891,7 @@ int main(int argc, char *argv[]) {
             std::print(">>> ");
         }
         (void)std::fflush(stdout);
-        auto args = getInputArgs();
+        auto args = get_input_args();
         if (args.empty()) {
             continue;
         }

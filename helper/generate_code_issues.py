@@ -218,7 +218,7 @@ def main():
             r"\033\[[0-9;]*m"
         )  # 用于删除ansi转义的颜色
         issue_count: int = 0
-        step: int = 5
+        step: int = 10
         for i in range(0, len(files), step):
             try:
                 subfiles: list[Path] = files[i : i + step]

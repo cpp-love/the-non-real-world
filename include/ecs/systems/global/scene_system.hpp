@@ -36,12 +36,12 @@ namespace tnrw::ecs {
      */
     template <typename Key, typename Compare = std::less<Key>,
               typename Allocator = std::allocator<std::pair<const Key, entt::entity>>>
-    class BasicSceneSystem {
+    class basic_scene_system {
       public: /// @publicsection
         // using 声明
-        using KeyType = Key;             //< 键类型
-        using KeyCompare = Compare;      //< 键比较类型
-        using AllocatorType = Allocator; //< 分配器类型
+        using key_type = Key;             //< 键类型
+        using key_compare = Compare;      //< 键比较类型
+        using allocator_type = Allocator; //< 分配器类型
 
         /**
          * @brief 创建一个场景实体
@@ -49,13 +49,13 @@ namespace tnrw::ecs {
          * @param [in] name 场景名字
          * @return std::optional<entt::entity> 场景的实体和是否已创建过
          */
-        static std::optional<entt::entity> createScene(entt::registry &registry,
-                                                       const Key      &name) noexcept {
-            createGlobalScenes(registry); //< 确保全局状态已被创建
+        static std::optional<entt::entity> create_scene(entt::registry &registry,
+                                                        const Key      &name) noexcept {
+            create_global_scenes(registry); //< 确保全局状态已被创建
             auto newscene = registry.create();
-            registry.emplace<Scene>(newscene);
+            registry.emplace<scene>(newscene);
             auto res = registry.ctx()
-                           .get<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()
+                           .get<global_scenes<key_type, key_compare, allocator_type>>()
                            .m_scenes.try_emplace(name, newscene);
             if (!res.second) {
                 registry.destroy(newscene);
@@ -71,16 +71,16 @@ namespace tnrw::ecs {
          * @param [in] name 场景名字
          * @warning 此函数不安全，如果注册表没有组件，可能会断言错误
          * @warning 此函数不会删除子实体，需要手动删除
-         * @note 安全版本见 @ref tnrw::ecs::BasicSceneSystem::tryEraseScene(entt::registry &registry, const key_type &name)
+         * @note 安全版本见 @ref tnrw::ecs::basic_scene_system::tryEraseScene(entt::registry &registry, const key_type &name)
          */
-        static void eraseScene(entt::registry &registry, const KeyType &name) noexcept {
-            assert_msg((registry.ctx().contains<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()),
-                       "参数 `registry` 没有 `tnrw::ecs::GlobalScenes` 组件");
+        static void erase_scene(entt::registry &registry, const key_type &name) noexcept {
+            assert_msg((registry.ctx().contains<global_scenes<key_type, key_compare, allocator_type>>()),
+                       "参数 `registry` 没有 `tnrw::ecs::global_scenes` 组件");
             auto &scenes =
-                registry.ctx().get<GlobalScenes<KeyType, KeyCompare, AllocatorType>>().m_scenes;
+                registry.ctx().get<global_scenes<key_type, key_compare, allocator_type>>().m_scenes;
             auto scene_it = scenes.find(name);
-            assert_msg((scene_it != scenes.end() && registry.all_of<Scene>(scene_it->second)),
-                       "参数 `name`（为{}） 没有对应的实体或对应的实体没有 `tnrw::ecs::Scene` "
+            assert_msg((scene_it != scenes.end() && registry.all_of<scene>(scene_it->second)),
+                       "参数 `name`（为{}） 没有对应的实体或对应的实体没有 `tnrw::ecs::scene` "
                        "组件",
                        name);
             spdlog::info("删除场景：（实体编号：{}，名称：{}）",
@@ -97,14 +97,15 @@ namespace tnrw::ecs {
          * @warning 此函数不会删除子实体，需要手动删除
          * @note 删除失败不影响原来的组件
          */
-        [[nodiscard]] static bool tryEraseScene(entt::registry &registry, const KeyType &name) noexcept {
-            if (!registry.ctx().contains<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()) {
+        [[nodiscard]] static bool try_erase_scene(entt::registry &registry,
+                                                  const key_type &name) noexcept {
+            if (!registry.ctx().contains<global_scenes<key_type, key_compare, allocator_type>>()) {
                 return false;
             }
             auto &scenes =
-                registry.ctx().get<GlobalScenes<KeyType, KeyCompare, AllocatorType>>().m_scenes;
+                registry.ctx().get<global_scenes<key_type, key_compare, allocator_type>>().m_scenes;
             auto scene_it = scenes.find(name);
-            if (scene_it == scenes.end() || !registry.all_of<Scene>(scene_it->second)) {
+            if (scene_it == scenes.end() || !registry.all_of<scene>(scene_it->second)) {
                 return false;
             }
             spdlog::info("删除场景：（实体编号：{}，名称：{}）",
@@ -117,10 +118,10 @@ namespace tnrw::ecs {
          * @brief 清除所有的场景实体（不删除子实体）
          * @param [in] registry 注册表
          */
-        static void clearScenes(entt::registry &registry) noexcept {
-            createGlobalScenes(registry); //< 确保全局状态已被创建
+        static void clear_scenes(entt::registry &registry) noexcept {
+            create_global_scenes(registry); //< 确保全局状态已被创建
             auto &scenes =
-                registry.ctx().get<GlobalScenes<KeyType, KeyCompare, AllocatorType>>().m_scenes;
+                registry.ctx().get<global_scenes<key_type, key_compare, allocator_type>>().m_scenes;
             for (auto scene : scenes) {
                 spdlog::info("删除场景：（实体编号：{}，名称：{}）",
                              static_cast<entt::id_type>(scene.second), scene.first);
@@ -133,10 +134,10 @@ namespace tnrw::ecs {
          * @param [in] registry 注册表
          * @return const std::map<key_type, entt::entity>& 所有的场景实体
          */
-        [[nodiscard]] static const std::map<KeyType, entt::entity> &
-        getScenes(entt::registry &registry) noexcept {
-            createGlobalScenes(registry); //< 确保全局状态已被创建
-            return registry.ctx().get<GlobalScenes<KeyType, KeyCompare, AllocatorType>>().m_scenes;
+        [[nodiscard]] static const std::map<key_type, entt::entity> &
+        get_scenes(entt::registry &registry) noexcept {
+            create_global_scenes(registry); //< 确保全局状态已被创建
+            return registry.ctx().get<global_scenes<key_type, key_compare, allocator_type>>().m_scenes;
         }
         /**
          * @brief 获取场景名字所对应的实体
@@ -144,14 +145,14 @@ namespace tnrw::ecs {
          * @param [in] name 场景名字
          * @return entt::entity 场景名字所对应的实体
          * @warning 此函数不安全，如果注册表没有组件，可能会断言错误
-         * @note 安全版本见 @ref tnrw::ecs::BasicSceneSystem::tryGetSceneEntity(entt::registry &registry, const key_type &name)
+         * @note 安全版本见 @ref tnrw::ecs::basic_scene_system::tryGetSceneEntity(entt::registry &registry, const key_type &name)
          */
-        [[nodiscard]] static entt::entity getSceneEntity(const entt::registry &registry,
-                                                         const KeyType        &name) noexcept {
-            assert_msg((registry.ctx().contains<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()),
-                       "参数 `registry` 没有 `tnrw::ecs::GlobalScenes` 组件");
+        [[nodiscard]] static entt::entity get_scene_entity(const entt::registry &registry,
+                                                           const key_type       &name) noexcept {
+            assert_msg((registry.ctx().contains<global_scenes<key_type, key_compare, allocator_type>>()),
+                       "参数 `registry` 没有 `tnrw::ecs::global_scenes` 组件");
             const auto &scenes =
-                registry.ctx().get<GlobalScenes<KeyType, KeyCompare, AllocatorType>>().m_scenes;
+                registry.ctx().get<global_scenes<key_type, key_compare, allocator_type>>().m_scenes;
             const auto scene_it = scenes.find(name);
             assert_msg(scene_it != scenes.end(), "参数 `name`（为：{}） 没有对应的实体", name);
             return scene_it->second;
@@ -164,13 +165,13 @@ namespace tnrw::ecs {
          * @retval entt::null 如果没有对应的实体时返回此值
          * @note 获取失败不影响原来的组件
          */
-        [[nodiscard]] static entt::entity tryGetSceneEntity(const entt::registry &registry,
-                                                            const KeyType        &name) noexcept {
-            if (!registry.ctx().contains<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()) {
+        [[nodiscard]] static entt::entity try_get_scene_entity(const entt::registry &registry,
+                                                               const key_type       &name) noexcept {
+            if (!registry.ctx().contains<global_scenes<key_type, key_compare, allocator_type>>()) {
                 return entt::null;
             }
             const auto &scenes =
-                registry.ctx().get<GlobalScenes<KeyType, KeyCompare, AllocatorType>>().m_scenes;
+                registry.ctx().get<global_scenes<key_type, key_compare, allocator_type>>().m_scenes;
             const auto scene_it = scenes.find(name);
             if (scene_it == scenes.end()) {
                 return entt::null;
@@ -183,20 +184,20 @@ namespace tnrw::ecs {
          * @param [in] scene_entity 场景实体
          * @param [in] child_entity 子实体
          * @warning 此函数不安全，如果注册表没有组件，可能会断言错误
-         * @note 安全版本见 @ref tnrw::ecs::BasicSceneSystem::tryAddToScene(entt::registry &registry, const entt::entity scene_entity, const entt::entity child_entity)
+         * @note 安全版本见 @ref tnrw::ecs::basic_scene_system::tryAddToScene(entt::registry &registry, const entt::entity scene_entity, const entt::entity child_entity)
          */
-        static void addToScene(entt::registry &registry, const entt::entity scene_entity,
-                               const entt::entity child_entity) noexcept {
-            assert_msg((registry.ctx().contains<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()),
-                       "参数 `registry` 没有 `tnrw::ecs::GlobalScenes` 组件");
-            assert_msg(registry.all_of<Scene>(scene_entity),
-                       "参数 `scene_entity`（编号为：{}） 没有 `tnrw::ecs::Scene` "
+        static void add_to_scene(entt::registry &registry, const entt::entity scene_entity,
+                                 const entt::entity child_entity) noexcept {
+            assert_msg((registry.ctx().contains<global_scenes<key_type, key_compare, allocator_type>>()),
+                       "参数 `registry` 没有 `tnrw::ecs::global_scenes` 组件");
+            assert_msg(registry.all_of<scene>(scene_entity),
+                       "参数 `scene_entity`（编号为：{}） 没有 `tnrw::ecs::scene` "
                        "组件",
                        static_cast<entt::id_type>(scene_entity));
 
-            createFatherScenes(registry, child_entity); //< 确保组件已被创建
-            registry.get<Scene>(scene_entity).m_children.insert(child_entity);
-            registry.get<FatherScenes>(child_entity).m_fathers.insert(scene_entity);
+            create_father_scenes(registry, child_entity); //< 确保组件已被创建
+            registry.get<scene>(scene_entity).m_children.insert(child_entity);
+            registry.get<father_scenes>(child_entity).m_fathers.insert(scene_entity);
         }
         /**
          * @brief 将子实体加入场景中
@@ -204,11 +205,11 @@ namespace tnrw::ecs {
          * @param [in] scene_name 场景名字
          * @param [in] child_entity 子实体
          * @warning 此函数不安全，如果注册表没有组件，可能会断言错误
-         * @note 安全版本见 @ref tnrw::ecs::BasicSceneSystem::tryAddToScene(entt::registry &registry, const key_type &scene_name, const entt::entity child_entity)
+         * @note 安全版本见 @ref tnrw::ecs::basic_scene_system::tryAddToScene(entt::registry &registry, const key_type &scene_name, const entt::entity child_entity)
          */
-        static void addToScene(entt::registry &registry, const KeyType &scene_name,
-                               const entt::entity child_entity) noexcept {
-            addToScene(registry, getSceneEntity(registry, scene_name), child_entity);
+        static void add_to_scene(entt::registry &registry, const key_type &scene_name,
+                                 const entt::entity child_entity) noexcept {
+            add_to_scene(registry, get_scene_entity(registry, scene_name), child_entity);
         }
         /**
          * @brief 将子实体加入场景中
@@ -219,19 +220,19 @@ namespace tnrw::ecs {
          * @return false 加入失败
          * @note 加入失败不影响原来的组件
          */
-        [[nodiscard]] static bool tryAddToScene(entt::registry    &registry,
-                                                const entt::entity scene_entity,
-                                                const entt::entity child_entity) noexcept {
-            if (!registry.ctx().contains<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()) {
+        [[nodiscard]] static bool try_add_to_scene(entt::registry    &registry,
+                                                   const entt::entity scene_entity,
+                                                   const entt::entity child_entity) noexcept {
+            if (!registry.ctx().contains<global_scenes<key_type, key_compare, allocator_type>>()) {
                 return false;
             }
-            if (!registry.all_of<Scene>(scene_entity)) {
+            if (!registry.all_of<scene>(scene_entity)) {
                 return false;
             }
 
-            createFatherScenes(registry, child_entity); //< 确保组件已被创建
-            auto tmp = registry.get<Scene>(scene_entity).m_children.insert(child_entity).second;
-            auto tmp2 = registry.get<FatherScenes>(child_entity).m_fathers.insert(scene_entity).second;
+            create_father_scenes(registry, child_entity); //< 确保组件已被创建
+            auto tmp = registry.get<scene>(scene_entity).m_children.insert(child_entity).second;
+            auto tmp2 = registry.get<father_scenes>(child_entity).m_fathers.insert(scene_entity).second;
             return tmp && tmp2;
         }
         /**
@@ -243,13 +244,13 @@ namespace tnrw::ecs {
          * @return false 加入失败
          * @note 加入失败不影响原来的组件
          */
-        [[nodiscard]] static bool tryAddToScene(entt::registry &registry, const KeyType &scene_name,
-                                                const entt::entity child_entity) noexcept {
-            auto scene_entity = tryGetSceneEntity(registry, scene_name);
+        [[nodiscard]] static bool try_add_to_scene(entt::registry &registry, const key_type &scene_name,
+                                                   const entt::entity child_entity) noexcept {
+            auto scene_entity = try_get_scene_entity(registry, scene_name);
             if (scene_entity == entt::null) {
                 return false;
             }
-            return tryAddToScene(registry, scene_entity, child_entity);
+            return try_add_to_scene(registry, scene_entity, child_entity);
         }
         /**
          * @brief 将子实体从场景中移除
@@ -257,18 +258,18 @@ namespace tnrw::ecs {
          * @param [in] scene_entity 场景实体
          * @param [in] child_entity 子实体
          * @warning 此函数不安全，如果注册表没有组件，可能会断言错误
-         * @note 安全版本见 @ref tnrw::ecs::BasicSceneSystem::tryRemoveFromScene(entt::registry &registry, const entt::entity scene_entity, const entt::entity child_entity)
+         * @note 安全版本见 @ref tnrw::ecs::basic_scene_system::tryRemoveFromScene(entt::registry &registry, const entt::entity scene_entity, const entt::entity child_entity)
          */
-        static void removeFromScene(entt::registry &registry, const entt::entity scene_entity,
-                                    const entt::entity child_entity) noexcept {
-            assert_msg((registry.ctx().contains<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()),
-                       "参数 `registry` 没有 `tnrw::ecs::GlobalScenes` 组件");
-            assert_msg(registry.all_of<Scene>(scene_entity),
-                       "参数 `scene_entity`（编号为：{}） 没有 `tnrw::ecs::Scene` "
+        static void remove_from_scene(entt::registry &registry, const entt::entity scene_entity,
+                                      const entt::entity child_entity) noexcept {
+            assert_msg((registry.ctx().contains<global_scenes<key_type, key_compare, allocator_type>>()),
+                       "参数 `registry` 没有 `tnrw::ecs::global_scenes` 组件");
+            assert_msg(registry.all_of<scene>(scene_entity),
+                       "参数 `scene_entity`（编号为：{}） 没有 `tnrw::ecs::scene` "
                        "组件",
                        static_cast<entt::id_type>(scene_entity));
-            auto                 &children = registry.get<Scene>(scene_entity).m_children;
-            auto                 &fathers = registry.get<FatherScenes>(child_entity).m_fathers;
+            auto                 &children = registry.get<scene>(scene_entity).m_children;
+            auto                 &fathers = registry.get<father_scenes>(child_entity).m_fathers;
             [[maybe_unused]] auto cnt = children.erase(child_entity);
             cnt += fathers.erase(scene_entity);
             assert_msg(cnt == 2,
@@ -282,11 +283,11 @@ namespace tnrw::ecs {
          * @param [in] scene_name 场景名字
          * @param [in] child_entity 子实体
          * @warning 此函数不安全，如果注册表没有组件，可能会断言错误
-             * @note 安全版本见 @ref tnrw::ecs::BasicSceneSystem::tryRemoveFromScene(entt::registry &registry, const key_type &scene_name, const entt::entity child_entity)
+             * @note 安全版本见 @ref tnrw::ecs::basic_scene_system::tryRemoveFromScene(entt::registry &registry, const key_type &scene_name, const entt::entity child_entity)
              */
-        static void removeFromScene(entt::registry &registry, const KeyType &scene_name,
-                                    const entt::entity child_entity) noexcept {
-            removeFromScene(registry, getSceneEntity(registry, scene_name), child_entity);
+        static void remove_from_scene(entt::registry &registry, const key_type &scene_name,
+                                      const entt::entity child_entity) noexcept {
+            remove_from_scene(registry, get_scene_entity(registry, scene_name), child_entity);
         }
         /**
          * @brief 将子实体从场景中移除
@@ -297,18 +298,18 @@ namespace tnrw::ecs {
          * @return false 移除失败
          * @note 移除失败不影响原来的组件
          */
-        [[nodiscard]] static bool tryRemoveFromScene(entt::registry    &registry,
-                                                     const entt::entity scene_entity,
-                                                     const entt::entity child_entity) noexcept {
-            if (!registry.ctx().contains<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()) {
+        [[nodiscard]] static bool try_remove_from_scene(entt::registry    &registry,
+                                                        const entt::entity scene_entity,
+                                                        const entt::entity child_entity) noexcept {
+            if (!registry.ctx().contains<global_scenes<key_type, key_compare, allocator_type>>()) {
                 return false;
             }
-            if (!registry.all_of<Scene>(scene_entity)) {
+            if (!registry.all_of<scene>(scene_entity)) {
                 return false;
             }
-            createFatherScenes(registry, child_entity); //< 确保组件已被创建
-            auto &children = registry.get<Scene>(scene_entity).m_children;
-            auto &fathers = registry.get<FatherScenes>(child_entity).m_fathers;
+            create_father_scenes(registry, child_entity); //< 确保组件已被创建
+            auto &children = registry.get<scene>(scene_entity).m_children;
+            auto &fathers = registry.get<father_scenes>(child_entity).m_fathers;
             auto  cnt = children.erase(child_entity);
             cnt += fathers.erase(scene_entity);
             return cnt == 2;
@@ -322,14 +323,15 @@ namespace tnrw::ecs {
          * @return false 移除失败
          * @note 移除失败不影响原来的组件
          */
-        [[nodiscard]] static bool tryRemoveFromScene(entt::registry &registry, const KeyType &scene_name,
-                                                     const entt::entity child_entity) noexcept {
+        [[nodiscard]] static bool try_remove_from_scene(entt::registry    &registry,
+                                                        const key_type    &scene_name,
+                                                        const entt::entity child_entity) noexcept {
 
-            auto scene_entity = tryGetSceneEntity(scene_name);
+            auto scene_entity = try_get_scene_entity(scene_name);
             if (scene_entity == entt::null) {
                 return false;
             }
-            return tryRemoveFromScene(registry, scene_entity, child_entity);
+            return try_remove_from_scene(registry, scene_entity, child_entity);
         }
         /**
          * @brief 获取场景所有孩子的集合
@@ -337,17 +339,17 @@ namespace tnrw::ecs {
          * @param [in] entity 场景实体
          * @return const std::set<entt::entity>& 场景所有孩子的集合
          * @warning 此函数不安全，如果注册表没有组件，可能会断言错误
-         * @note 安全版本见 @ref tnrw::ecs::BasicSceneSystem::tryGetSceneChildren(entt::registry &registry, const entt::entity entity)
+         * @note 安全版本见 @ref tnrw::ecs::basic_scene_system::tryGetSceneChildren(entt::registry &registry, const entt::entity entity)
          */
         [[nodiscard]] static const std::set<entt::entity> &
-        getSceneChildren(const entt::registry &registry, const entt::entity entity) noexcept {
-            assert_msg((registry.ctx().contains<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()),
-                       "参数 `registry` 没有 `tnrw::ecs::GlobalScenes` 组件");
-            assert_msg(registry.all_of<Scene>(entity),
-                       "参数 `entity`（编号为：{}） 没有 `tnrw::ecs::Scene` "
+        get_scene_children(const entt::registry &registry, const entt::entity entity) noexcept {
+            assert_msg((registry.ctx().contains<global_scenes<key_type, key_compare, allocator_type>>()),
+                       "参数 `registry` 没有 `tnrw::ecs::global_scenes` 组件");
+            assert_msg(registry.all_of<scene>(entity),
+                       "参数 `entity`（编号为：{}） 没有 `tnrw::ecs::scene` "
                        "组件",
                        static_cast<entt::id_type>(entity));
-            return registry.get<Scene>(entity).m_children;
+            return registry.get<scene>(entity).m_children;
         }
         /**
          * @brief 获取场景所有孩子的集合
@@ -358,14 +360,14 @@ namespace tnrw::ecs {
          * @note 获取失败不影响原来的组件
          */
         [[nodiscard]] static const std::set<entt::entity> *
-        tryGetSceneChildren(const entt::registry &registry, const entt::entity entity) noexcept {
-            if (!registry.ctx().contains<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()) {
+        try_get_scene_children(const entt::registry &registry, const entt::entity entity) noexcept {
+            if (!registry.ctx().contains<global_scenes<key_type, key_compare, allocator_type>>()) {
                 return nullptr;
             }
-            if (!registry.all_of<Scene>(entity)) {
+            if (!registry.all_of<scene>(entity)) {
                 return nullptr;
             }
-            return &registry.get<Scene>(entity).m_children;
+            return &registry.get<scene>(entity).m_children;
         }
         /**
          * @brief 获取场景所有孩子的集合
@@ -373,12 +375,12 @@ namespace tnrw::ecs {
          * @param [in] name 场景名字
          * @return const std::set<entt::entity>& 场景所有孩子的集合
          * @warning 此函数不安全，如果注册表没有组件，可能会断言错误
-         * @note 安全版本见 @ref tnrw::ecs::BasicSceneSystem::tryGetSceneChildren(entt::registry &registry, const key_type &name)
+         * @note 安全版本见 @ref tnrw::ecs::basic_scene_system::tryGetSceneChildren(entt::registry &registry, const key_type &name)
          */
         [[nodiscard]] static const std::set<entt::entity> &
-        getSceneChildren(const entt::registry &registry, const KeyType &name) noexcept {
-            entt::entity entity = getSceneEntity(registry, name);
-            return getSceneChildren(registry, entity);
+        get_scene_children(const entt::registry &registry, const key_type &name) noexcept {
+            entt::entity entity = get_scene_entity(registry, name);
+            return get_scene_children(registry, entity);
         }
         /**
          * @brief 获取场景所有孩子的集合
@@ -389,12 +391,12 @@ namespace tnrw::ecs {
          * @note 获取失败不影响原来的组件
          */
         [[nodiscard]] static const std::set<entt::entity> *
-        tryGetSceneChildren(const entt::registry &registry, const KeyType &name) noexcept {
-            entt::entity entity = tryGetSceneEntity(registry, name);
+        try_get_scene_children(const entt::registry &registry, const key_type &name) noexcept {
+            entt::entity entity = try_get_scene_entity(registry, name);
             if (entity == entt::null) {
                 return nullptr;
             }
-            return tryGetSceneChildren(registry, entity);
+            return try_get_scene_children(registry, entity);
         }
         /**
          * @brief 获取实体所有父亲的集合
@@ -403,38 +405,38 @@ namespace tnrw::ecs {
          * @return const std::set<entt::entity>& 实体所有父亲的集合
          */
         [[nodiscard]] static const std::set<entt::entity> &
-        getFatherScenes(entt::registry &registry, const entt::entity entity) noexcept {
-            createFatherScenes(registry, entity); //< 确保组件已被创建
-            return registry.get<FatherScenes>(entity).m_fathers;
+        get_father_scenes(entt::registry &registry, const entt::entity entity) noexcept {
+            create_father_scenes(registry, entity); //< 确保组件已被创建
+            return registry.get<father_scenes>(entity).m_fathers;
         }
         /// @cond INTERNAL
       private: /// @privatesection
         /**
-          * @brief 创建游戏全局获取场景的组件（即 `GlobalScenes` ）
+          * @brief 创建游戏全局获取场景的组件（即 `global_scenes` ）
           * @param [in] registry 注册表
           */
-        static void createGlobalScenes(entt::registry &registry) noexcept {
-            if (registry.ctx().contains<GlobalScenes<KeyType, KeyCompare, AllocatorType>>()) {
+        static void create_global_scenes(entt::registry &registry) noexcept {
+            if (registry.ctx().contains<global_scenes<key_type, key_compare, allocator_type>>()) {
                 return;
             }
-            registry.ctx().emplace<GlobalScenes<KeyType, KeyCompare, AllocatorType>>();
+            registry.ctx().emplace<global_scenes<key_type, key_compare, allocator_type>>();
         }
         /**
-         * @brief 创建 `FatherScenes` 组件
+         * @brief 创建 `father_scenes` 组件
          * @param [in] registry 注册表
          * @param [in] entity 实体
          */
-        static void createFatherScenes(entt::registry &registry, const entt::entity entity) noexcept {
-            if (registry.all_of<FatherScenes>(entity)) {
+        static void create_father_scenes(entt::registry &registry, const entt::entity entity) noexcept {
+            if (registry.all_of<father_scenes>(entity)) {
                 return;
             }
-            registry.emplace<FatherScenes>(entity);
+            registry.emplace<father_scenes>(entity);
         }
         /// @endcond
     };
 
     // using 声明
-    using SceneSystem = BasicSceneSystem<LevelIdentifierType>;
+    using scene_system = basic_scene_system<level_identifier_type>;
 
 } // namespace tnrw::ecs
 

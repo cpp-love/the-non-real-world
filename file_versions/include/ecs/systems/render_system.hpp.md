@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 声明了渲染系统(`tnrw::ecs::RenderSystem`)及其基本功能
+1. 声明了渲染系统(`tnrw::ecs::render_system`)及其基本功能
 
 ---

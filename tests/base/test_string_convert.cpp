@@ -24,9 +24,9 @@ int main() {
     SetConsoleCP(CP_UTF8);
 #endif // _WIN32
 
-    std::cout << tnrw::string_convert::toUtf8String(u8"这是一个类型为 const char8_t * 类型的字符串")
+    std::cout << tnrw::string_convert::to_utf8_string(u8"这是一个类型为 const char8_t * 类型的字符串")
               << ' '
-              << tnrw::string_convert::toUtf8String(
+              << tnrw::string_convert::to_utf8_string(
                      std::u8string(u8"这是一个类型为 std::u8string 类型的字符串"))
               << '\n'
               << std::flush;

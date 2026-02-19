@@ -21,18 +21,18 @@
 namespace tnrw::ecs {
 
     /// @brief 渲染系统
-    class RenderSystem {
+    class render_system {
       public: /// @publicsection
         /**
          * @brief 获取绘制的圆会有的点数
          * @return std::size_t 绘制的圆会有的点数
          */
-        [[nodiscard]] static std::size_t getCirclePointCount() noexcept;
+        [[nodiscard]] static std::size_t get_circle_point_count() noexcept;
         /**
          * @brief 设置绘制的圆会有的点数
          * @param [in] new_cnt 新的绘制的圆会有的点数
          */
-        static void                      setCirclePointCount(std::size_t new_cnt) noexcept;
+        static void                      set_circle_point_count(std::size_t new_cnt) noexcept;
 
         /**
          * @brief 绘制注册表里的内容

@@ -15,13 +15,13 @@
 
 ### Added(新增)
 
-1. `tnrw::math::VariableView` 别名的定义及其自定义字面量
+1. `tnrw::math::variable_view` 别名的定义及其自定义字面量
 
 ### Changed(修改)
 
-1. **BREAKING(不向下兼容):** 将 `tnrw::math::VariableType` 别名的类型从 `char` 转为 `std::string`，
+1. **BREAKING(不向下兼容):** 将 `tnrw::math::variable_type` 别名的类型从 `char` 转为 `std::string`，
    以支持字符串变量，并将 `_v` 与 `_vAlgeExpr` 自定义字面量的声明该为使用字符串字面量为参数
-2. **BREAKING(不向下兼容):** 将 `tnrw::math::ConstantType` 改名为 `tnrw::math::IntegerConstantType`，
+2. **BREAKING(不向下兼容):** 将 `tnrw::math::ConstantType` 改名为 `tnrw::math::integer_constant_type`，
    以更清晰地显示为整型
 
 ### Removed(移除)
@@ -36,8 +36,8 @@
 ### Added(新增)
 
 1. `AlgegraicExpression` 类及其自定义字面量的前向声明
-2. `NumericExpression` 类及其自定义字面量的前向声明
+2. `numeric_expression` 类及其自定义字面量的前向声明
 3. `gcd` （最大公约数）和 `lcm` （最小公倍数）的函数的前向声明
-4. `ConstantType` 和 `VariableType` 别名的前向声明
+4. `ConstantType` 和 `variable_type` 别名的前向声明
 
 ---

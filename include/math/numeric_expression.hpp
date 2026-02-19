@@ -36,137 +36,139 @@ namespace tnrw {
          * - 加入根式
          * - 完备代数运算
          */
-        class NumericExpression {
+        class numeric_expression {
             /// @cond INTERNAL
           private: /// @privatesection
             // 数据成员
-            details::NodePtr m_root; ///< 私有实现指针，也是代数式树的根节点
+            details::node_ptr m_root; ///< 私有实现指针，也是代数式树的根节点
 
             /// @endcond
           public: /// @publicsection
                   // 友元声明
-            friend bool operator==(const NumericExpression &lhs, const NumericExpression &rhs) noexcept;
-            friend bool operator!=(const NumericExpression &lhs, const NumericExpression &rhs) noexcept;
-            friend class AlgebraicExpression;
+            friend bool operator==(const numeric_expression &lhs,
+                                   const numeric_expression &rhs) noexcept;
+            friend bool operator!=(const numeric_expression &lhs,
+                                   const numeric_expression &rhs) noexcept;
+            friend class algebraic_expression;
 
             // 构造、赋值、析构
             /**
              * @brief 默认构造函数
              * @details 创建一个空的无字母的代数式
              */
-            [[nodiscard]] NumericExpression() noexcept;
+            [[nodiscard]] numeric_expression() noexcept;
             /**
              * @brief 以常量为参数的构造函数
              * @param [in] constant 常量值
              */
-            [[nodiscard]] explicit NumericExpression(IntegerConstantType constant) noexcept;
+            [[nodiscard]] explicit numeric_expression(integer_constant_type constant) noexcept;
             /**
              * @brief 析构函数
              */
-            ~NumericExpression() noexcept;
+            ~numeric_expression() noexcept;
             /**
              * @brief 复制构造函数
              * @param [in] rhs 另一个无字母的代数式对象
              */
-            [[nodiscard]] NumericExpression(const NumericExpression &rhs) noexcept;
+            [[nodiscard]] numeric_expression(const numeric_expression &rhs) noexcept;
             /**
              * @brief 移动构造函数
              * @param [in] rhs 另一个无字母的代数式对象
              */
-            [[nodiscard]] NumericExpression(NumericExpression &&rhs) noexcept;
+            [[nodiscard]] numeric_expression(numeric_expression &&rhs) noexcept;
             /**
              * @brief 复制赋值运算符
              * @param [in] rhs 另一个无字母的代数式对象
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              */
-            NumericExpression              &operator=(const NumericExpression &rhs)              &noexcept;
+            numeric_expression              &operator=(const numeric_expression &rhs)              &noexcept;
             /**
              * @brief 移动赋值运算符
              * @param [in] rhs 另一个无字母的代数式对象
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              */
-            NumericExpression              &operator=(NumericExpression &&rhs)              &noexcept;
+            numeric_expression              &operator=(numeric_expression &&rhs)              &noexcept;
 
             // 复合赋值与其他操作符
             /**
              * @brief 加法赋值运算符
              * @param [in] rhs 常量
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              */
-            NumericExpression              &operator+=(IntegerConstantType rhs)              &noexcept;
+            numeric_expression              &operator+=(integer_constant_type rhs)              &noexcept;
             /**
              * @brief 加法赋值运算符
              * @param [in] rhs 另一个无字母的代数式
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              */
-            NumericExpression              &operator+=(const NumericExpression &rhs)              &noexcept;
+            numeric_expression              &operator+=(const numeric_expression &rhs)              &noexcept;
             /**
              * @brief 减法赋值运算符
              * @param [in] rhs 常量
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              */
-            NumericExpression              &operator-=(IntegerConstantType rhs)              &noexcept;
+            numeric_expression              &operator-=(integer_constant_type rhs)              &noexcept;
             /**
              * @brief 减法赋值运算符
              * @param [in] rhs 另一个无字母的代数式
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              */
-            NumericExpression              &operator-=(const NumericExpression &rhs)              &noexcept;
+            numeric_expression              &operator-=(const numeric_expression &rhs)              &noexcept;
             /**
              * @brief 乘法赋值运算符
              * @param [in] rhs 常量
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              */
-            NumericExpression              &operator*=(IntegerConstantType rhs)              &noexcept;
+            numeric_expression              &operator*=(integer_constant_type rhs)              &noexcept;
             /**
              * @brief 乘法赋值运算符
              * @param [in] rhs 另一个无字母的代数式
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              */
-            NumericExpression              &operator*=(const NumericExpression &rhs)              &noexcept;
+            numeric_expression              &operator*=(const numeric_expression &rhs)              &noexcept;
             /**
              * @brief 除法赋值运算符
              * @param [in] rhs 常量
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              * @warning 除以0行为未定义
              */
-            NumericExpression              &operator/=(IntegerConstantType rhs)              &noexcept;
+            numeric_expression              &operator/=(integer_constant_type rhs)              &noexcept;
             /**
              * @brief 除法赋值运算符
              * @param [in] rhs 另一个无字母的代数式
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              */
-            NumericExpression              &operator/=(const NumericExpression &rhs)              &noexcept;
+            numeric_expression              &operator/=(const numeric_expression &rhs)              &noexcept;
             /**
              * @brief 一元加法运算符
-             * @return NumericExpression 当前对象的副本( `*this` )
+             * @return numeric_expression 当前对象的副本( `*this` )
              */
-            [[nodiscard]] NumericExpression operator+() const noexcept;
+            [[nodiscard]] numeric_expression operator+() const noexcept;
             /**
              * @brief 一元减法运算符
-             * @return NumericExpression 当前对象的副本取相反数( `*this` )
+             * @return numeric_expression 当前对象的副本取相反数( `*this` )
              */
-            [[nodiscard]] NumericExpression operator-() const noexcept;
+            [[nodiscard]] numeric_expression operator-() const noexcept;
             /**
              * @brief 后缀自增运算符
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              */
-            NumericExpression              &operator++() noexcept;
+            numeric_expression              &operator++() noexcept;
             /**
              * @brief 后缀自减运算符
-             * @return NumericExpression& 当前对象的引用( `*this` )
+             * @return numeric_expression& 当前对象的引用( `*this` )
              */
-            NumericExpression              &operator--() noexcept;
+            numeric_expression              &operator--() noexcept;
             /**
              * @brief 前缀自增运算符
-             * @return NumericExpression 自增前的副本
+             * @return numeric_expression 自增前的副本
              */
-            [[nodiscard]] NumericExpression operator++(int) noexcept;
+            [[nodiscard]] numeric_expression operator++(int) noexcept;
             /**
              * @brief 前缀自减运算符
-             * @return NumericExpression 自减前的副本
+             * @return numeric_expression 自减前的副本
              */
-            [[nodiscard]] NumericExpression operator--(int) noexcept;
+            [[nodiscard]] numeric_expression operator--(int) noexcept;
 
             // 其他成员函数
             /**
@@ -175,7 +177,7 @@ namespace tnrw {
              * @return FloatT 无字母的代数式的近似值
              */
             template <std::floating_point FloatT>
-            [[nodiscard]] FloatT       calculateApproximation() const noexcept;
+            [[nodiscard]] FloatT       calculate_approximation() const noexcept;
             /**
              * @brief 清空无字母的代数式
              * @details 释放原无字母的代数式，重设为0
@@ -185,118 +187,118 @@ namespace tnrw {
              * @brief 将无字母的代数式转为人类可读的字符串
              * @return std::string 人类可读的字符串
              */
-            [[nodiscard]] std::string  toString() const noexcept;
+            [[nodiscard]] std::string  to_string() const noexcept;
             /**
              * @brief 将无字母的代数式转为人类可读的字符串
              * @return std::wstring 人类可读的字符串
              */
-            [[nodiscard]] std::wstring toWString() const noexcept;
+            [[nodiscard]] std::wstring to_wstring() const noexcept;
             /// @brief 将原无字母的代数式取相反数
-            void                       changeToOpposite() noexcept;
+            void                       change_to_opposite() noexcept;
         };
 
         /**
          * @brief 加法运算符
          * @param [in] lhs 无字母的代数式对象
          * @param [in] rhs 常量
-         * @return NumericExpression 两项相加后的副本
+         * @return numeric_expression 两项相加后的副本
          */
-        [[nodiscard]] NumericExpression operator+(const NumericExpression &lhs,
-                                                  IntegerConstantType      rhs) noexcept;
+        [[nodiscard]] numeric_expression operator+(const numeric_expression &lhs,
+                                                   integer_constant_type     rhs) noexcept;
         /**
          * @brief 加法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 无字母的代数式对象
-         * @return NumericExpression 两项相加后的副本
+         * @return numeric_expression 两项相加后的副本
          */
-        [[nodiscard]] NumericExpression operator+(IntegerConstantType      lhs,
-                                                  const NumericExpression &rhs) noexcept;
+        [[nodiscard]] numeric_expression operator+(integer_constant_type     lhs,
+                                                   const numeric_expression &rhs) noexcept;
         /**
          * @brief 加法运算符
          * @param [in] lhs 无字母的代数式对象
          * @param [in] rhs 无字母的代数式对象
-         * @return NumericExpression 两项相加后的副本
+         * @return numeric_expression 两项相加后的副本
          */
-        [[nodiscard]] NumericExpression operator+(const NumericExpression &lhs,
-                                                  const NumericExpression &rhs) noexcept;
+        [[nodiscard]] numeric_expression operator+(const numeric_expression &lhs,
+                                                   const numeric_expression &rhs) noexcept;
 
         /**
          * @brief 减法运算符
          * @param [in] lhs 无字母的代数式对象
          * @param [in] rhs 常量
-         * @return NumericExpression 两项相减后的副本
+         * @return numeric_expression 两项相减后的副本
          */
-        [[nodiscard]] NumericExpression operator-(const NumericExpression &lhs,
-                                                  IntegerConstantType      rhs) noexcept;
+        [[nodiscard]] numeric_expression operator-(const numeric_expression &lhs,
+                                                   integer_constant_type     rhs) noexcept;
         /**
          * @brief 减法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 无字母的代数式对象
-         * @return NumericExpression 两项相减后的副本
+         * @return numeric_expression 两项相减后的副本
          */
-        [[nodiscard]] NumericExpression operator-(IntegerConstantType      lhs,
-                                                  const NumericExpression &rhs) noexcept;
+        [[nodiscard]] numeric_expression operator-(integer_constant_type     lhs,
+                                                   const numeric_expression &rhs) noexcept;
         /**
          * @brief 减法运算符
          * @param [in] lhs 无字母的代数式对象
          * @param [in] rhs 无字母的代数式对象
-         * @return NumericExpression 两项相减后的副本
+         * @return numeric_expression 两项相减后的副本
          */
-        [[nodiscard]] NumericExpression operator-(const NumericExpression &lhs,
-                                                  const NumericExpression &rhs) noexcept;
+        [[nodiscard]] numeric_expression operator-(const numeric_expression &lhs,
+                                                   const numeric_expression &rhs) noexcept;
 
         /**
          * @brief 乘法运算符
          * @param [in] lhs 无字母的代数式对象
          * @param [in] rhs 常量
-         * @return NumericExpression 两项相乘后的副本
+         * @return numeric_expression 两项相乘后的副本
          */
-        [[nodiscard]] NumericExpression operator*(const NumericExpression &lhs,
-                                                  IntegerConstantType      rhs) noexcept;
+        [[nodiscard]] numeric_expression operator*(const numeric_expression &lhs,
+                                                   integer_constant_type     rhs) noexcept;
         /**
          * @brief 乘法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 无字母的代数式对象
-         * @return NumericExpression 两项相乘后的副本
+         * @return numeric_expression 两项相乘后的副本
          */
-        [[nodiscard]] NumericExpression operator*(IntegerConstantType      lhs,
-                                                  const NumericExpression &rhs) noexcept;
+        [[nodiscard]] numeric_expression operator*(integer_constant_type     lhs,
+                                                   const numeric_expression &rhs) noexcept;
         /**
          * @brief 乘法运算符
          * @param [in] lhs 无字母的代数式对象
          * @param [in] rhs 无字母的代数式对象
-         * @return NumericExpression 两项相乘后的副本
+         * @return numeric_expression 两项相乘后的副本
          */
-        [[nodiscard]] NumericExpression operator*(const NumericExpression &lhs,
-                                                  const NumericExpression &rhs) noexcept;
+        [[nodiscard]] numeric_expression operator*(const numeric_expression &lhs,
+                                                   const numeric_expression &rhs) noexcept;
 
         /**
          * @brief 除法运算符
          * @param [in] lhs 无字母的代数式对象
          * @param [in] rhs 常量
-         * @return NumericExpression 两项相除后的副本
+         * @return numeric_expression 两项相除后的副本
          * @warning 除以0行为未定义
          */
-        [[nodiscard]] NumericExpression operator/(const NumericExpression &lhs,
-                                                  IntegerConstantType      rhs) noexcept;
+        [[nodiscard]] numeric_expression operator/(const numeric_expression &lhs,
+                                                   integer_constant_type     rhs) noexcept;
         /**
          * @brief 除法运算符
          * @param [in] lhs 常量
          * @param [in] rhs 无字母的代数式对象
-         * @return NumericExpression 两项相除后的副本
+         * @return numeric_expression 两项相除后的副本
          * @warning 除以0行为未定义
          */
-        [[nodiscard]] NumericExpression operator/(IntegerConstantType      lhs,
-                                                  const NumericExpression &rhs) noexcept;
+        [[nodiscard]] numeric_expression operator/(integer_constant_type     lhs,
+                                                   const numeric_expression &rhs) noexcept;
         /**
          * @brief 除法运算符
          * @param [in] lhs 无字母的代数式对象
          * @param [in] rhs 无字母的代数式对象
-         * @return NumericExpression 两项相除后的副本
+         * @return numeric_expression 两项相除后的副本
          * @warning 除以0行为未定义
          */
-        [[nodiscard]] NumericExpression operator/(const NumericExpression &lhs,
-                                                  const NumericExpression &rhs) noexcept;
+        [[nodiscard]] numeric_expression operator/(const numeric_expression &lhs,
+                                                   const numeric_expression &rhs) noexcept;
 
         /**
          * @brief 比较运算符（等号）
@@ -305,8 +307,8 @@ namespace tnrw {
          * @return true 两无字母的代数式相等
          * @return false 两无字母的代数式不相等
          */
-        [[nodiscard]] bool              operator==(const NumericExpression &lhs,
-                                      const NumericExpression &rhs) noexcept;
+        [[nodiscard]] bool               operator==(const numeric_expression &lhs,
+                                      const numeric_expression &rhs) noexcept;
         /**
          * @brief 比较运算符（不等号）
          * @param [in] lhs 无字母的代数式对象1
@@ -314,8 +316,8 @@ namespace tnrw {
          * @return true 两无字母的代数式不相等
          * @return false 两无字母的代数式相等
          */
-        [[nodiscard]] bool              operator!=(const NumericExpression &lhs,
-                                      const NumericExpression &rhs) noexcept;
+        [[nodiscard]] bool               operator!=(const numeric_expression &lhs,
+                                      const numeric_expression &rhs) noexcept;
 
         /**
          * @brief 流输出操作符
@@ -327,7 +329,7 @@ namespace tnrw {
          */
         template <typename CharT, typename Traits>
         std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &out,
-                                                      const NumericExpression           &rhs) noexcept;
+                                                      const numeric_expression          &rhs) noexcept;
 
     } // namespace math
 
@@ -339,10 +341,10 @@ namespace tnrw {
             /**
              * @brief 以常量字面量创建无字母的代数式类
              * @param [in] constant 常量值字面量
-             * @return NumericExpression 创建的无字母的代数式类
-             * @see @ref math::NumericExpression::NumericExpression(math::IntegerConstantType constant) "NumericExpression类的以常量为参数的构造函数"
+             * @return numeric_expression 创建的无字母的代数式类
+             * @see @ref math::numeric_expression::numeric_expression(math::integer_constant_type constant) "NumericExpression类的以常量为参数的构造函数"
              */
-            [[nodiscard]] math::NumericExpression
+            [[nodiscard]] math::numeric_expression
             operator""_cNumExpr(unsigned long long constant) noexcept;
 
         } // namespace numeric_expression_literals
@@ -352,9 +354,9 @@ namespace tnrw {
 } // namespace tnrw
 
 template <typename CharT>
-struct std::formatter<tnrw::math::NumericExpression, CharT> {
-    using FmtType = tnrw::math::NumericExpression; ///< 格式化参数
-    using CharType = CharT;                        ///< 字符类型
+struct std::formatter<tnrw::math::numeric_expression, CharT> {
+    using fmt_type = tnrw::math::numeric_expression; ///< 格式化参数
+    using char_type = CharT;                         ///< 字符类型
     /**
      * @brief 解析格式化参数的解析器
      * @tparam ParseCtx 解析的上下文类型
@@ -364,7 +366,7 @@ struct std::formatter<tnrw::math::NumericExpression, CharT> {
     template <typename ParseCtx>
     constexpr ParseCtx::iterator parse(ParseCtx &ctx) {
         if (ctx.begin() != ctx.end() && *ctx.begin() != '}') {
-            throw std::format_error("Invalid format args for tnrw::math::AlgebraicExpression!");
+            throw std::format_error("Invalid format args for tnrw::math::algebraic_expression!");
         }
         return ctx.begin();
     }
@@ -376,10 +378,10 @@ struct std::formatter<tnrw::math::NumericExpression, CharT> {
      * @return FmtCtx::iterator 格式化后的迭代器
      */
     template <typename FmtCtx>
-    typename FmtCtx::iterator format(const FmtType &num, FmtCtx &ctx) const {
-        std::string str = num.toString();
+    typename FmtCtx::iterator format(const fmt_type &num, FmtCtx &ctx) const {
+        std::string str = num.to_string();
         auto        out_it = ctx.out();
-        auto       &ctype = std::use_facet<std::ctype<CharType>>(ctx.locale());
+        auto       &ctype = std::use_facet<std::ctype<char_type>>(ctx.locale());
         for (char character : str) {
             *out_it = ctype.widen(character);
             ++out_it;

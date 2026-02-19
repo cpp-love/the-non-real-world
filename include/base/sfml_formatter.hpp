@@ -26,9 +26,9 @@
  */
 template <typename T, typename CharT>
 struct std::formatter<sf::Vector2<T>, CharT> {
-    using FmtType = sf::Vector2<T>; ///< 格式化参数
-    using CharType = CharT;         ///< 字符类型
-    std::formatter<T, CharType> m_formatter_impl;
+    using fmt_type = sf::Vector2<T>; ///< 格式化参数
+    using char_type = CharT;         ///< 字符类型
+    std::formatter<T, char_type> m_formatter_impl;
     /**
      * @brief 解析格式化参数的解析器
      * @tparam ParseCtx 解析的上下文类型
@@ -47,8 +47,8 @@ struct std::formatter<sf::Vector2<T>, CharT> {
      * @return FmtCtx::iterator 格式化后的迭代器
      */
     template <typename FmtCtx>
-    typename FmtCtx::iterator format(const FmtType &vector, FmtCtx &ctx) const {
-        const auto &facet = std::use_facet<std::ctype<CharType>>(ctx.locale());
+    typename FmtCtx::iterator format(const fmt_type &vector, FmtCtx &ctx) const {
+        const auto &facet = std::use_facet<std::ctype<char_type>>(ctx.locale());
         *ctx.out() = facet.widen('(');
         ++ctx.out();
         ctx.out() = m_formatter_impl.format(vector.x, ctx);
@@ -72,8 +72,8 @@ struct std::formatter<sf::Vector2<T>, CharT> {
  */
 template <typename T, typename CharT>
 struct std::formatter<sf::Vector3<T>, CharT> {
-    using FmtType = sf::Vector3<T>; ///< 格式化参数
-    using CharType = CharT;         ///< 字符类型
+    using fmt_type = sf::Vector3<T>; ///< 格式化参数
+    using char_type = CharT;         ///< 字符类型
     std::formatter<T, CharT> m_formatter_impl;
     /**
      * @brief 解析格式化参数的解析器
@@ -93,8 +93,8 @@ struct std::formatter<sf::Vector3<T>, CharT> {
      * @return FmtCtx::iterator 格式化后的迭代器
      */
     template <typename FmtCtx>
-    typename FmtCtx::iterator format(const FmtType &vector, FmtCtx &ctx) const {
-        auto facet = std::use_facet<std::ctype<CharType>>(ctx.locale());
+    typename FmtCtx::iterator format(const fmt_type &vector, FmtCtx &ctx) const {
+        auto facet = std::use_facet<std::ctype<char_type>>(ctx.locale());
         *ctx.out() = facet.widen('(');
         ++ctx.out();
         ctx.out() = m_formatter_impl.format(vector.x, ctx);

@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 添加了场景管理系统(`tnrw::ecs::BasicSceneSystem` 模板类及 `tnrw::ecs::SceneSystem` 别名)及其基本功能
+1. 添加了场景管理系统(`tnrw::ecs::basic_scene_system` 模板类及 `tnrw::ecs::scene_system` 别名)及其基本功能
 
 ---

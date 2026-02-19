@@ -25,33 +25,33 @@
 namespace tnrw::ecs {
 
     template <typename Key, typename Compare, typename Allocator>
-    class BasicSceneSystem;
+    class basic_scene_system;
 
     /// @brief 全局获取场景的组件
     template <typename Key, typename Compare = std::less<Key>,
               typename Allocator = std::allocator<std ::pair<const Key, entt::entity>>>
-    class [[nodiscard]] GlobalScenes {
+    class [[nodiscard]] global_scenes {
       public: /// @publicsection
         // using 声明
-        using KeyType = Key;             //< 键类型
-        using KeyCompare = Compare;      //< 键比较类型
-        using AllocatorType = Allocator; //< 分配器类型
+        using key_type = Key;             //< 键类型
+        using key_compare = Compare;      //< 键比较类型
+        using allocator_type = Allocator; //< 分配器类型
         // 友元声明
-        friend class BasicSceneSystem<Key, Compare, Allocator>;
+        friend class basic_scene_system<Key, Compare, Allocator>;
 
         /// @cond INTERNAL
       private: /// @privatesection
         // 成员
-        std::map<KeyType, entt::entity, KeyCompare, AllocatorType> m_scenes; //< 场景实体列表
+        std::map<key_type, entt::entity, key_compare, allocator_type> m_scenes; //< 场景实体列表
         /// @endcond
     };
 
     /// @brief 场景组件
-    class [[nodiscard]] Scene {
+    class [[nodiscard]] scene {
       public: /// @publicsection
         // 友元声明
         template <typename Key, typename Compare, typename Allocator>
-        friend class BasicSceneSystem;
+        friend class basic_scene_system;
         /// @cond INTERNAL
       private: /// @privatesection
         // 成员
@@ -60,11 +60,11 @@ namespace tnrw::ecs {
     };
 
     /// @brief 获取父场景实体的组件
-    class [[nodiscard]] FatherScenes {
+    class [[nodiscard]] father_scenes {
       public: /// @publicsection
         // 友元声明
         template <typename Key, typename Compare, typename Allocator>
-        friend class BasicSceneSystem;
+        friend class basic_scene_system;
         /// @cond INTERNAL
       private: /// @privatesection
         // 成员

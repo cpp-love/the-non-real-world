@@ -1,7 +1,7 @@
 /**
  * @file test_render_system.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
- * @brief `tnrw::ecs::RenderSystem` 的测试用例和使用示例
+ * @brief `tnrw::ecs::render_system` 的测试用例和使用示例
  * @version 0.1.0-1
  * @date 2025-10-19
  * 
@@ -17,25 +17,24 @@
 #include <entt/entt.hpp>
 #include <vector>
 
+using tnrw::ecs::render_system;
+using tnrw::ecs::scene_system;
 
-using tnrw::ecs::RenderSystem;
-using tnrw::ecs::SceneSystem;
-
-entt::entity createShape(entt::registry &registry, tnrw::LevelIdentifierType level_id,
-                         tnrw::ecs::Shape shape) {
+entt::entity create_shape(entt::registry &registry, tnrw::level_identifier_type level_id,
+                          tnrw::ecs::shape shape) {
     const auto entity = registry.create();
-    registry.emplace<tnrw::ecs::Shape>(entity, shape);
-    registry.emplace<tnrw::ecs::ShouldRender>(entity);
-    SceneSystem::createScene(registry, level_id);
-    SceneSystem::addToScene(registry, level_id, entity);
+    registry.emplace<tnrw::ecs::shape>(entity, shape);
+    registry.emplace<tnrw::ecs::should_render>(entity);
+    scene_system::create_scene(registry, level_id);
+    scene_system::add_to_scene(registry, level_id, entity);
     return entity;
 }
 
-constexpr sf::Vector2u              window_size = {800, 600}; ///< 窗口的大小
-constexpr tnrw::LevelIdentifierType first_level = 1;          ///< 第一个关卡
-constexpr tnrw::LevelIdentifierType second_level = 2;         ///< 第二个关卡
+constexpr sf::Vector2u                window_size = {800, 600}; ///< 窗口的大小
+constexpr tnrw::level_identifier_type first_level = 1;          ///< 第一个关卡
+constexpr tnrw::level_identifier_type second_level = 2;         ///< 第二个关卡
 
-int                                 main() {
+int                                   main() {
 
     std::vector<entt::entity> line_vec;
     std::vector<entt::entity> circle_vec;
@@ -44,34 +43,34 @@ int                                 main() {
     entt::registry            registry;
 
     // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
-    line_vec.push_back(createShape(
+    line_vec.push_back(create_shape(
         registry, first_level,
-        {tnrw::ecs::Shape::Line{.start = {.position = {20.f, 20.f}, .color = sf::Color::Red},
-                                                                .end = {.position = {50.f, 50.f}, .color = sf::Color::Red}}}));
-    circle_vec.push_back(createShape(registry, first_level,
-                                                                     {tnrw::ecs::Shape::Circle{.center = {140.f, 60.f},
-                                                                                               .radius = 30.f,
-                                                                                               .fill_color = sf::Color::Blue}}));
-    rect_vec.push_back(createShape(registry, first_level,
-                                                                   {tnrw::ecs::Shape::Rectangle{.position = {400.f, 400.f},
-                                                                                                .size = {50.f, 60.f},
-                                                                                                .fill_color = sf::Color::Yellow}}));
-    line_vec.push_back(createShape(
+        {tnrw::ecs::shape::line{.start = {.position = {20.f, 20.f}, .color = sf::Color::Red},
+                                                                  .end = {.position = {50.f, 50.f}, .color = sf::Color::Red}}}));
+    circle_vec.push_back(create_shape(registry, first_level,
+                                                                        {tnrw::ecs::shape::circle{.center = {140.f, 60.f},
+                                                                                                  .radius = 30.f,
+                                                                                                  .fill_color = sf::Color::Blue}}));
+    rect_vec.push_back(create_shape(registry, first_level,
+                                                                      {tnrw::ecs::shape::rectangle{.position = {400.f, 400.f},
+                                                                                                   .size = {50.f, 60.f},
+                                                                                                   .fill_color = sf::Color::Yellow}}));
+    line_vec.push_back(create_shape(
         registry, second_level,
-        {tnrw::ecs::Shape::Line{.start = {.position = {200.f, 90.f}, .color = sf::Color::Green},
-                                                                .end = {.position = {100.f, 100.f}, .color = sf::Color::Blue}}}));
-    line_vec.push_back(createShape(
+        {tnrw::ecs::shape::line{.start = {.position = {200.f, 90.f}, .color = sf::Color::Green},
+                                                                  .end = {.position = {100.f, 100.f}, .color = sf::Color::Blue}}}));
+    line_vec.push_back(create_shape(
         registry, second_level,
-        {tnrw::ecs::Shape::Line{.start = {.position = {550.f, 700.f}, .color = sf::Color::Red},
-                                                                .end = {.position = {400.f, 200.f}, .color = sf::Color::Blue}}}));
-    circle_vec.push_back(createShape(registry, second_level,
-                                                                     {tnrw::ecs::Shape::Circle{.center = {300.f, 300.f},
-                                                                                               .radius = 20.f,
-                                                                                               .fill_color = sf::Color::Cyan}}));
-    rect_vec.push_back(createShape(registry, second_level,
-                                                                   {tnrw::ecs::Shape::Rectangle{.position = {400.f, 400.f},
-                                                                                                .size = {50.f, 60.f},
-                                                                                                .fill_color = sf::Color::Cyan}}));
+        {tnrw::ecs::shape::line{.start = {.position = {550.f, 700.f}, .color = sf::Color::Red},
+                                                                  .end = {.position = {400.f, 200.f}, .color = sf::Color::Blue}}}));
+    circle_vec.push_back(create_shape(registry, second_level,
+                                                                        {tnrw::ecs::shape::circle{.center = {300.f, 300.f},
+                                                                                                  .radius = 20.f,
+                                                                                                  .fill_color = sf::Color::Cyan}}));
+    rect_vec.push_back(create_shape(registry, second_level,
+                                                                      {tnrw::ecs::shape::rectangle{.position = {400.f, 400.f},
+                                                                                                   .size = {50.f, 60.f},
+                                                                                                   .fill_color = sf::Color::Cyan}}));
     // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
     auto curlevel = first_level;
@@ -90,9 +89,9 @@ int                                 main() {
             }
         }
         window.clear();
-        RenderSystem::draw(registry, window, [&registry, curlevel](entt::entity entity) -> bool {
-            auto father_scenes = SceneSystem::getFatherScenes(registry, entity);
-            return father_scenes.contains(SceneSystem::getSceneEntity(registry, curlevel));
+        render_system::draw(registry, window, [&registry, curlevel](entt::entity entity) -> bool {
+            auto father_scenes = scene_system::get_father_scenes(registry, entity);
+            return father_scenes.contains(scene_system::get_scene_entity(registry, curlevel));
         });
         window.display();
     }

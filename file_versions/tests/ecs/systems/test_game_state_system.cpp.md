@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 添加了 `tnrw::ecs::GameStateSystem` 的使用样例和测试用例
+1. 添加了 `tnrw::ecs::game_state_system` 的使用样例和测试用例
 
 ---

@@ -14,8 +14,8 @@
 ### Added(新增)
 
 1. 添加了命令 `alge operator [index1] [op] algeexpr [index2]`,
-             `alge hasVariable [index]`,
-             `alge hasVariable [index] [var]`,
+             `alge has_variable [index]`,
+             `alge has_variable [index] [var]`,
              `alge toNum [index1] [index2]`,
              `num operator [index1] [op] numexpr [index2]`,
              `num toAlge [index1] [index2]`
@@ -37,7 +37,7 @@
 
 ### Added(新增)
 
-1. 添加了 `tnrw::math::AlgebraicExpression` 与 `tnrw::math::NumericExpression` 类的测试用例或使用示例，
+1. 添加了 `tnrw::math::algebraic_expression` 与 `tnrw::math::numeric_expression` 类的测试用例或使用示例，
    用于替换旧的 `testAlgeExpr.cpp` 与 `testNumExpr.cpp` 文件
 
 ---

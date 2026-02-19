@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 实现了移动系统(`tnrw::MovementSystem`)
+1. 实现了移动系统(`tnrw::movement_system`)
 
 ---

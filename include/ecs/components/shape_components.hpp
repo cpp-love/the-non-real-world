@@ -20,15 +20,15 @@ namespace tnrw::ecs {
 
     /// @brief 形状类型
     /// @details 使用 `std::variant` 来表示不同形状的集合
-    struct [[nodiscard]] Shape {
+    struct [[nodiscard]] shape {
         /// @brief 线类型
-        struct [[nodiscard]] Line {
+        struct [[nodiscard]] line {
             sf::Vertex start; ///< 起点
             sf::Vertex end;   ///< 终点
         };
 
         /// @brief 圆类型
-        struct [[nodiscard]] Circle {
+        struct [[nodiscard]] circle {
             sf::Vector2f center;                                 ///< 圆心
             float        radius = 0.f;                           ///< 半径
             sf::Color    fill_color = sf::Color::Transparent;    ///< 填充颜色
@@ -37,7 +37,7 @@ namespace tnrw::ecs {
         };
 
         /// @brief 矩形类型
-        struct [[nodiscard]] Rectangle {
+        struct [[nodiscard]] rectangle {
             sf::Vector2f position;                            ///< 位置，指左上角的点
             sf::Vector2f size;                                ///< 大小，x为横轴的长/宽，y为纵轴的宽/长
             sf::Color    fill_color = sf::Color::Transparent; ///< 填充颜色
@@ -46,14 +46,14 @@ namespace tnrw::ecs {
             float        outline_thickness = 0.f;                ///< 外边厚度
         };
 
-        std::variant<Line, Circle, Rectangle> shape; ///< 形状
+        std::variant<line, circle, rectangle> shape; ///< 形状
     };
 
     /// @brief 空类型，用于表示实体应该渲染
-    struct [[nodiscard]] ShouldRender {};
+    struct [[nodiscard]] should_render {};
 
     /// @brief 空类型，用于表示实体应该碰撞
-    struct [[nodiscard]] ShouldCollide {};
+    struct [[nodiscard]] should_collide {};
 
 } // namespace tnrw::ecs
 

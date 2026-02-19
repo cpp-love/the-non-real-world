@@ -13,6 +13,6 @@
 
 ### Added(新增)
 
-1. 添加了 `tnrw::ecs::RenderSystem` 的使用样例和测试用例
+1. 添加了 `tnrw::ecs::render_system` 的使用样例和测试用例
 
 ---

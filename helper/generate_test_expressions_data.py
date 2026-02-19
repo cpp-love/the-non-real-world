@@ -36,8 +36,8 @@ def generate_data(exec: Path, input_file: Path, ans_file: Path):
             "delete",
             "operator",
             "clear",
-            "calculateApproximation",
-            "changeToOpposite",
+            "calculate_approximation",
+            "change_to_opposite",
             "compare",
         ]
         # todo : 添加其他命令
@@ -65,7 +65,7 @@ def generate_data(exec: Path, input_file: Path, ans_file: Path):
             type_str: str = random.choice(types)
             cmd_str: str = random.choice(cmds + ["operator" for i in range(15)])
 
-            if cmd_str in ["new", "delete", "clear", "changeToOpposite"]:
+            if cmd_str in ["new", "delete", "clear", "change_to_opposite"]:
                 if cmd_str == "delete" and expression_cnts[type_str] == 0:
                     continue
                 f.write(
@@ -140,7 +140,7 @@ def generate_data(exec: Path, input_file: Path, ans_file: Path):
                                 if constant == 0:
                                     constant = random.randint(0, 100)
                             f.write(f"{type_str} {cmd_str} {index} {op} {constant}\n")
-            else:  # cmd_str == "calculateApproximation"
+            else:  # cmd_str == "calculate_approximation"
                 index: int = random.randint(0, expression_cnts[type_str])
                 if type_str == "alge":
                     f.write(

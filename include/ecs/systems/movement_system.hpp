@@ -19,7 +19,7 @@
 
 namespace tnrw::ecs {
 
-    class MovementSystem {
+    class movement_system {
       public: /// @publicsection
         /**
          * @brief 获取实体的速度引用
@@ -39,8 +39,8 @@ namespace tnrw::ecs {
          * @warning 此函数目前只支持圆形的移动，其他形状的实体可能会断言失败
          * @warning 此函数的碰撞只关注在同一场景里的内容，其他场景会被忽略
          */
-        static void updateWithVelocity(entt::registry &registry, entt::entity entity,
-                                       std::chrono::milliseconds delta_time) noexcept;
+        static void update_with_velocity(entt::registry &registry, entt::entity entity,
+                                         std::chrono::milliseconds delta_time) noexcept;
         /**
          * @brief 更新所有实体
          * @param [in] registry 注册表
@@ -48,8 +48,8 @@ namespace tnrw::ecs {
          * @warning 此函数目前只支持圆形的移动，其他形状的实体会直接跳过
          * @warning 此函数的碰撞只关注在同一场景里的内容，其他场景会被忽略
          */
-        static void updateWithVelocity(entt::registry           &registry,
-                                       std::chrono::milliseconds delta_time) noexcept;
+        static void update_with_velocity(entt::registry           &registry,
+                                         std::chrono::milliseconds delta_time) noexcept;
     };
 
 } // namespace tnrw::ecs
