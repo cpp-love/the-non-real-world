@@ -37,14 +37,12 @@ namespace tnrw {
          * - 完备代数运算
          */
         class numeric_expression {
-            /// @cond INTERNAL
-          private: /// @privatesection
+          private:
             // 数据成员
             details::node_ptr m_root; ///< 私有实现指针，也是代数式树的根节点
 
-            /// @endcond
-          public: /// @publicsection
-                  // 友元声明
+          public:
+            // 友元声明
             friend bool operator==(const numeric_expression &lhs,
                                    const numeric_expression &rhs) noexcept;
             friend bool operator!=(const numeric_expression &lhs,
@@ -335,17 +333,17 @@ namespace tnrw {
 
     inline namespace literals {
 
-        /// @brief NumericExpression类的内联自定义字面量命名空间
+        /// @brief numeric_expression类的内联自定义字面量命名空间
         inline namespace numeric_expression_literals {
 
             /**
              * @brief 以常量字面量创建无字母的代数式类
              * @param [in] constant 常量值字面量
              * @return numeric_expression 创建的无字母的代数式类
-             * @see @ref math::numeric_expression::numeric_expression(math::integer_constant_type constant) "NumericExpression类的以常量为参数的构造函数"
+             * @see @ref math::numeric_expression::numeric_expression(math::integer_constant_type constant) "numeric_expression类的以常量为参数的构造函数"
              */
             [[nodiscard]] math::numeric_expression
-            operator""_cNumExpr(unsigned long long constant) noexcept;
+            operator""_c_num_expr(unsigned long long constant) noexcept;
 
         } // namespace numeric_expression_literals
 

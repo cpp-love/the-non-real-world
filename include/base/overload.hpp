@@ -306,14 +306,11 @@ namespace tnrw {
         struct as_callable_helper<Func, Ret(Args...)> {
             /// @brief 转换后的函数对象类型
             class type {
-                /// @cond INTERNAL
-              private: /// @privatesection
-                // 数据成员
+              private:
                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
                 Func &m_func; ///< 函数引用
 
-                /// @endcond
-              public: /// @publicsection
+              public:
                 /**
                  * @brief 从函数引用构造的构造函数
                  * @param [in] func 函数引用
@@ -342,14 +339,11 @@ namespace tnrw {
         struct as_callable_helper<Func, Ret (*)(Args...)> {
             /// @brief 转换后的函数对象类型
             class type {
-                /// @cond INTERNAL
-              private: /// @privatesection
-                // 数据成员
+              private:
                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
                 Func m_func; ///< 函数指针
 
-                /// @endcond
-              public: /// @publicsection
+              public:
                 /**
                  * @brief 从函数指针构造的构造函数
                  * @param [in] func 函数指针
@@ -379,14 +373,11 @@ namespace tnrw {
         struct as_callable_helper<Func, Ret (Class::*)(Args...)> {
             /// @brief 转换后的函数对象类型
             class type {
-                /// @cond INTERNAL
-              private: /// @privatesection
-                // 数据成员
+              private:
                 // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
                 Func m_func; ///< 成员函数指针
 
-                /// @endcond
-              public: /// @publicsection
+              public:
                 /**
                  * @brief 从成员函数指针构造的构造函数
                  * @param [in] func 成员函数指针
@@ -462,16 +453,15 @@ namespace tnrw {
      * @return auto 含有可调用对象重载的函数对象
      * @details
      *  - 支持绝大部分可调用类型：
-     *    1. 非模板的普通函数（函数引用）
-     *    2. 非模板的函数指针
-     *    3. 非模板的成员函数指针（但包装成为模板函数对象，调用优先级比非模板的可调用对象低）
-     *    4. 函数对象（包括 std::function 等标准库定义的函数对象）
+     *    1. **非模板的** 普通函数（函数引用）
+     *    2. **非模板的** 函数指针
+     *    3. **非模板的** 成员函数指针（但包装成为模板函数对象，调用优先级比非模板的可调用对象低）
+     *    4. 函数对象（包括 `std::function` 等标准库定义的函数对象）
      *    5. lambda 表达式
-     * @warning
-     *  - 不支持普通模板函数，
-     *    若要使其参与重载，请使用 `泛型 lambda 表达式包装` 或 `手动定义函数对象包装`
-     *  - 不支持 C-style 可变参数函数
-     *    若要使其参与重载，请使用 `泛型 lambda 表达式包装` 或 `手动定义函数对象包装`
+     * @warning 
+     *  - 不支持类型：
+     *    1. 普通模板函数，若要使其参与重载，请使用 泛型 lambda 表达式包装 或 手动定义函数对象包装
+     *    2. C-style 可变参数函数，若要使其参与重载，请使用 泛型 lambda 表达式包装 或 手动定义函数对象包装
      */
     template <typename... Funcs>
     constexpr auto make_overloaded(Funcs &&...funcs) {

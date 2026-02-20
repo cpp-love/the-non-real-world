@@ -71,6 +71,11 @@ if(TNRW_BUILD_BASE_TESTS)
     set_tests_properties(TestBase4StandardUse
         PROPERTIES PASS_REGULAR_EXPRESSION "vec1 is \\(10.000, 10.000\\), vec2 is \\(11, 11\\), vec3 is \\(13, 10\\)\\s*"
     )
+    add_test(NAME RunTestBase5 COMMAND test_overload)
+    add_test(NAME TestBase5StandardUse COMMAND test_overload)
+    set_tests_properties(TestBase5StandardUse
+        PROPERTIES PASS_REGULAR_EXPRESSION "value: 2\ncall from lambda\nvalue: 1\ncall from lambda3\\s*"
+    )
 
     # todo : 解决下面的测试失败的问题
     # add_test(NAME RunTestBase2 COMMAND test_assert_msg)
@@ -84,18 +89,11 @@ if(TNRW_BUILD_ECS_TESTS)
     # 构建程序
 
     # 设置链接文件
-    add_executable(test_game_state_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/systems/test_game_state_system.cpp)
     add_executable(test_scene_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/systems/test_scene_system.cpp)
     add_executable(test_render_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/systems/test_render_system.cpp)
     add_executable(test_movement_system ${CMAKE_CURRENT_SOURCE_DIR}/ecs/systems/test_movement_system.cpp)
 
     # 链接第三方库
-    target_link_libraries(test_game_state_system
-        PUBLIC
-        tnrw_compiler_flags
-        tnrw
-    )
-
     target_link_libraries(test_scene_system
         PUBLIC
         tnrw_compiler_flags
@@ -115,15 +113,9 @@ if(TNRW_BUILD_ECS_TESTS)
     )
 
     # 添加安装支持
-    install(TARGETS test_game_state_system test_scene_system test_render_system test_movement_system DESTINATION bin/tests)
+    install(TARGETS test_scene_system test_render_system test_movement_system DESTINATION bin/tests)
 
     # 添加测试支持
-    add_test(NAME RunTestEcs1 COMMAND test_game_state_system)
-    add_test(NAME TestEcs1StandardUse COMMAND test_game_state_system)
-    set_tests_properties(TestEcs1StandardUse
-        PROPERTIES PASS_REGULAR_EXPRESSION "加入Mainpage状态（代码为1）\n当前顶状态代码为：1\n当前所有状态代码为：\n1 \n删除Mainpage状态\n加入Mainpage状态（代码为1）\n加入Game状态（代码为2）\n当前顶状态代码为：2\n当前所有状态代码为：\n1 2 \n删除Game状态\n删除Mainpage状态\\s*"
-    )
-
     add_test(NAME RunTestEcs2 COMMAND test_scene_system)
     # todo : 修复此错误
     # add_test(NAME TestEcs2StandardUse COMMAND test_scene_system)

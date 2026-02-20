@@ -12,13 +12,13 @@
 #ifndef TNRW_ECS_COMPONENTS_FWD_HPP
 #define TNRW_ECS_COMPONENTS_FWD_HPP
 
+#include "ecs/components/global/game_base.hpp"
 #include "ecs/components/global/scene_components.hpp"
-#include "ecs/components/movement_components.hpp"
 #include <SFML/System/Vector2.hpp>
 
 namespace tnrw::ecs {
 
-    // global/GameState.hpp
+    // global/game_state_components.hpp
     class game_state;
 
     // shape_components.hpp

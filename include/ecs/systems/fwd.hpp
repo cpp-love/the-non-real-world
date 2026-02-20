@@ -16,7 +16,7 @@
 
 namespace tnrw::ecs {
 
-    // global/game_state_system.hpp
+    // global/game_state_manager.hpp
     class game_state_system;
 
     // render_system.hpp

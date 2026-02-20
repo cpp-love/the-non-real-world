@@ -22,7 +22,7 @@ namespace tnrw::ecs {
 
     /// @brief 渲染系统
     class render_system {
-      public: /// @publicsection
+      public:
         /**
          * @brief 获取绘制的圆会有的点数
          * @return std::size_t 绘制的圆会有的点数

@@ -31,7 +31,7 @@ namespace tnrw::ecs {
     template <typename Key, typename Compare = std::less<Key>,
               typename Allocator = std::allocator<std ::pair<const Key, entt::entity>>>
     class [[nodiscard]] global_scenes {
-      public: /// @publicsection
+      public:
         // using 声明
         using key_type = Key;             //< 键类型
         using key_compare = Compare;      //< 键比较类型
@@ -39,37 +39,30 @@ namespace tnrw::ecs {
         // 友元声明
         friend class basic_scene_system<Key, Compare, Allocator>;
 
-        /// @cond INTERNAL
-      private: /// @privatesection
-        // 成员
+      private:
         std::map<key_type, entt::entity, key_compare, allocator_type> m_scenes; //< 场景实体列表
-        /// @endcond
     };
 
     /// @brief 场景组件
     class [[nodiscard]] scene {
-      public: /// @publicsection
+      public:
         // 友元声明
         template <typename Key, typename Compare, typename Allocator>
         friend class basic_scene_system;
-        /// @cond INTERNAL
-      private: /// @privatesection
-        // 成员
+
+      private:
         std::set<entt::entity> m_children; //< 子实体列表
-        /// @endcond
     };
 
     /// @brief 获取父场景实体的组件
     class [[nodiscard]] father_scenes {
-      public: /// @publicsection
+      public:
         // 友元声明
         template <typename Key, typename Compare, typename Allocator>
         friend class basic_scene_system;
-        /// @cond INTERNAL
-      private: /// @privatesection
-        // 成员
+
+      private:
         std::set<entt::entity> m_fathers; //< 父亲实体列表
-        /// @endcond
     };
 
 } // namespace tnrw::ecs

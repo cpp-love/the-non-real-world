@@ -20,7 +20,7 @@
 namespace tnrw::ecs {
 
     class movement_system {
-      public: /// @publicsection
+      public:
         /**
          * @brief 获取实体的速度引用
          * @param [in] registry 注册表

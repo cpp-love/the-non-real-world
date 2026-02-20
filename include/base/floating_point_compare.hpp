@@ -53,11 +53,11 @@ namespace tnrw {
      */
     template <std::floating_point T>
     struct [[nodiscard]] fast_float : public details::float_wrapper<T> {
-      private: /// @privatesection
+      private:
         // using别名
         using base = details::float_wrapper<T>; ///< 基类别名
 
-      public: /// @publicsection
+      public:
         // using解决模板依赖
         using base::base;
         using typename base::value_type;
@@ -74,11 +74,11 @@ namespace tnrw {
      */
     template <std::floating_point T>
     struct [[nodiscard]] safe_float : public details::float_wrapper<T> {
-      private: /// @privatesection
+      private:
         // using别名
         using base = details::float_wrapper<T>; ///< 基类别名
 
-      public: /// @publicsection
+      public:
         // using解决模板依赖
         using base::base;
         using typename base::value_type;

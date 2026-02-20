@@ -70,58 +70,54 @@ def main():
     """
     主函数
     """
+    import argparse
+
+    # 解析参数
+    parser = argparse.ArgumentParser(description="移动C/C++文件的脚本")
+    parser.add_argument(
+        "source",
+        type=str,
+        help="要移动的文件",
+    )
+    parser.add_argument(
+        "destination",
+        type=str,
+        help="文件移动后的位置",
+    )
+    parser.add_argument(
+        "-w",
+        "--workspacefolder",
+        type=str,
+        help="文件所属的工作区",
+    )
+    args = parser.parse_args()
+    source: Path = helper_base.filter_invalid_path(
+        Path(args.source), helper_base.PathType.FILE
+    )
+    if not source.suffix in helper_base.C_CPP_FILE_EXTENSION:
+        raise Exception("要移动的文件不是C/C++文件")
+    destination: Path = helper_base.filter_invalid_path(
+        Path(args.destination), helper_base.PathType.NOT_EXIST
+    )
+    if not destination.suffix in helper_base.C_CPP_FILE_EXTENSION:
+        raise Exception("要移动的文件不是C/C++文件")
+    workspace_folder: Path = helper_base.filter_invalid_path(
+        Path(args.workspacefolder), helper_base.PathType.DIRECTORY
+    )
+    source_md: Path = Path(
+        str(workspace_folder / "file_versions" / source.relative_to(workspace_folder))
+        + ".md"
+    )
+    destination_md: Path = Path(
+        str(
+            workspace_folder
+            / "file_versions"
+            / destination.relative_to(workspace_folder)
+        )
+        + ".md"
+    )
+
     try:
-        import argparse
-
-        # 解析参数
-        parser = argparse.ArgumentParser(description="移动C/C++文件的脚本")
-        parser.add_argument(
-            "source",
-            type=str,
-            help="要移动的文件",
-        )
-        parser.add_argument(
-            "destination",
-            type=str,
-            help="文件移动后的位置",
-        )
-        parser.add_argument(
-            "-w",
-            "--workspacefolder",
-            type=str,
-            help="文件所属的工作区",
-        )
-        args = parser.parse_args()
-        source: Path = helper_base.filter_invalid_path(
-            Path(args.source), helper_base.PathType.FILE
-        )
-        if not source.suffix in helper_base.C_CPP_FILE_EXTENSION:
-            raise Exception("要移动的文件不是C/C++文件")
-        destination: Path = helper_base.filter_invalid_path(
-            Path(args.destination), helper_base.PathType.NOT_EXIST
-        )
-        if not destination.suffix in helper_base.C_CPP_FILE_EXTENSION:
-            raise Exception("要移动的文件不是C/C++文件")
-        workspace_folder: Path = helper_base.filter_invalid_path(
-            Path(args.workspacefolder), helper_base.PathType.DIRECTORY
-        )
-        source_md: Path = Path(
-            str(
-                workspace_folder
-                / "file_versions"
-                / source.relative_to(workspace_folder)
-            )
-            + ".md"
-        )
-        destination_md: Path = Path(
-            str(
-                workspace_folder
-                / "file_versions"
-                / destination.relative_to(workspace_folder)
-            )
-            + ".md"
-        )
-
         # 改名
         move_file(source, destination)
         move_file(source_md, destination_md)
@@ -144,9 +140,13 @@ def main():
                     if source.is_relative_to(workspace_folder / "include"):
                         line = re.sub(
                             r"\b"
-                            + str(source.relative_to(workspace_folder / "include"))
+                            + source.relative_to(
+                                workspace_folder / "include"
+                            ).as_posix()
                             + r"\b",
-                            str(destination.relative_to(workspace_folder / "include")),
+                            destination.relative_to(
+                                workspace_folder / "include"
+                            ).as_posix(),
                             line,
                         )
                     line = re.sub(r"\b" + source.name + r"\b", destination.name, line)
@@ -160,7 +160,16 @@ def main():
                 f.write(file_content)
 
     except Exception as e:
-        print(f"error: {e}")
+        # 撤销操作
+        print("出现错误：撤销操作")
+        if destination.exists():
+            # 移动成功了，撤销
+            move_file(destination, source)
+        if destination_md.exists():
+            # 移动成功了，撤销
+            move_file(destination_md, source_md)
+        # 重新抛出
+        raise e
 
 
 if __name__ == "__main__":

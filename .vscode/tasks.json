@@ -5,6 +5,22 @@
             "id": "generateFiles",
             "type": "promptString",
             "description": "选择相对当前工作区目录的要生成版本文档的文件（夹）"
+        },
+        {
+            "id": "moveSource",
+            "type": "command",
+            "command": "extension.commandvariable.file.pickFile",
+            "args": {
+                "description": "选择要移动的文件",
+                "include": "**/*.{cpp,hpp,c,h,cc,hh,cxx,hxx}",
+                "exclude": "out/**"
+            }
+        },
+        {
+            "id": "moveDestination",
+            "type": "promptString",
+            "description": "选择文件要移动的位置",
+            "default": "${input:moveSource}"
         }
     ],
     "tasks": [
@@ -32,13 +48,27 @@
             "detail": "输出tnrw代码问题到文件的任务"
         },
         {
+            "label": "C/C++: 移动项目文件",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}/helper/move_source_file.py",
+                "-w",
+                "${workspaceFolder}",
+                "${input:moveSource}",
+                "${input:moveDestination}",
+            ],
+            "problemMatcher": [],
+            "detail": "移动tnrw项目文件的任务"
+        },
+        {
             "label": "C/C++: 生成文件版本文件",
             "type": "shell",
             "command": "${command:cmake.buildDirectory}/bin/generate_file_version",
             "args": [
                 "${workspaceFolder}",
                 "${file}",
-                "'cpp-love(15865418+cpp-love@user.noreply.gitee.com)'"
+                "'cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)'"
             ],
             "problemMatcher": [],
             "detail": "输出文件版本文件的任务",
@@ -53,7 +83,7 @@
             "args": [
                 "${workspaceFolder}",
                 "${workspaceFolder}/${input:generateFiles}",
-                "'cpp-love(15865418+cpp-love@user.noreply.gitee.com)'"
+                "'cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)'"
             ],
             "problemMatcher": [],
             "detail": "输出文件版本文件的任务",

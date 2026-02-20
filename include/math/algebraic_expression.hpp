@@ -41,14 +41,12 @@ namespace tnrw {
          * - 加入根式
          */
         class algebraic_expression {
-            /// @cond INTERNAL
-          private: /// @privatesection
+          private:
             // 数据成员
             inline static std::set<variable_type, std::ranges::less> m_vars; ///< 统一存储变量的地方
             details::node_ptr m_root; ///< 私有实现指针，也是代数式树的根节点
 
-            /// @endcond
-          public: /// @publicsection
+          public:
             // 友元声明
             friend bool operator==(const algebraic_expression &lhs,
                                    const algebraic_expression &rhs) noexcept;
@@ -481,26 +479,26 @@ namespace tnrw {
 
     inline namespace literals {
 
-        /// @brief AlgebraicExpression类的内联自定义字面量命名空间
+        /// @brief algebraic_expression类的内联自定义字面量命名空间
         inline namespace algebraic_expression_literals {
 
             /**
              * @brief 以常量字面量创建代数式类
              * @param [in] constant 常量值字面量
              * @return algebraic_expression 创建的代数式类
-             * @see @ref math::algebraic_expression::algebraic_expression(math::integer_constant_type constant) "AlgebraicExpression类的以常量为参数的构造函数"
+             * @see @ref math::algebraic_expression::algebraic_expression(math::integer_constant_type constant) "algebraic_expression类的以常量为参数的构造函数"
              */
             [[nodiscard]] math::algebraic_expression
-            operator""_cAlgeExpr(unsigned long long constant) noexcept;
+            operator""_c_alge_expr(unsigned long long constant) noexcept;
             /**
              * @brief 以变量字面量创建代数式类
              * @param [in] variable 变量字符串字面量
              * @param [in] len 变量字符串字面量的长度
              * @return algebraic_expression 创建的代数式类
-             * @see @ref math::algebraic_expression::algebraic_expression(math::variable_view vairable) "AlgebraicExpression类的以变量为参数的构造函数"
+             * @see @ref math::algebraic_expression::algebraic_expression(math::variable_view vairable) "algebraic_expression类的以变量为参数的构造函数"
              */
-            [[nodiscard]] math::algebraic_expression operator""_vAlgeExpr(const char *variable,
-                                                                          std::size_t len) noexcept;
+            [[nodiscard]] math::algebraic_expression operator""_v_alge_expr(const char *variable,
+                                                                            std::size_t len) noexcept;
 
         } // namespace algebraic_expression_literals
 

@@ -37,7 +37,7 @@ namespace tnrw::ecs {
     template <typename Key, typename Compare = std::less<Key>,
               typename Allocator = std::allocator<std::pair<const Key, entt::entity>>>
     class basic_scene_system {
-      public: /// @publicsection
+      public:
         // using 声明
         using key_type = Key;             //< 键类型
         using key_compare = Compare;      //< 键比较类型
@@ -409,8 +409,8 @@ namespace tnrw::ecs {
             create_father_scenes(registry, entity); //< 确保组件已被创建
             return registry.get<father_scenes>(entity).m_fathers;
         }
-        /// @cond INTERNAL
-      private: /// @privatesection
+
+      private:
         /**
           * @brief 创建游戏全局获取场景的组件（即 `global_scenes` ）
           * @param [in] registry 注册表
@@ -432,7 +432,6 @@ namespace tnrw::ecs {
             }
             registry.emplace<father_scenes>(entity);
         }
-        /// @endcond
     };
 
     // using 声明
