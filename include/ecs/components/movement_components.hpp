@@ -20,7 +20,7 @@ namespace tnrw::ecs {
      * @brief 速度组件
      * @attention 此组件不是一个稳定的组件，可能会因需求变多而改变
      */
-    struct [[nodiscard]] velocity {
+    struct velocity {
         sf::Vector2f velocity;
     };
 

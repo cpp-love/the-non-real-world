@@ -9,6 +9,14 @@
 
 ---
 
+## [0.1.0-3] - 2026-02-21 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. 添加了 **打印堆栈跟踪** 的能力
+
+---
+
 ## [0.1.0-2] - 2025-11-09 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Changed(修改)

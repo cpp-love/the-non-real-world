@@ -26,7 +26,7 @@ namespace tnrw {
          * @warning 该类是私有的，用户不应直接访问
          */
         template <std::floating_point T>
-        struct [[nodiscard]] float_wrapper {
+        struct float_wrapper {
             using value_type = T;                                               ///< 浮点数值类型
             value_type                  value;                                  ///< 浮点数值
             static constexpr value_type epsilon = static_cast<value_type>(0.5); ///< 浮点比较最小阈值
@@ -45,14 +45,14 @@ namespace tnrw {
     } // namespace details
 
     template <std::floating_point T>
-    struct [[nodiscard]] safe_float; // 前向声明
+    struct safe_float; // 前向声明
 
     /**
      * @brief 快速比较的浮点类型，不含非法值（ `inf` 和 `nan` ）
      * @tparam T 原始浮点类型
      */
     template <std::floating_point T>
-    struct [[nodiscard]] fast_float : public details::float_wrapper<T> {
+    struct fast_float : public details::float_wrapper<T> {
       private:
         // using别名
         using base = details::float_wrapper<T>; ///< 基类别名
@@ -73,7 +73,7 @@ namespace tnrw {
      * @tparam T 原始浮点类型
      */
     template <std::floating_point T>
-    struct [[nodiscard]] safe_float : public details::float_wrapper<T> {
+    struct safe_float : public details::float_wrapper<T> {
       private:
         // using别名
         using base = details::float_wrapper<T>; ///< 基类别名
