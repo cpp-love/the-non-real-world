@@ -145,5 +145,6 @@
         "stack": "cpp",
         "functexcept.h": "c"
     },
-    "python.analysis.autoImportCompletions": false
+    "python.analysis.autoImportCompletions": false,
+    "doxygen_runner.configuration_file_override": "${workspaceFolder}/Doxyfile.internal"
 }

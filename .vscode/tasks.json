@@ -90,26 +90,6 @@
             "runOptions": {
                 "instanceLimit": 10
             }
-        },
-        {
-            "label": "C/C++: doxygen 生成文档（公共）",
-            "type": "shell",
-            "command": "doxygen", // 生成 Doxygen 文档
-            "args": [
-                "${workspaceFolder}/Doxyfile"
-            ],
-            "problemMatcher": [],
-            "detail": "生成 Doxygen 公共文档的任务"
-        },
-        {
-            "label": "C/C++: doxygen 生成文档（内部）",
-            "type": "shell",
-            "command": "doxygen", // 生成 Doxygen 文档
-            "args": [
-                "${workspaceFolder}/Doxyfile.internal"
-            ],
-            "problemMatcher": [],
-            "detail": "生成 Doxygen 内部文档的任务"
         }
     ]
 }

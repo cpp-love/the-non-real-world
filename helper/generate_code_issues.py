@@ -9,7 +9,6 @@
 """
 
 import subprocess
-import shutil
 import helper_base
 import re
 import os
@@ -153,60 +152,59 @@ def main():
     主函数
     """
 
+    import argparse
+
+    # 解析参数
+    parser = argparse.ArgumentParser(
+        description="输出C/C++代码问题（使用clang-tidy）到文件的脚本"
+    )
+    parser.add_argument(
+        "-p", "--build-path", type=str, help="compile_commands.json 的路径位置"
+    )
+    parser.add_argument(
+        "-ea",
+        "--extra-arg",
+        type=str,
+        action="append",
+        help="额外的参数",
+    )
+    parser.add_argument(
+        "-fd",
+        "--file-or-directory",
+        type=str,
+        action="append",
+        help="要解析的代码文件（夹）位置",
+    )
+    parser.add_argument(
+        "--print-stderr",
+        action="store_true",
+        default=False,
+        help="用于添加clang-tidy的stderr的输出",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="用于添加详细输出",
+    )
+    args = parser.parse_args()
+    old_build_path: Path = filter_invalid_build_path(Path(args.build_path))
+    files: list[Path] = process_paths(args.file_or_directory)
+    output_file: Path = Path("code_issues/code_issues.txt")
+    new_build_path: Path = Path(os.curdir) / "tmp"
+    while (new_build_path / "compile_commands.json").exists():
+        new_build_path /= "tmp"
+    new_build_path /= "compile_commands.json"
+
+    # 在json文件中添加编译器目录
+    add_include_directories_to_new_build_path(
+        old_build_path,
+        new_build_path,
+        args.extra_arg,
+    )
+
     try:
-        import argparse
-
-        # 解析参数
-        parser = argparse.ArgumentParser(
-            description="输出C/C++代码问题（使用clang-tidy）到文件的脚本"
-        )
-        parser.add_argument(
-            "-p", "--build-path", type=str, help="compile_commands.json 的路径位置"
-        )
-        parser.add_argument(
-            "-ea",
-            "--extra-arg",
-            type=str,
-            action="append",
-            help="额外的参数",
-        )
-        parser.add_argument(
-            "-fd",
-            "--file-or-directory",
-            type=str,
-            action="append",
-            help="要解析的代码文件（夹）位置",
-        )
-        parser.add_argument(
-            "--print-stderr",
-            action="store_true",
-            default=False,
-            help="用于添加clang-tidy的stderr的输出",
-        )
-        parser.add_argument(
-            "-v",
-            "--verbose",
-            action="store_true",
-            default=False,
-            help="用于添加详细输出",
-        )
-        args = parser.parse_args()
-        old_build_path: Path = filter_invalid_build_path(Path(args.build_path))
-        files: list[Path] = process_paths(args.file_or_directory)
-        output_file: Path = Path("code_issues/code_issues.txt")
-        new_build_path: Path = Path(os.curdir) / "compile_commands.json"
-
-        # 在json文件中添加编译器目录
-        compiler = shutil.which("clang")
-        if not compiler:
-            print("error: 没有找到clang编译器")
-            return
-        add_include_directories_to_new_build_path(
-            old_build_path,
-            new_build_path,
-            args.extra_arg,
-        )
-
         print(f"检查 {len(files)} 个文件，输出到 {output_file.resolve()}")
 
         # 清空输出文件
@@ -220,53 +218,48 @@ def main():
         issue_count: int = 0
         step: int = 10
         for i in range(0, len(files), step):
-            try:
-                subfiles: list[Path] = files[i : i + step]
-                command: list[str] = [
-                    "clang-tidy",
-                    "-p",
-                    str(new_build_path.resolve()),
-                    '-header-filter=".*"',
-                ]
-                if args.verbose:
-                    command.append("-extra-arg=-v")
-                for file in subfiles:
-                    command.append(str(file.resolve()))
-                print(f"正在检查第{i}至第{min(len(files), i + step)}文件的问题...")
-                result = subprocess.run(
-                    command,
-                    capture_output=True,
-                    text=True,
-                    encoding="utf-8",
-                    timeout=1000,
-                )
-                issue_count += result.stdout.count("warning: ") + result.stdout.count(
-                    "error: "
-                )
-                with open(output_file, "a", encoding="utf-8") as file:
-                    file.write(f"检查文件: {[str(file) for file in subfiles]}\n")
-                    file.write("-" * 80 + "\n\n")
-                    file.write(ansi_color_pattern.sub("", result.stdout) + "\n\n")
-                    if args.print_stderr:
-                        if result.stderr:
-                            file.write("stderr的输出：\n")
-                            file.write(
-                                ansi_color_pattern.sub("", result.stderr) + "\n\n"
-                            )
-                        else:
-                            file.write("stderr无输出")
-            except Exception as e:
-                print(f"error: {e}")
-                return
-
-        # 删除临时创建的文件
-        os.remove(new_build_path)
+            subfiles: list[Path] = files[i : i + step]
+            command: list[str] = [
+                "clang-tidy",
+                "-p",
+                str(new_build_path.resolve()),
+                '-header-filter=".*"',
+            ]
+            if args.verbose:
+                command.append("-extra-arg=-v")
+            for file in subfiles:
+                command.append(str(file.resolve()))
+            print(f"正在检查第{i}至第{min(len(files), i + step)}文件的问题...")
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                timeout=3000,
+            )
+            issue_count += result.stdout.count("warning: ") + result.stdout.count(
+                "error: "
+            )
+            with open(output_file, "a", encoding="utf-8") as file:
+                file.write(f"检查文件: {[str(file) for file in subfiles]}\n")
+                file.write("-" * 80 + "\n\n")
+                file.write(ansi_color_pattern.sub("", result.stdout) + "\n\n")
+                if args.print_stderr:
+                    if result.stderr:
+                        file.write("stderr的输出：\n")
+                        file.write(ansi_color_pattern.sub("", result.stderr) + "\n\n")
+                    else:
+                        file.write("stderr无输出")
 
         # 输出
         print(f"检查完成，结果已保存到 {output_file}")
         print(f"发现 {issue_count} 个问题")
     except Exception as e:
         print(f"error: {e}")
+        exit(1)
+    finally:
+        # 删除临时创建的文件
+        os.remove(new_build_path)
 
 
 if __name__ == "__main__":
