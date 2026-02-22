@@ -31,8 +31,8 @@ entt::entity create_shape(entt::registry &registry, tnrw::level_identifier_type 
     registry.emplace<tnrw::ecs::shape>(entity, shape);
     registry.emplace<tnrw::ecs::should_render>(entity);
     registry.emplace<tnrw::ecs::should_collide>(entity);
-    scene_system::create_scene(registry, level_id);
-    scene_system::add_to_scene(registry, level_id, entity);
+    scene_system::insert_scene(registry, level_id);
+    scene_system::insert_to_scene(registry, level_id, entity);
     return entity;
 }
 
@@ -141,8 +141,8 @@ int                                   main() {
 
         window.clear();
         render_system::draw(registry, window, [&registry, curlevel](entt::entity entity) -> bool {
-            auto father_scenes = scene_system::get_father_scenes(registry, entity);
-            return father_scenes.contains(scene_system::get_scene_entity(registry, curlevel));
+            const auto &father_scenes = scene_system::get_father_scenes(registry, entity);
+            return father_scenes.contains(curlevel);
         });
         window.display();
     }

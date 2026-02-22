@@ -9,6 +9,15 @@
 
 ---
 
+## [0.1.0-2] - 2026-02-22 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 重构了 `tnrw::ecs::scene_system`，将其去模板化，
+   并简化了其成员函数，取消了不安全的操作，因为所有操作现在的开销都很小
+
+---
+
 ## [0.1.0-1] - 2025-08-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)

@@ -323,8 +323,9 @@ namespace tnrw::ecs {
             const auto &greater_scenes =
                 (scenes.size() < compare_scenes.size()) ? compare_scenes : scenes;
 
-            return std::ranges::any_of(
-                less_scenes, [&](entt::entity scene) -> bool { return greater_scenes.contains(scene); });
+            return std::ranges::any_of(less_scenes, [&](level_identifier_type scene) -> bool {
+                return greater_scenes.contains(scene);
+            });
         };
         /**
          * @brief 迭代器自加（忽略不在同一场景内的实体）
