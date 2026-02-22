@@ -21,6 +21,7 @@
 #ifndef TNRW_BASE_ASSERT_MSG_HPP
 #define TNRW_BASE_ASSERT_MSG_HPP
 
+#include <exception>
 #include <format>
 #include <iterator>
 #include <optional>
@@ -47,16 +48,21 @@ namespace tnrw::details {
      */
     [[noreturn]] constexpr void assert_fail(std::string_view expr, const std::source_location &loc,
                                             const std::stacktrace     &stack_trace,
-                                            std::optional<std::string> message = std::nullopt) {
-        std::string stack_trace_message = [&stack_trace] {
-            std::string str;
-            // trace[0] is `assert_check`
-            // 正常情况下是这样的，但是在优化情况下可能不稳定，所以不删除可能多余的堆栈信息
-            for (const auto &[index, entry] : stack_trace | std::views::enumerate) {
-                std::format_to(std::back_inserter(str), "frame #{} : {} in line {} in file {}\n", index,
-                               entry.description(), entry.source_line(), entry.source_file());
-            }
-            return str;
+                                            std::optional<std::string> message = std::nullopt) noexcept {
+        std::string stack_trace_message = [&stack_trace] noexcept -> std::string {
+            try {
+                std::string str;
+                // trace[0] is `assert_check`
+                // 正常情况下是这样的，但是在优化情况下可能不稳定，所以不删除可能多余的堆栈信息
+                for (const auto &[index, entry] : stack_trace | std::views::enumerate) {
+                    std::format_to(std::back_inserter(str), "frame #{} : {} in line {} in file {}\n",
+                                   index, entry.description(), entry.source_line(), entry.source_file());
+                }
+                return str;
+            } catch (std::exception &exception) {
+                return "Due to the following exception, we lost stack trace message.\n"
+                       + std::string(exception.what());
+            } catch (...) { return "Due to the unknown exception, we lost stack trace message.\n"; }
         }();
         // 输出信息
         if (message != std::nullopt) {
@@ -94,12 +100,21 @@ namespace tnrw::details {
      */
     template <typename... Args>
     constexpr void assert_check(bool condition, std::string_view expr, const std::source_location &loc,
-                                std::format_string<Args...> fmt, Args &&...args) {
+                                std::format_string<Args...> fmt, Args &&...args) noexcept {
         if (condition) {
             return;
         }
-        assert_fail(expr, loc, std::stacktrace::current(),
-                    std::format(fmt, std::forward<Args>(args)...));
+        try {
+            assert_fail(expr, loc, std::stacktrace::current(),
+                        std::format(fmt, std::forward<Args>(args)...));
+        } catch (std::exception &exception) {
+            assert_fail(expr, loc, std::stacktrace::current(),
+                        "Due to the following exception, we lost assertion message.\n"
+                            + std::string(exception.what()));
+        } catch (...) {
+            assert_fail(expr, loc, std::stacktrace::current(),
+                        "Due to the unknown exception, we lost assertion message.\n");
+        }
     }
     /**
      * @brief 断言检查函数
@@ -112,12 +127,21 @@ namespace tnrw::details {
      */
     template <typename... Args>
     constexpr void assert_check(bool condition, std::string_view expr, const std::source_location &loc,
-                                std::wformat_string<Args...> fmt, Args &&...args) {
+                                std::wformat_string<Args...> fmt, Args &&...args) noexcept {
         if (condition) {
             return;
         }
-        assert_fail(expr, loc, std::stacktrace::current(),
-                    std::format(fmt, std::forward<Args>(args)...));
+        try {
+            assert_fail(expr, loc, std::stacktrace::current(),
+                        std::format(fmt, std::forward<Args>(args)...));
+        } catch (std::exception &exception) {
+            assert_fail(expr, loc, std::stacktrace::current(),
+                        "Due to the following exception, we lost assertion message.\n"
+                            + std::string(exception.what()));
+        } catch (...) {
+            assert_fail(expr, loc, std::stacktrace::current(),
+                        "Due to the unknown exception, we lost assertion message.\n");
+        }
     }
     /**
      * @brief 断言检查函数
@@ -125,7 +149,8 @@ namespace tnrw::details {
      * @param [in] expr 断言表达式
      * @param [in] loc 断言位置
      */
-    constexpr void assert_check(bool condition, std::string_view expr, const std::source_location &loc) {
+    constexpr void assert_check(bool condition, std::string_view expr,
+                                const std::source_location &loc) noexcept {
         if (condition) {
             return;
         }
