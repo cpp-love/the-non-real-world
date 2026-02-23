@@ -33,7 +33,7 @@ target_compile_options(tnrw_compiler_flags
 # 添加优化
 target_compile_options(tnrw_compiler_flags
     INTERFACE
-    $<${gcc_like_cxx}:$<BUILD_INTERFACE:-O2>>
+    $<${gcc_like_cxx}:$<BUILD_INTERFACE:$<$<CONFIG:Debug>:-O2>>>
 )
 
 # 添加gcc对c++23 `print` / `println` 函数的 `Windows` 版本的支持
@@ -60,13 +60,14 @@ target_compile_definitions(tnrw_compiler_flags
     $<BUILD_INTERFACE:$<$<CONFIG:Release>:NDEBUG=1>>
 )
 
+
+# 设置输出目录
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # 添加子目录
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(helper)
-
-# 设置输出目录
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # 设置链接文件
 # add_executable(TheNon-realWorld ${PROJECT_SOURCE_DIR}/tests/base/test_string_convert.cpp)
