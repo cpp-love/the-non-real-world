@@ -9,6 +9,18 @@
 
 ---
 
+## [0.1.0-4] - 2026-02-23 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. 添加了输出 **运行时字符串** 的能力
+
+### Changed(修改)
+
+1. 移除了无法编译通过的 `assert_check` 函数的 `wformat_string` 版本，断言函数现在只接受以 **`char`** 类型为单元的字符串
+
+---
+
 ## [0.1.0-3] - 2026-02-21 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)

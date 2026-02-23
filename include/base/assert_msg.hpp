@@ -2,8 +2,8 @@
  * @file assert_msg.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 添加支持自定义输出的assert断言
- * @version 0.1.0-3
- * @date 2026-02-21
+ * @version 0.1.0-4
+ * @date 2026-02-23
  * 
  * @copyright cpp-love
  * 
@@ -31,14 +31,16 @@
 #include <stacktrace>
 #include <string>
 #include <string_view>
+#include <utility>
 
 #ifdef NDEBUG
 #define assert_msg(expr, ...) ((void)0) //< NOLINT(readability-identifier-naming)
 #else
 
-/// @brief 一些内部实现，用户不应访问
 /// @cond INTERNAL
+/// @brief 一些内部实现，用户不应访问
 namespace tnrw::details {
+
     /**
      * @brief 断言失败处理函数
      * @param [in] expr 断言表达式
@@ -116,46 +118,22 @@ namespace tnrw::details {
                         "Due to the unknown exception, we lost assertion message.\n");
         }
     }
+
     /**
      * @brief 断言检查函数
-     * @tparam Args 格式化字符串参数类型
      * @param [in] condition 条件
      * @param [in] expr 断言表达式
      * @param [in] loc 断言位置
-     * @param [in] fmt 格式化字符串
-     * @param [in] args 格式化字符串参数
+     * @param [in] message 运行时消息（如果有）
      */
-    template <typename... Args>
     constexpr void assert_check(bool condition, std::string_view expr, const std::source_location &loc,
-                                std::wformat_string<Args...> fmt, Args &&...args) noexcept {
+                                std::optional<std::string> message = std::nullopt) noexcept {
         if (condition) {
             return;
         }
-        try {
-            assert_fail(expr, loc, std::stacktrace::current(),
-                        std::format(fmt, std::forward<Args>(args)...));
-        } catch (std::exception &exception) {
-            assert_fail(expr, loc, std::stacktrace::current(),
-                        "Due to the following exception, we lost assertion message.\n"
-                            + std::string(exception.what()));
-        } catch (...) {
-            assert_fail(expr, loc, std::stacktrace::current(),
-                        "Due to the unknown exception, we lost assertion message.\n");
-        }
+        assert_fail(expr, loc, std::stacktrace::current(), std::move(message));
     }
-    /**
-     * @brief 断言检查函数
-     * @param [in] condition 条件
-     * @param [in] expr 断言表达式
-     * @param [in] loc 断言位置
-     */
-    constexpr void assert_check(bool condition, std::string_view expr,
-                                const std::source_location &loc) noexcept {
-        if (condition) {
-            return;
-        }
-        assert_fail(expr, loc, std::stacktrace::current());
-    }
+
 } // namespace tnrw::details
 /// @endcond
 
