@@ -64,7 +64,7 @@ namespace tnrw::ecs {
         for (entt::entity child : scene_it->second) {
             auto                 &fathers = registry.get<father_scenes>(child).m_fathers;
             [[maybe_unused]] auto cnt = fathers.erase(scene_id);
-            assert_msg(cnt == 1, "子实体错误地未删除父场景");
+            ASSERT_MSG(cnt == 1, "子实体错误地未删除父场景");
         }
         // 删除场景
         scenes_childrens.erase(scene_it);
@@ -91,7 +91,7 @@ namespace tnrw::ecs {
         bool                  is_inserted = children.insert(child_entity).second;
         [[maybe_unused]] bool is_inserted2 =
             registry.get_or_emplace<father_scenes>(child_entity).m_fathers.insert(scene_id).second;
-        assert_msg(is_inserted == is_inserted2, "子实体和父场景的两处登记处的信息错误地不一致");
+        ASSERT_MSG(is_inserted == is_inserted2, "子实体和父场景的两处登记处的信息错误地不一致");
         return is_inserted;
     }
     bool scene_system::erase_from_scene(entt::registry &registry, level_identifier_type scene_id,
@@ -100,7 +100,7 @@ namespace tnrw::ecs {
         bool                  is_inserted = static_cast<bool>(children.erase(child_entity));
         [[maybe_unused]] bool is_inserted2 = static_cast<bool>(
             registry.get_or_emplace<father_scenes>(child_entity).m_fathers.erase(scene_id));
-        assert_msg(is_inserted == is_inserted2, "子实体和父场景的两处登记处的信息错误地不一致");
+        ASSERT_MSG(is_inserted == is_inserted2, "子实体和父场景的两处登记处的信息错误地不一致");
         return is_inserted;
     }
     [[nodiscard]] const std::set<entt::entity> &

@@ -426,7 +426,7 @@ namespace tnrw::math::details {
         for (std::size_t i = 0; i < children.size(); ++i) {
             node_ptr cur = std::move(children[i]);
             // 获取元素
-            assert_msg(cur != nullptr, "addition 节点的子节点 cur 错误地为 nullptr");
+            ASSERT_MSG(cur != nullptr, "addition 节点的子节点 cur 错误地为 nullptr");
             // 对每个子节点化简
             simplify(cur);
 
@@ -453,7 +453,7 @@ namespace tnrw::math::details {
                                }
                            },
                            [&](multiplication & /*unused*/) {
-                               assert_msg(false, "化简后的节点不应为 multiplication 节点");
+                               unreachable("化简后的节点不应为 multiplication 节点");
                            },
                            [&](division &value) {
                                std::string key = node_to_string(value.m_children[1]);
@@ -484,7 +484,7 @@ namespace tnrw::math::details {
                         auto &sub_children = value.m_children;
                         for (node_ptr &sub : sub_children) {
                             // sub一定是 monomial
-                            assert_msg(std::holds_alternative<monomial>(sub->m_value),
+                            ASSERT_MSG(std::holds_alternative<monomial>(sub->m_value),
                                        "猜想错误：sub 实际上不一定为 monomial");
                             auto &sub_value = std::get<monomial>(sub->m_value);
                             if (sub_value.m_var_exps.empty()) {
@@ -520,7 +520,7 @@ namespace tnrw::math::details {
                         }
                     },
                     [&](multiplication & /*unused*/) {
-                        assert_msg(false, "化简后的节点不应为 multiplication 节点");
+                        unreachable("化简后的节点不应为 multiplication 节点");
                     },
                     [&](division &value) {
                         // 合并到前面的节点或添加
@@ -529,7 +529,7 @@ namespace tnrw::math::details {
                                                          node_ptr &root) -> void {
                             std::string key = node_to_string(root_value.m_children[1]);
                             for (node_ptr &child : children) {
-                                assert_msg(std::holds_alternative<division>(child->m_value),
+                                ASSERT_MSG(std::holds_alternative<division>(child->m_value),
                                            "猜想错误：child 实际上不一定为 division");
                                 auto &child_value = std::get<division>(child->m_value);
                                 if (key != node_to_string(child_value.m_children[1])) {
@@ -552,7 +552,7 @@ namespace tnrw::math::details {
                                             auto &sub_children = value.m_children;
                                             for (node_ptr &sub : sub_children) {
                                                 // sub一定是 monomial
-                                                assert_msg(
+                                                ASSERT_MSG(
                                                     std::holds_alternative<monomial>(sub->m_value),
                                                     "猜想错误：sub 实际上不一定为 monomial");
                                                 auto &sub_value = std::get<monomial>(sub->m_value);
@@ -593,7 +593,7 @@ namespace tnrw::math::details {
                                             }
                                         },
                                         [&](multiplication & /*unused*/) {
-                                            assert_msg(false, "化简后的节点不应为 multiplication 节点");
+                                            unreachable("化简后的节点不应为 multiplication 节点");
                                         },
                                         [&](division &value) {
                                             // 继续递归，防止化简后还有相同分母的其他节点
@@ -663,7 +663,7 @@ namespace tnrw::math::details {
                                }
                            },
                            [&](multiplication & /*unused*/) {
-                               assert_msg(false, "化简后的节点不应为 multiplication 节点");
+                               unreachable("化简后的节点不应为 multiplication 节点");
                            },
                            [&](addition &value) {
                                // 乘进去
@@ -768,13 +768,11 @@ namespace tnrw::math::details {
                     remove_redundant_poly(poly);
                     return poly;
                 },
-                [&](multiplication & /*unused*/) {
-                    assert_msg(false, "化简后的节点不应为 multiplication 节点");
-                    return polynomial{};
+                [&](multiplication & /*unused*/) -> polynomial {
+                    unreachable("化简后的节点不应为 multiplication 节点");
                 },
-                [&](division & /*unused*/) {
-                    assert_msg(false, "多项式节点中不应有 division 节点");
-                    return polynomial{};
+                [&](division & /*unused*/) -> polynomial {
+                    unreachable("多项式节点中不应有 division 节点");
                 }),
             root->m_value);
     };
@@ -936,7 +934,7 @@ namespace tnrw::math::details {
         node_ptr   lc_divisor = get_leading_coefficient_poly(divisor);
         polynomial quotient;
         while (!is_zero_poly(dividend)) {
-            assert_msg(get_degree_poly(dividend) >= get_degree_poly(divisor),
+            ASSERT_MSG(get_degree_poly(dividend) >= get_degree_poly(divisor),
                        "dividend 不能被 divisor 整除");
             node_ptr lc_dividend = get_leading_coefficient_poly(dividend);
             node_ptr lc_div_node =
@@ -1042,7 +1040,7 @@ namespace tnrw::math::details {
             // 递归终止条件：poly2 为常数
             if (get_degree_poly(poly2) == 0) {
                 // 此时 poly1 不可能为常数
-                assert_msg(get_degree_poly(poly1) > 0, "猜想错误：poly1 实际上可能为常数");
+                ASSERT_MSG(get_degree_poly(poly1) > 0, "猜想错误：poly1 实际上可能为常数");
                 // 返回 1
                 polynomial ret;
                 ret.push_back(make_node<monomial>(1));
@@ -1095,49 +1093,47 @@ namespace tnrw::math::details {
     std::optional<variable_view> get_common_var(const node_ptr &root1, const node_ptr &root2) {
         std::optional<variable_view> main_var; //< 主元
         std::set<variable_view>      vars;     //< 变量集
-        std::visit(make_overloaded(
-                       [&](const monomial &value) {
-                           for (const auto &[var, exp] : value.m_var_exps) { vars.insert(var); }
-                       },
-                       [&](const addition &value) {
-                           for (const node_ptr &child : value.m_children) {
-                               const auto &value = std::get<monomial>(child->m_value);
-                               for (const auto &[var, exp] : value.m_var_exps) { vars.insert(var); }
-                           }
-                       },
-                       [&](const multiplication & /*unused*/) {
-                           assert_msg(false, "化简后的节点不应为 multiplication 节点");
-                       },
-                       [&](const division & /*unused*/) {
-                           assert_msg(false, "多项式节点中不应有 division 节点");
-                       }),
-                   root1->m_value);
+        std::visit(
+            make_overloaded(
+                [&](const monomial &value) {
+                    for (const auto &[var, exp] : value.m_var_exps) { vars.insert(var); }
+                },
+                [&](const addition &value) {
+                    for (const node_ptr &child : value.m_children) {
+                        const auto &value = std::get<monomial>(child->m_value);
+                        for (const auto &[var, exp] : value.m_var_exps) { vars.insert(var); }
+                    }
+                },
+                [&](const multiplication & /*unused*/) {
+                    unreachable("化简后的节点不应为 multiplication 节点");
+                },
+                [&](const division & /*unused*/) { unreachable("多项式节点中不应有 division 节点"); }),
+            root1->m_value);
 
-        std::visit(make_overloaded(
-                       [&](const monomial &value) {
-                           for (const auto &[var, exp] : value.m_var_exps) {
-                               if (vars.contains(var)) {
-                                   main_var = var;
-                                   return;
-                               }
-                           }
-                       },
-                       [&](const addition &value) {
-                           for (const node_ptr &child : value.m_children) {
-                               const auto &value = std::get<monomial>(child->m_value);
-                               for (const auto &[var, exp] : value.m_var_exps) {
-                                   main_var = var;
-                                   return;
-                               }
-                           }
-                       },
-                       [&](const multiplication & /*unused*/) {
-                           assert_msg(false, "化简后的节点不应为 multiplication 节点");
-                       },
-                       [&](const division & /*unused*/) {
-                           assert_msg(false, "多项式节点中不应有 division 节点");
-                       }),
-                   root2->m_value);
+        std::visit(
+            make_overloaded(
+                [&](const monomial &value) {
+                    for (const auto &[var, exp] : value.m_var_exps) {
+                        if (vars.contains(var)) {
+                            main_var = var;
+                            return;
+                        }
+                    }
+                },
+                [&](const addition &value) {
+                    for (const node_ptr &child : value.m_children) {
+                        const auto &value = std::get<monomial>(child->m_value);
+                        for (const auto &[var, exp] : value.m_var_exps) {
+                            main_var = var;
+                            return;
+                        }
+                    }
+                },
+                [&](const multiplication & /*unused*/) {
+                    unreachable("化简后的节点不应为 multiplication 节点");
+                },
+                [&](const division & /*unused*/) { unreachable("多项式节点中不应有 division 节点"); }),
+            root2->m_value);
         return main_var;
     }
 
@@ -1155,7 +1151,7 @@ namespace tnrw::math::details {
                             [&](const addition &value) {
                                 std::optional<integer_constant_type> coeff = std::nullopt;
                                 for (const node_ptr &child : value.m_children) {
-                                    assert_msg(std::holds_alternative<monomial>(child->m_value),
+                                    ASSERT_MSG(std::holds_alternative<monomial>(child->m_value),
                                                "猜想错误：child 实际上不一定为 monomial");
                                     auto &mono = std::get<monomial>(child->m_value);
                                     coeff = coeff
@@ -1167,11 +1163,11 @@ namespace tnrw::math::details {
                                 return coeff.value_or(1);
                             },
                             [&](const multiplication & /*unused*/) -> integer_constant_type {
-                                assert_msg(false, "化简后的节点不应为 multiplication 节点");
+                                unreachable("化简后的节点不应为 multiplication 节点");
                                 return 0;
                             },
                             [&](const division & /*unused*/) -> integer_constant_type {
-                                assert_msg(false, "多项式节点中不应有 division 节点");
+                                unreachable("多项式节点中不应有 division 节点");
                                 return 0;
                             }),
             root->m_value);
@@ -1186,21 +1182,20 @@ namespace tnrw::math::details {
      * @warning 这要求 root 节点能整除 coeff
      */
     void divide_polynomial_with_integer_coefficient(node_ptr &root, integer_constant_type coeff) {
-        std::visit(make_overloaded([&](monomial &value) { value.m_coeff /= coeff; },
-                                   [&](addition &value) {
-                                       for (const node_ptr &child : value.m_children) {
-                                           assert_msg(std::holds_alternative<monomial>(child->m_value),
-                                                      "猜想错误：child 实际上不一定为 monomial");
-                                           auto &mono = std::get<monomial>(child->m_value);
-                                           mono.m_coeff /= coeff;
-                                       }
-                                   },
-                                   [&](multiplication & /*unused*/) {
-                                       assert_msg(false, "化简后的节点不应为 multiplication 节点");
-                                   },
-                                   [&](division & /*unused*/) {
-                                       assert_msg(false, "多项式节点中不应有 division 节点");
-                                   }),
+        std::visit(make_overloaded(
+                       [&](monomial &value) { value.m_coeff /= coeff; },
+                       [&](addition &value) {
+                           for (const node_ptr &child : value.m_children) {
+                               ASSERT_MSG(std::holds_alternative<monomial>(child->m_value),
+                                          "猜想错误：child 实际上不一定为 monomial");
+                               auto &mono = std::get<monomial>(child->m_value);
+                               mono.m_coeff /= coeff;
+                           }
+                       },
+                       [&](multiplication & /*unused*/) {
+                           unreachable("化简后的节点不应为 multiplication 节点");
+                       },
+                       [&](division & /*unused*/) { unreachable("多项式节点中不应有 division 节点"); }),
                    root->m_value);
     }
 
@@ -1927,8 +1922,7 @@ namespace tnrw {
         [[nodiscard]] FloatT numeric_expression::calculate_approximation() const noexcept {
             return details::calculate_approximation<FloatT>(
                 m_root, [](variable_view /*unused*/) -> FloatT {
-                    assert_msg(false, "numeric_expression 不应该有 Variable 节点");
-                    return 0;
+                    unreachable("numeric_expression 不应该有 Variable 节点");
                 });
         }
 

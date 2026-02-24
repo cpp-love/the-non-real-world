@@ -296,10 +296,10 @@ namespace tnrw::ecs {
     }
     void movement_system::update_with_velocity(entt::registry &registry, entt::entity entity,
                                                std::chrono::milliseconds delta_time) noexcept {
-        assert_msg(registry.all_of<shape>(entity),
+        ASSERT_MSG(registry.all_of<shape>(entity),
                    "函数参数 `entity`（编号为：{}） 没有组件 `tnrw::ecs::shape`",
                    static_cast<entt::id_type>(entity));
-        assert_msg(std::holds_alternative<shape::circle>(registry.get<shape>(entity).shape),
+        ASSERT_MSG(std::holds_alternative<shape::circle>(registry.get<shape>(entity).shape),
                    "函数参数 `entity`（编号为：{}） 的组件 `tnrw::ecs::shape` 不是圆形",
                    static_cast<entt::id_type>(entity));
 
@@ -437,7 +437,7 @@ namespace tnrw::ecs {
                                     next_forward_direction = line.end.position - line.start.position;
                                 }
                             } else {
-                                assert_msg(
+                                ASSERT_MSG(
                                     false,
                                     "编号为{}的实体的形状不是 `tnrw::ecs::shape::line` "
                                     "类型，目前移动时的碰撞处理仅支持 `tnrw::ecs::shape::line` 类型",

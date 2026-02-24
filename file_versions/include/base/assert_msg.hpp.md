@@ -9,6 +9,18 @@
 
 ---
 
+## [0.1.0-5] - 2026-02-24 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. 添加 `tnrw::unreachable`，提供了类似带消息的 `std::unreachable` 的作用
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 将 `assert_msg` 改名为 `ASSERT_MSG`
+
+---
+
 ## [0.1.0-4] - 2026-02-23 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)

@@ -1,9 +1,9 @@
 /**
  * @file test_assert_msg.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
- * @brief `assert_msg` 的测试用例和使用示例
- * @version 0.1.0-2
- * @date 2026-02-23
+ * @brief `assert_msg` 和 `tnrw::unreachable` 的测试用例和使用示例
+ * @version 0.1.0-3
+ * @date 2026-02-25
  * 
  * @copyright cpp-love
  * 
@@ -27,22 +27,25 @@ int main() {
     int var = std::gcd(100, 10); //NOLINT(cppcoreguidelines-avoid-magic-numbers)
 
     // 1. 编译时字符串（与下面的 2. 原理相同）
-    assert_msg(var > 9, "var 必须大于9");
+    ASSERT_MSG(var > 9, "var 必须大于9");
 
     // 2. 运行时字符串
     std::string message = "var 必须大于9，因为 var 为";
     message += std::format("{}", var);
-    assert_msg(var > 9, message);
+    ASSERT_MSG(var > 9, message);
 
     // 3. 没有字符串
-    assert_msg(var > 0);
+    ASSERT_MSG(var > 0);
 
     // 这个断言一定会被触发
     // 4. 编译时格式化字符串+格式化参数
-    assert_msg(var < 8, "这个断言一定会被触发，因为var为 {} ，大于8", var);
+    ASSERT_MSG(var < 8, "这个断言一定会被触发，因为var为 {} ，大于8", var);
 
-    // 这句话不会被打印
-    std::println("这句话不会被打印");
+    // 下面不会运行到
+    tnrw::unreachable("这句话不会被打印, {}", "^_^");
+    tnrw::unreachable("这句话不会被打印");
+    tnrw::unreachable(message);
+    tnrw::unreachable();
 
     return 0;
 }

@@ -9,11 +9,19 @@
 
 ---
 
+## [0.1.0-3] - 2026-02-25 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. 添加了 `tnrw::unreachable` 的使用样例和测试用例
+
+---
+
 ## [0.1.0-2] - 2026-02-23 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Changed(修改)
 
-1. 修改了 `assert_msg` 的使用样例和测试用例，使其更加完善
+1. 修改了 `assert_msg`(现为 `ASSERT_MSG`) 的使用样例和测试用例，使其更加完善
 
 ---
 
@@ -21,6 +29,6 @@
 
 ### Added(新增)
 
-1. 添加了 `assert_msg` 的使用样例和测试用例
+1. 添加了 `assert_msg`(现为 `ASSERT_MSG`) 的使用样例和测试用例
 
 ---

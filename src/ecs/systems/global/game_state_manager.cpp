@@ -35,7 +35,7 @@ namespace tnrw::ecs {
         m_states.back().push_back(std::move(state_will_push));
     }
     void game_state_manager::pop_state() noexcept {
-        assert_msg(!m_states.empty(), "用户错误地尝试对空的栈执行弹出操作");
+        ASSERT_MSG(!m_states.empty(), "用户错误地尝试对空的栈执行弹出操作");
         m_states.back().pop_back();
         if (m_states.back().empty()) {
             // 删除无效的状态

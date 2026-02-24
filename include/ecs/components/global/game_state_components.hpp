@@ -51,9 +51,7 @@ namespace tnrw::ecs {
             case game_state_enum::main_menu: return "main_menu";
             case game_state_enum::pause_menu: return "pause_menu";
             default:
-                assert_msg(false, "参数 `state` （整数形式为：{}）有非法的状态",
-                           std::to_underlying(state));
-                return {};
+                unreachable("参数 `state` （整数形式为：{}）有非法的状态", std::to_underlying(state));
         }
     }
 
@@ -87,33 +85,33 @@ namespace tnrw::ecs {
         /// @brief 虚析构函数
         virtual ~game_state_base() noexcept = default;
         /// @brief 将此游戏状态暂停
-        virtual void on_pause() noexcept = 0;
+        virtual void               on_pause() noexcept = 0;
         /// @brief 将此游戏状态从暂停中恢复
-        virtual void on_resume() noexcept = 0;
+        virtual void               on_resume() noexcept = 0;
         /**
          * @brief 处理事件
          * @param [in] event 事件
          * @return true 事件已处理
          * @return false 事件未处理
          */
-        virtual bool handle_event(const sf::Event &event) noexcept = 0;
+        virtual bool               handle_event(const sf::Event &event) noexcept = 0;
         /**
          * @brief 更新游戏状态
          * @param [in] delta_time 时间间隔
          */
-        virtual void update(milliseconds_f delta_time) noexcept = 0;
+        virtual void               update(milliseconds_f delta_time) noexcept = 0;
         /**
          * @brief 绘制当前状态
          * @param [in] render 需要渲染的地方
          */
-        virtual void draw(sf::RenderTarget &render) noexcept = 0;
+        virtual void               draw(sf::RenderTarget &render) noexcept = 0;
         /**
          * @brief 判断是否要阻隔绘制、更新、事件往下传递
          * @return true 要阻隔
          * @return false 不要阻隔
          * @details 默认为 true
          */
-        virtual bool should_block_passing_down() noexcept { return true; }
+        [[nodiscard]] virtual bool should_block_passing_down() noexcept { return true; }
 
         /// @cond INTERNAL
       protected:
@@ -243,17 +241,17 @@ namespace tnrw::ecs {
         /// @copydoc game_state_base::~game_state_base
         ~pause_menu() noexcept override = default;
         /// @copydoc game_state_base::on_pause
-        void on_pause() noexcept override;
+        void               on_pause() noexcept override;
         /// @copydoc game_state_base::on_resume
-        void on_resume() noexcept override;
+        void               on_resume() noexcept override;
         /// @copydoc game_state_base::on_handle_event
-        bool handle_event(const sf::Event &event) noexcept override;
+        bool               handle_event(const sf::Event &event) noexcept override;
         /// @copydoc game_state_base::update
-        void update(milliseconds_f delta_time) noexcept override;
+        void               update(milliseconds_f delta_time) noexcept override;
         /// @copydoc game_state_base::draw
-        void draw(sf::RenderTarget &render) noexcept override;
+        void               draw(sf::RenderTarget &render) noexcept override;
         /// @copybrief game_state_base::should_block_passing_down
-        bool should_block_passing_down() noexcept override { return false; }
+        [[nodiscard]] bool should_block_passing_down() noexcept override { return false; }
 
       private:
         /// @brief 连接分配器
@@ -288,9 +286,7 @@ namespace tnrw::ecs {
                 return std::make_unique<pause_menu>(pause_menu(dispatcher));
                 break;
             default:
-                assert_msg(false, "参数 `state` （整数形式为：{}）有非法的状态",
-                           std::to_underlying(state));
-                return {};
+                unreachable("参数 `state` （整数形式为：{}）有非法的状态", std::to_underlying(state));
         }
     }
 
