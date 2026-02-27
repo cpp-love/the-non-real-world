@@ -62,9 +62,9 @@ int                         main() {
     res = overloaded_result2(
         obj,
         false); // 匹配 lambda3!!! 因为 &Object::getValue 经包装后成为了模板函数对象，调用优先级比普通可调用对象低
-    ASSERT_MSG(res == 4, "断言不会触发");
+    TNRW_ASSERT_MSG(res == 4, "断言不会触发");
     res = overloaded_result2(&obj, true); // 这次才匹配 &Object::getValue
-    ASSERT_MSG(res == 4, "断言不会触发");
+    TNRW_ASSERT_MSG(res == 4, "断言不会触发");
 
     // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 }

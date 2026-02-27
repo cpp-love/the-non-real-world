@@ -2,8 +2,8 @@
  * @file assert_msg.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 添加 支持自定义消息的 `assert` 和 支持自定义消息的 `std::unreachable`
- * @version 0.1.0-5
- * @date 2026-02-24
+ * @version 0.1.0-6
+ * @date 2026-02-27
  * 
  * @copyright cpp-love
  * 
@@ -34,7 +34,7 @@ namespace tnrw::details {
      * @param [in] stack_trace 堆栈对象，默认为当前堆栈
      * @return std::string 堆栈信息
      */
-    [[nodiscard]] std::string
+    [[nodiscard]] inline std::string
     get_stack_trace_message(const std::stacktrace &stack_trace = std::stacktrace::current()) noexcept {
         try {
             std::string str;
@@ -128,10 +128,9 @@ namespace tnrw::details {
     }
 
     template <typename T>
-    struct with_debug_info {
+    struct with_source_location {
         T                    value;
         std::source_location loc;
-        std::stacktrace      stack_trace;
 
         // NOLINTBEGIN(hicpp-explicit-conversions)
         /**
@@ -143,46 +142,23 @@ namespace tnrw::details {
          */
         template <typename U>
             requires std::constructible_from<T, U>
-        with_debug_info(U &&val, std::source_location location = std::source_location::current(),
-                        std::stacktrace trace = std::stacktrace::current())
-            : value(std::forward<U>(val)), loc(location), stack_trace(std::move(trace)) {}
+        constexpr with_source_location(
+            U &&val, std::source_location location = std::source_location::current()) noexcept
+            : value(std::forward<U>(val)), loc(location) {}
         // NOLINTEND(hicpp-explicit-conversions)
-        /**
-         * @brief 默认复制构造函数
-         * @param [in] rhs 另一个对象
-         */
-        with_debug_info(const with_debug_info &rhs) = default;
-        /**
-         * @brief 默认移动构造函数
-         * @param [in] rhs 另一个对象
-         */
-        with_debug_info(with_debug_info &&rhs) = default;
-        /**
-         * @brief 默认复制赋值运算符重载
-         * @param [in] rhs 另一个对象
-         * @return with_debug_info& 当前对象的引用(`*this`)
-         */
-        with_debug_info &operator=(const with_debug_info &rhs) = default;
-        /**
-         * @brief 默认移动赋值运算符重载
-         * @param [in] rhs 另一个对象
-         * @return with_debug_info& 当前对象的引用(`*this`)
-         */
-        with_debug_info &operator=(with_debug_info &&rhs) = default;
-        /// @brief 默认析构函数
-        ~with_debug_info() = default;
     };
 
 } // namespace tnrw::details
 /// @endcond
 
 namespace tnrw {
-
     /**
      * @brief 带消息的 `std::unreachable`（执行到正常情况无法到达的位置时的处理函数）
      * @param [in] message 若执行到不该执行的的此处时输出的消息（默认为空，即 `std::nullopt`)
      * @details
-     * - 当定义宏 `NDEBUG` 时，函数只调用 `std::unreachable()`，**不输出消息**，若到达 **会导致UB**；
+     * - 当在编译期求值时，宏调用 `std::unreachable()`，**不输出消息**；
+     *   当在运行期求值时：
+     *   当定义宏 `NDEBUG` 时，函数只调用 `std::unreachable()`，**不输出消息**，若到达 **会导致UB**；
      *   未定义宏 `NDEBUG` 时，会输出消息，行为定义（调用 `std::abort()` 终止函数）
      * - 输出格式：
      * ```plain
@@ -190,37 +166,42 @@ namespace tnrw {
      * >> Message: <message>
      * Stack trace:
      * frame #0 : <description> in line <line> in file <file>
+     * ...
      * ```
-     * @warning 此函数会直接调用 `std::abort()` / `std::unreachable()`，不会返回，请确认调用处是否无法到达
+     * @warning 此函数会调用 `std::abort()` / `std::unreachable()`，不会返回，请确认调用处是否无法到达
      */
     [[noreturn]] constexpr void
-    unreachable([[maybe_unused]] details::with_debug_info<std::optional<std::string>> message =
+    unreachable([[maybe_unused]] details::with_source_location<std::optional<std::string>> message =
                     std::nullopt) noexcept {
 #ifdef NEBUG
         std::unreachable();
 #else
-        std::string stack_trace_message = details::get_stack_trace_message(message.stack_trace);
-        // 输出信息
-        if (message.value != std::nullopt) {
-            spdlog::critical("Control reached an unreachable place at {}:{}:{} (in function :{}):\n"
-                             ">> Message: {}\n"
-                             "Stack trace:\n"
-                             "{}",
-                             message.loc.file_name(), message.loc.line(), message.loc.column(),
-                             message.loc.function_name(), *message.value, stack_trace_message);
+        if consteval {
+            std::unreachable();
         } else {
-            spdlog::critical("Control reached an unreachable place at {}:{}:{} (in function :{}):\n"
-                             "Stack trace:\n"
-                             "{}",
-                             message.loc.file_name(), message.loc.line(), message.loc.column(),
-                             message.loc.function_name(), stack_trace_message);
+            std::string stack_trace_message = details::get_stack_trace_message();
+            // 输出信息
+            if (message.value != std::nullopt) {
+                spdlog::critical("Control reached an unreachable place at {}:{}:{} (in function :{}):\n"
+                                 ">> Message: {}\n"
+                                 "Stack trace:\n"
+                                 "{}",
+                                 message.loc.file_name(), message.loc.line(), message.loc.column(),
+                                 message.loc.function_name(), *message.value, stack_trace_message);
+            } else {
+                spdlog::critical("Control reached an unreachable place at {}:{}:{} (in function :{}):\n"
+                                 "Stack trace:\n"
+                                 "{}",
+                                 message.loc.file_name(), message.loc.line(), message.loc.column(),
+                                 message.loc.function_name(), stack_trace_message);
+            }
+
+            // 及时刷新
+            spdlog::default_logger()->flush();
+
+            // 终止程序
+            std::abort();
         }
-
-        // 及时刷新
-        spdlog::default_logger()->flush();
-
-        // 终止程序
-        std::abort();
 #endif // NDEBUG
     }
 
@@ -230,7 +211,9 @@ namespace tnrw {
      * @param [in] fmt 格式化字符串
      * @param [in] args 格式化字符串参数
      * @details
-     * - 当定义宏 `NDEBUG` 时，函数只调用 `std::unreachable()`，**不输出消息**，若到达 **会导致UB**；
+     * - 当在编译期求值时，宏调用 `std::unreachable()`，**不输出消息**；
+     *   当在运行期求值时：
+     *   当定义宏 `NDEBUG` 时，函数只调用 `std::unreachable()`，**不输出消息**，若到达 **会导致UB**；
      *   未定义宏 `NDEBUG` 时，会输出消息，行为定义（调用 `std::abort()` 终止函数）
      * - 输出格式：
      * ```plain
@@ -238,21 +221,21 @@ namespace tnrw {
      * >> Message: <message>
      * Stack trace:
      * frame #0 : <description> in line <line> in file <file>
+     * ...
      * ```
-     * @warning 此函数会直接调用 `std::abort()` / `std::unreachable()`，不会返回，请确认调用处是否无法到达
+     * @warning 此函数会调用 `std::abort()` / `std::unreachable()`，不会返回，请确认调用处是否无法到达
      */
     template <typename... Args>
     [[noreturn]] constexpr void
-    unreachable([[maybe_unused]] details::with_debug_info<std::format_string<Args...>> fmt,
+    unreachable([[maybe_unused]] details::with_source_location<std::format_string<Args...>> fmt,
                 [[maybe_unused]] Args &&...args) noexcept {
 #ifdef NEBUG
         std::unreachable();
 #else
-        unreachable(details::with_debug_info<std::optional<std::string>>{
-            std::format(fmt.value, std::forward<Args>(args)...), fmt.loc, fmt.stack_trace});
+        unreachable(details::with_source_location<std::optional<std::string>>{
+            std::format(fmt.value, std::forward<Args>(args)...), fmt.loc});
 #endif // NDEBUG
     }
-
 } // namespace tnrw
 
 /**
@@ -272,9 +255,9 @@ namespace tnrw {
  * ```
  */
 #ifdef NDEBUG
-#define ASSERT_MSG(expr, ...) static_cast<void>(0)
+#define TNRW_ASSERT_MSG(expr, ...) static_cast<void>(0)
 #else
-#define ASSERT_MSG(expr, ...)                                                                           \
+#define TNRW_ASSERT_MSG(expr, ...)                                                                      \
     ::tnrw::details::assert_check(expr, #expr,                                                          \
                                   std::source_location::current() __VA_OPT__(, ) __VA_ARGS__)
 #endif // NDEBUG

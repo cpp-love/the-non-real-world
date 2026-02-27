@@ -9,10 +9,18 @@
 
 ---
 
+## [0.1.0-2] - 2026-02-27 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 同步对 `tnrw::ecs::render_system` 的更新
+
+---
+
 ## [0.1.0-1] - 2025-10-18 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)
 
-1. 添加了 `ecs/systems/render_system.hpp` 的实现
+1. 添加了 `tnrw::ecs::render_system` 的实现
 
 ---

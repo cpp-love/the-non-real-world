@@ -1,5 +1,8 @@
 # *The Non-"Real" World*
 
+**WARNING! This English document might be later than the Chinese one!**
+It is just because the author's English is not very good.
+
 #### Description
 
 *The Non-"Real" World*（《不“真实”的世界》）: A game about the non-"real" numbers, the complex numbers, which explores the mysteries of this complex world through notes left behind by previous explorers.
@@ -26,12 +29,3 @@ Software architecture description
 2. Create feature/brief_author branch
 3. Commit your code
 4. Create Pull Request
-
-#### Gitee Feature
-
-1. You can use Readme.XXX.md to support different languages, such as Readme.en.md
-2. Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3. Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4. The most valuable open source project [GVP](https://gitee.com/gvp)
-5. The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6. The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)

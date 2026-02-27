@@ -426,7 +426,7 @@ namespace tnrw::math::details {
         for (std::size_t i = 0; i < children.size(); ++i) {
             node_ptr cur = std::move(children[i]);
             // 获取元素
-            ASSERT_MSG(cur != nullptr, "addition 节点的子节点 cur 错误地为 nullptr");
+            TNRW_ASSERT_MSG(cur != nullptr, "addition 节点的子节点 cur 错误地为 nullptr");
             // 对每个子节点化简
             simplify(cur);
 
@@ -484,8 +484,8 @@ namespace tnrw::math::details {
                         auto &sub_children = value.m_children;
                         for (node_ptr &sub : sub_children) {
                             // sub一定是 monomial
-                            ASSERT_MSG(std::holds_alternative<monomial>(sub->m_value),
-                                       "猜想错误：sub 实际上不一定为 monomial");
+                            TNRW_ASSERT_MSG(std::holds_alternative<monomial>(sub->m_value),
+                                            "猜想错误：sub 实际上不一定为 monomial");
                             auto &sub_value = std::get<monomial>(sub->m_value);
                             if (sub_value.m_var_exps.empty()) {
                                 // 是常量
@@ -529,8 +529,8 @@ namespace tnrw::math::details {
                                                          node_ptr &root) -> void {
                             std::string key = node_to_string(root_value.m_children[1]);
                             for (node_ptr &child : children) {
-                                ASSERT_MSG(std::holds_alternative<division>(child->m_value),
-                                           "猜想错误：child 实际上不一定为 division");
+                                TNRW_ASSERT_MSG(std::holds_alternative<division>(child->m_value),
+                                                "猜想错误：child 实际上不一定为 division");
                                 auto &child_value = std::get<division>(child->m_value);
                                 if (key != node_to_string(child_value.m_children[1])) {
                                     continue;
@@ -552,7 +552,7 @@ namespace tnrw::math::details {
                                             auto &sub_children = value.m_children;
                                             for (node_ptr &sub : sub_children) {
                                                 // sub一定是 monomial
-                                                ASSERT_MSG(
+                                                TNRW_ASSERT_MSG(
                                                     std::holds_alternative<monomial>(sub->m_value),
                                                     "猜想错误：sub 实际上不一定为 monomial");
                                                 auto &sub_value = std::get<monomial>(sub->m_value);
@@ -934,8 +934,8 @@ namespace tnrw::math::details {
         node_ptr   lc_divisor = get_leading_coefficient_poly(divisor);
         polynomial quotient;
         while (!is_zero_poly(dividend)) {
-            ASSERT_MSG(get_degree_poly(dividend) >= get_degree_poly(divisor),
-                       "dividend 不能被 divisor 整除");
+            TNRW_ASSERT_MSG(get_degree_poly(dividend) >= get_degree_poly(divisor),
+                            "dividend 不能被 divisor 整除");
             node_ptr lc_dividend = get_leading_coefficient_poly(dividend);
             node_ptr lc_div_node =
                 make_node<division>(std::move(lc_dividend), std::make_unique<node>(*lc_divisor));
@@ -1040,7 +1040,7 @@ namespace tnrw::math::details {
             // 递归终止条件：poly2 为常数
             if (get_degree_poly(poly2) == 0) {
                 // 此时 poly1 不可能为常数
-                ASSERT_MSG(get_degree_poly(poly1) > 0, "猜想错误：poly1 实际上可能为常数");
+                TNRW_ASSERT_MSG(get_degree_poly(poly1) > 0, "猜想错误：poly1 实际上可能为常数");
                 // 返回 1
                 polynomial ret;
                 ret.push_back(make_node<monomial>(1));
@@ -1151,8 +1151,8 @@ namespace tnrw::math::details {
                             [&](const addition &value) {
                                 std::optional<integer_constant_type> coeff = std::nullopt;
                                 for (const node_ptr &child : value.m_children) {
-                                    ASSERT_MSG(std::holds_alternative<monomial>(child->m_value),
-                                               "猜想错误：child 实际上不一定为 monomial");
+                                    TNRW_ASSERT_MSG(std::holds_alternative<monomial>(child->m_value),
+                                                    "猜想错误：child 实际上不一定为 monomial");
                                     auto &mono = std::get<monomial>(child->m_value);
                                     coeff = coeff
                                                 .transform([&](integer_constant_type nested_coeff) {
@@ -1186,8 +1186,8 @@ namespace tnrw::math::details {
                        [&](monomial &value) { value.m_coeff /= coeff; },
                        [&](addition &value) {
                            for (const node_ptr &child : value.m_children) {
-                               ASSERT_MSG(std::holds_alternative<monomial>(child->m_value),
-                                          "猜想错误：child 实际上不一定为 monomial");
+                               TNRW_ASSERT_MSG(std::holds_alternative<monomial>(child->m_value),
+                                               "猜想错误：child 实际上不一定为 monomial");
                                auto &mono = std::get<monomial>(child->m_value);
                                mono.m_coeff /= coeff;
                            }

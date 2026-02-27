@@ -2,8 +2,8 @@
  * @file movement_system.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 实现了移动系统
- * @version 0.1.0-1
- * @date 2025-11-15
+ * @version 0.1.0-2
+ * @date 2026-02-27
  * 
  * @copyright cpp-love
  * 
@@ -12,10 +12,12 @@
 #include "ecs/systems/movement_system.hpp"
 #include "base/assert_msg.hpp"
 #include "base/floating_point_compare.hpp"
+#include "base/overload.hpp"
 #include "base/sfml_formatter.hpp"
 #include "ecs/systems/global/scene_system.hpp"
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <algorithm>
+#include <cmath>
 #include <entt/entt.hpp>
 #include <optional>
 #include <type_traits>
@@ -24,6 +26,7 @@ namespace tnrw::ecs {
 
     /// @cond INTERNAL
     namespace {
+
         /**
          * @brief 判断某一位置是否在矩形内
          * @param [in] position 位置
@@ -32,7 +35,7 @@ namespace tnrw::ecs {
          * @return false 不在其内
          * @warning 此为函数 @ref tnrw::ecs::is_collided 的辅助函数，其他函数不应访问
          */
-        [[nodiscard]] bool tnrw_is_in_rectangle(sf::Vector2f position, shape::rectangle rect) {
+        [[nodiscard]] bool is_in_rectangle(sf::Vector2f position, shape::rectangle rect) {
             const sf::Vector2f size_x_rotated = sf::Vector2f{rect.size.x, 0.f}.rotatedBy(rect.rotation);
             const sf::Vector2f size_y_rotated = sf::Vector2f{0.f, rect.size.y}.rotatedBy(rect.rotation);
             std::array<float, 4> area_signed{
@@ -64,11 +67,11 @@ namespace tnrw::ecs {
          */
         [[nodiscard]] bool is_collided(const shape::circle &first, const shape::line &second) {
             //< 检测圆到直线的距离
-            sf::Vector2f line = second.end.position - second.start.position; //< 线首指向线尾的向量
-            float        area_signed = line.cross(
-                first.center - second.start.position); //< 以圆心和线构成的平行四边形的面积（有符号）
-            float len = line.length();                        //< 线的长度
-            float dis_signed = area_signed / len;             //< 圆到线的距离（有符号）
+            sf::Vector2f line = second.end - second.start; //< 线首指向线尾的向量
+            float        area_signed =
+                line.cross(first.center - second.start); //< 以圆心和线构成的平行四边形的面积（有符号）
+            float len = line.length();                   //< 线的长度
+            float dis_signed = area_signed / len;        //< 圆到线的距离（有符号）
             if (fast_floatf{std::abs(dis_signed)} >= fast_floatf{first.radius}) {
                 return false;
             }
@@ -81,12 +84,12 @@ namespace tnrw::ecs {
                       .rotatedBy(-90_deg); //< NOLINT(cppcoreguidelines-avoid-magic-numbers)
             sf::Vector2f max_position;
             sf::Vector2f min_position;
-            if (fast_floatf{second.start.position.x} < fast_floatf{second.end.position.x}) {
-                min_position = second.start.position;
-                max_position = second.end.position;
+            if (fast_floatf{second.start.x} < fast_floatf{second.end.x}) {
+                min_position = second.start;
+                max_position = second.end;
             } else {
-                min_position = second.end.position;
-                max_position = second.start.position;
+                min_position = second.end;
+                max_position = second.start;
             }
             if (fast_floatf{min_position.x} < fast_floatf{collided_pos.x}
                 && fast_floatf{max_position.x} > fast_floatf{collided_pos.x}) {
@@ -151,8 +154,7 @@ namespace tnrw::ecs {
          * @return false 两物体不碰撞
          */
         [[nodiscard]] bool is_collided(const shape::rectangle &first, shape::line second) {
-            return tnrw_is_in_rectangle(second.start.position, first)
-                   || tnrw_is_in_rectangle(second.end.position, first);
+            return is_in_rectangle(second.start, first) || is_in_rectangle(second.end, first);
         }
         /**
          * @brief 判断两物体是否碰撞
@@ -168,7 +170,7 @@ namespace tnrw::ecs {
                 second.position + sf::Vector2f{0.f, second.size.y}.rotatedBy(second.rotation),
                 second.position + second.size.rotatedBy(second.rotation)};
             return std::ranges::all_of(
-                rect, [&first](sf::Vector2f position) { return tnrw_is_in_rectangle(position, first); });
+                rect, [&first](sf::Vector2f position) { return is_in_rectangle(position, first); });
         }
 
         /**
@@ -189,9 +191,9 @@ namespace tnrw::ecs {
          * @return false 两物体不碰撞
          */
         [[nodiscard]] bool is_collided(const shape::line &first, const shape::line &second) {
-            auto line = first.end.position - first.start.position;
-            auto area1_signed = (second.start.position - first.start.position).cross(line);
-            auto area2_signed = (second.end.position - first.start.position).cross(line);
+            auto line = first.end - first.start;
+            auto area1_signed = (second.start - first.start).cross(line);
+            auto area2_signed = (second.end - first.start).cross(line);
             return fast_floatf{area1_signed * area2_signed} < fast_floatf{0};
         }
         /**
@@ -259,14 +261,13 @@ namespace tnrw::ecs {
          */
         [[nodiscard]] sf::Vector2f get_collided_position(const shape::line &first,
                                                          const shape::line &second) {
-            // spdlog::trace("the first line is ({}, {}), second line is ({}, {})", first.start.position,
-            //               first.end.position, second.start.position, second.end.position);
-            auto line = first.end.position - first.start.position;
-            auto area1_signed = (second.start.position - first.start.position).cross(line);
-            auto area2_signed = (second.end.position - first.start.position).cross(line);
-            return (second.end.position - second.start.position)
-                       * (area1_signed / (area1_signed - area2_signed))
-                   + second.start.position;
+            // spdlog::trace("the first line is ({}, {}), second line is ({}, {})", first.start,
+            //               first.end, second.start, second.end);
+            auto line = first.end - first.start;
+            auto area1_signed = (second.start - first.start).cross(line);
+            auto area2_signed = (second.end - first.start).cross(line);
+            return (second.end - second.start) * (area1_signed / (area1_signed - area2_signed))
+                   + second.start;
         }
 
         /**
@@ -274,7 +275,7 @@ namespace tnrw::ecs {
          * @param [in] angle 角度
          * @return sf::Angle 转换后的角度
          */
-        [[nodiscard]] sf::Angle wrap_to_first(sf::Angle angle) {
+        [[nodiscard]] sf::Angle wrap_to_first_quadrent(sf::Angle angle) {
             // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
             using namespace sf::Literals;
             angle = angle.wrapSigned();
@@ -294,17 +295,20 @@ namespace tnrw::ecs {
                                                           entt::entity    entity) noexcept {
         return registry.get_or_emplace<struct velocity>(entity, sf::Vector2f{0.f, 0.f}).velocity;
     }
-    void movement_system::update_with_velocity(entt::registry &registry, entt::entity entity,
-                                               std::chrono::milliseconds delta_time) noexcept {
-        ASSERT_MSG(registry.all_of<shape>(entity),
-                   "函数参数 `entity`（编号为：{}） 没有组件 `tnrw::ecs::shape`",
-                   static_cast<entt::id_type>(entity));
-        ASSERT_MSG(std::holds_alternative<shape::circle>(registry.get<shape>(entity).shape),
-                   "函数参数 `entity`（编号为：{}） 的组件 `tnrw::ecs::shape` 不是圆形",
-                   static_cast<entt::id_type>(entity));
 
-        auto list = registry.view<should_collide, father_scenes, shape>(); //< 碰撞列表
-        using iterator = decltype(list.begin());                           //< 迭代器类型
+    /// @todo 添加对 `shape::circle` 和别的图形/可渲染图形的更新支持
+    void movement_system::update_with_velocity(entt::registry &registry, entt::entity entity,
+                                               milliseconds_f delta_time) noexcept {
+        TNRW_ASSERT_MSG(registry.all_of<render_shape>(entity),
+                        "函数参数 `entity`（编号为：{}） 没有组件 `tnrw::ecs::shape`",
+                        static_cast<entt::id_type>(entity));
+        TNRW_ASSERT_MSG(
+            std::holds_alternative<render_shape::circle>(registry.get<render_shape>(entity).shape),
+            "函数参数 `entity`（编号为：{}） 的组件 `tnrw::ecs::shape` 不是圆形",
+            static_cast<entt::id_type>(entity));
+
+        auto list = registry.view<father_scenes, render_shape>(); //< 碰撞列表
+        using iterator = decltype(list.begin());                  //< 迭代器类型
         /**
          * @brief 判断当前实体与传入的比较实体是否在同一场景里
          * @param [in] compare_entity 比较实体
@@ -353,13 +357,15 @@ namespace tnrw::ecs {
          * @param [in] forward_dis 总的移动距离，方向不变
          * @param [in] forward_direction 当前移动方向及最大移动距离，每轮都不一样
          */
-        auto         move = [&, &current = std::get<shape::circle>(registry.get<shape>(entity).shape)](
-                        auto self, sf::Vector2f forward_dis, sf::Vector2f forward_direction) -> void {
-            // 不移动就退出
+        auto         move =
+            [&, &render = registry.get<render_shape>(entity)](this auto &&move, sf::Vector2f forward_dis,
+                                                              sf::Vector2f forward_direction) -> void {
+            // 不移动退出
             if (fast_floatf{forward_dis.lengthSquared()} == fast_floatf{0}) {
                 return;
             }
-            // 重复移动也退出
+
+            // 重复移动退出
             if (pre_pre_forward_direction == forward_direction) {
                 return;
             }
@@ -375,34 +381,43 @@ namespace tnrw::ecs {
                 max_move_dis = forward_direction;
             }
 
+            // 不移动退出
+            if (fast_floatf{max_move_dis.lengthSquared()} == fast_floatf{0}) {
+                return;
+            }
+
+            auto  current = std::get<shape::circle>(static_cast<shape>(render).shape);
+            auto &render_current = std::get<render_shape::circle>(render.shape);
+
             spdlog::trace("max_move_dis is: {}", max_move_dis);
 
-            std::optional<sf::Vector2f> next_move_dis; //< 碰撞后下一步移动的距离（如果有）
-            std::optional<sf::Vector2f>
-                             next_forward_direction; //< 碰撞后下一步的 `forward_direction` （如果有）
+            struct next_argument {
+                sf::Vector2f move_dis;          //< 下一步移动的距离
+                sf::Vector2f forward_direction; //< 下一步的 `forward_direction`
+            };
+            std::optional<next_argument> next_arg; //< 碰撞后的一些参数（如果有）
 
-            shape::rectangle move_collision_rectangle{
-                .position =
+            shape::rectangle             move_collision_rectangle{
+                            .position =
                     current.center - sf::Vector2f{0, current.radius}.rotatedBy(max_move_dis.angle()),
-                .size = {max_move_dis.length(), 2 * current.radius},
-                .rotation = max_move_dis.angle()}; //< 移动时的碰撞区域1
+                            .size = {max_move_dis.length(), 2 * current.radius},
+                            .rotation = max_move_dis.angle()}; //< 移动时的碰撞区域1
             shape::circle move_collision_circle{.center = current.center + max_move_dis,
                                                 .radius = current.radius}; //< 移动时的碰撞区域2
             shape::line   line_to_get_collision_pos{
-                  .start = {.position = current.center - max_move_dis.normalized() * current.radius},
-                  .end = {.position = current.center
-                                      + max_move_dis.normalized()
-                                            * (1.f + current.radius)}}; //< 获得碰撞位置的参数之一
+                  .start = current.center - max_move_dis.normalized() * current.radius,
+                  .end = current.center + max_move_dis.normalized() * current.radius
+                       + max_move_dis}; //< 获得碰撞位置的参数之一
             for (auto it = [&] -> iterator {
                      auto tmp = list.begin();
                      return (tmp != list.end() && !is_in_same_scene(*tmp)) ? to_next(tmp) : tmp;
                  }();
                  it != list.end(); to_next(it)) {
-                auto cur_shape = registry.get<shape>(*it); //< it的形状
+                auto cur_shape = static_cast<shape>(registry.get<render_shape>(*it)); //< it的形状
                 if (bool rect_collided = is_collided(move_collision_rectangle, cur_shape),
                     circle_collided = is_collided(move_collision_circle, cur_shape);
                     rect_collided || circle_collided) {
-                    // 碰撞了，本轮移动到碰撞前
+                    // 碰撞了，更新移动的参数
 
                     // debug message
                     spdlog::trace("current shape(entity:{}) collided with a shape(entity:{}), "
@@ -411,77 +426,128 @@ namespace tnrw::ecs {
                                   rect_collided, circle_collided);
 
                     std::visit(
-                        [&](const auto &line) {
-                            using type = std::decay_t<decltype(line)>;
-                            if constexpr (std::is_same_v<type, shape::line>) {
+                        make_overloaded(
+                            [&](const shape::line &line) {
                                 // 获取更新后的位置
-                                sf::Vector2f pos = [&] {
-                                    using namespace sf::Literals;
+                                auto [pos,
+                                      forward_direction] = [&] -> std::pair<sf::Vector2f, sf::Vector2f> {
+                                    sf::Vector2f line_vec = line.end - line.start;
+                                    /// @todo if line_vec == {0, 0}?
+                                    TNRW_ASSERT_MSG(fast_floatf{line_vec.lengthSquared()}
+                                                        != fast_floatf{0},
+                                                    "not implemented yet");
+                                    // 判断是否平行
+                                    if (fast_floatf{line_vec.cross(line_to_get_collision_pos.end
+                                                                   - line_to_get_collision_pos.start)}
+                                        == fast_floatf{0}) {
+                                        float area =
+                                            std::abs((line_to_get_collision_pos.start - line.start)
+                                                         .cross(line_vec));
+                                        float        dis_sq = area * area / line_vec.lengthSquared();
+                                        float        dis = std::sqrt(dis_sq);
+                                        float        len_sq = (current.radius * current.radius) - dis_sq;
+                                        float        len = std::sqrt(len_sq);
+                                        sf::Vector2f radius = {len, dis};
+                                        sf::Vector2f final_pos; //< 最终的位置
+                                        if ((line.end - current.center).lengthSquared()
+                                            > (line.start - current.center).lengthSquared()) {
+                                            // `line.start` 更近
+                                            final_pos = line.start - radius;
+                                        } else {
+                                            // `line.end` 更近
+                                            final_pos = line.end - radius;
+                                        }
+                                        // `sf::Vector2f{radius.y, -radius.x}` : 将 `radius` 逆时针旋转 90°
+                                        sf::Vector2f next_forward_direction =
+                                            sf::Vector2f{radius.y, -radius.x};
+                                        next_forward_direction =
+                                            forward_dis.projectedOnto(next_forward_direction);
+                                        return {final_pos, next_forward_direction};
+                                    }
                                     sf::Vector2f collided_position =
                                         get_collided_position(line, line_to_get_collision_pos);
-                                    sf::Vector2f line_vec = line.end.position - line.start.position;
                                     if (line_vec.y < 0) {
                                         line_vec = -line_vec;
                                     }
-                                    return collided_position
-                                           - (max_move_dis.normalized()
-                                              * (current.radius
-                                                 / std::sin(wrap_to_first(line_vec.angleTo(max_move_dis))
-                                                                .asRadians())));
+                                    return {collided_position
+                                                - (max_move_dis.normalized()
+                                                   * (current.radius
+                                                      / std::sin(wrap_to_first_quadrent(
+                                                                     line_vec.angleTo(max_move_dis))
+                                                                     .asRadians()))),
+                                            line.end - line.start};
                                 }();
                                 auto move_dis = pos - current.center;
-                                if (!next_move_dis.has_value()
-                                    || fast_floatf{next_move_dis->lengthSquared()}
-                                           > fast_floatf{move_dis.lengthSquared()}) {
-                                    next_move_dis = move_dis;
-                                    next_forward_direction = line.end.position - line.start.position;
-                                }
-                            } else {
-                                ASSERT_MSG(
-                                    false,
-                                    "编号为{}的实体的形状不是 `tnrw::ecs::shape::line` "
-                                    "类型，目前移动时的碰撞处理仅支持 `tnrw::ecs::shape::line` 类型",
-                                    static_cast<entt::id_type>(*it));
-                            }
-                        },
+
+                                next_arg =
+                                    next_arg
+                                        .transform([&](next_argument arg) {
+                                            if (fast_floatf{arg.move_dis.lengthSquared()}
+                                                > fast_floatf{move_dis.lengthSquared()}) {
+                                                arg.move_dis = move_dis;
+                                                arg.forward_direction = forward_direction;
+                                            }
+                                            return arg;
+                                        })
+                                        .or_else([&]() -> std::optional<next_argument> {
+                                            return next_argument{.move_dis = move_dis,
+                                                                 .forward_direction = forward_direction};
+                                        });
+                            },
+                            [&](const auto & /*unused*/) {
+                                unreachable("编号为{}的实体的形状不是 `tnrw::ecs::render_shape::line` "
+                                            "类型，目前移动时的碰撞处理仅支持 "
+                                            "`tnrw::ecs::render_shape::line` 类型",
+                                            static_cast<entt::id_type>(*it));
+                            }),
                         cur_shape.shape);
                 }
             }
-            if (next_move_dis.has_value()) {
-                // 有碰撞时的移动
-                auto forward_rest = forward_dis
-                                    - (forward_dis.normalized()
-                                       * (next_move_dis->length()
-                                          / std::cos(next_move_dis->angleTo(forward_dis).asRadians())));
-                current.center += *next_move_dis;
-                spdlog::trace("The next position is: {}", current.center);
-                self(self, forward_rest, *next_forward_direction);
-                return;
-            }
-            // 无碰撞时的移动
-            current.center += max_move_dis;
-            sf::Vector2f forward_rest = forward_dis
-                                        - (forward_dis.normalized() * max_move_dis.length()
-                                           / std::cos(forward_dis.angleTo(max_move_dis).asRadians()));
-            self(self, forward_rest, forward_rest);
+            next_arg
+                .transform([&](next_argument arg) -> int {
+                    // 有碰撞时的移动
+                    render_current.move(arg.move_dis);
+                    spdlog::trace("The next position is: {}",
+                                  std::get<shape::circle>(static_cast<shape>(render).shape).center);
+                    sf::Vector2f forward_rest = forward_dis;
+                    if (fast_floatf{arg.move_dis.lengthSquared()} != fast_floatf{0}) {
+                        forward_rest -= (forward_dis.normalized()
+                                         * (arg.move_dis.length()
+                                            / std::cos(arg.move_dis.angleTo(forward_dis).asRadians())));
+                    }
+                    move(forward_rest, arg.forward_direction);
+                    return 0;
+                })
+                .or_else([&]() -> std::optional<int> {
+                    // 无碰撞时的移动
+                    render_current.move(max_move_dis);
+                    sf::Vector2f forward_rest =
+                        forward_dis
+                        - (forward_dis.normalized() * max_move_dis.length()
+                           / std::cos(forward_dis.angleTo(max_move_dis).asRadians()));
+                    move(forward_rest, forward_rest);
+                    return {};
+                });
         };
 
-        auto forward_dis =
-            static_cast<float>(delta_time.count()) * velocity(registry, entity); //< 前进的距离
+        auto forward_dis = delta_time.count() * velocity(registry, entity); //< 前进的距离
 
         if (fast_floatf{forward_dis.lengthSquared()} > fast_floatf{0}) {
-            move(move, forward_dis, forward_dis);
+            move(forward_dis, forward_dis);
             // debug message
-            spdlog::trace("current shape(entity:{})'s position is: {}, update delta time is: {}",
-                          static_cast<entt::id_type>(entity),
-                          std::get<shape::circle>(registry.get<shape>(entity).shape).center, delta_time);
+            spdlog::trace(
+                "current shape(entity:{})'s position is: {}, update delta time is: {}",
+                static_cast<entt::id_type>(entity),
+                std::get<shape::circle>(static_cast<shape>(registry.get<render_shape>(entity)).shape)
+                    .center,
+                delta_time);
         }
     }
-    void movement_system::update_with_velocity(entt::registry           &registry,
-                                               std::chrono::milliseconds delta_time) noexcept {
-        auto list = registry.view<shape, struct velocity, should_collide, father_scenes>();
+    void movement_system::update_with_velocity(entt::registry &registry,
+                                               milliseconds_f  delta_time) noexcept {
+        auto list = registry.view<render_shape, struct velocity, father_scenes>();
         std::ranges::for_each(list, [&](entt::entity entity) -> void {
-            if (std::holds_alternative<shape::circle>(registry.get<shape>(entity).shape)) {
+            if (std::holds_alternative<render_shape::circle>(registry.get<render_shape>(entity).shape)) {
                 update_with_velocity(registry, entity, delta_time);
             }
         });

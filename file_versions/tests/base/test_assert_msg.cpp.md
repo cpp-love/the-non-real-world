@@ -21,7 +21,7 @@
 
 ### Changed(修改)
 
-1. 修改了 `assert_msg`(现为 `ASSERT_MSG`) 的使用样例和测试用例，使其更加完善
+1. 修改了 `assert_msg`(现为 `TNRW_ASSERT_MSG`) 的使用样例和测试用例，使其更加完善
 
 ---
 
@@ -29,6 +29,6 @@
 
 ### Added(新增)
 
-1. 添加了 `assert_msg`(现为 `ASSERT_MSG`) 的使用样例和测试用例
+1. 添加了 `assert_msg`(现为 `TNRW_ASSERT_MSG`) 的使用样例和测试用例
 
 ---

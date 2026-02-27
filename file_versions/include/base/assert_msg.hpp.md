@@ -9,6 +9,18 @@
 
 ---
 
+## [0.1.0-6] - 2026-02-27 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. 添加 `tnrw::unreachable` 的 `constexpr` 支持
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 将 `ASSERT_MSG` 改名为 `TNRW_ASSERT_MSG`
+
+---
+
 ## [0.1.0-5] - 2026-02-24 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)
@@ -17,7 +29,7 @@
 
 ### Changed(修改)
 
-1. **BREAKING(不向下兼容):** 将 `assert_msg` 改名为 `ASSERT_MSG`
+1. **BREAKING(不向下兼容):** 将 `assert_msg` 改名为 `ASSERT_MSG`（现为 `TNRW_ASSERT_MSG`）
 
 ---
 
@@ -53,6 +65,6 @@
 
 ### Added(新增)
 
-1. 添加了带注释的断言(`assert_msg`)，与 `<cassert>` 中的 `assert` 功能相近，发布时（定义了 `NDEBUG` 宏时）可以完全消除
+1. 添加了带注释的断言(`assert_msg`，现为 `TNRW_ASSERT_MSG`)，与 `<cassert>` 中的 `assert` 功能相近，发布时（定义了 `NDEBUG` 宏时）可以完全消除
 
 ---

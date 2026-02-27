@@ -2,8 +2,8 @@
  * @file movement_system.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 声明了移动系统及其功能
- * @version 0.1.0-1
- * @date 2025-11-15
+ * @version 0.1.0-2
+ * @date 2026-02-27
  * 
  * @copyright cpp-love
  * 
@@ -12,10 +12,10 @@
 #ifndef TNRW_ECS_SYSTEMS_MOVEMENT_SYSTEM_HPP
 #define TNRW_ECS_SYSTEMS_MOVEMENT_SYSTEM_HPP
 
+#include "ecs/components/global/game_base.hpp"
 #include "ecs/components/movement_components.hpp"
-#include "ecs/components/shape_components.hpp"
-#include <chrono>
-#include <entt/fwd.hpp>
+#include "ecs/components/render_shape_components.hpp"
+#include <entt/entity/fwd.hpp>
 
 namespace tnrw::ecs {
 
@@ -36,20 +36,19 @@ namespace tnrw::ecs {
          * @param [in] registry 注册表
          * @param [in] entity 实体
          * @param [in] delta_time 更新时间
-         * @warning 此函数目前只支持圆形的移动，其他形状的实体可能会断言失败
+         * @warning 此函数目前只支持圆形 (`tnrw::ecs::render_shape::circle`) 的移动，其他形状的实体可能会断言失败
          * @warning 此函数的碰撞只关注在同一场景里的内容，其他场景会被忽略
          */
         static void update_with_velocity(entt::registry &registry, entt::entity entity,
-                                         std::chrono::milliseconds delta_time) noexcept;
+                                         milliseconds_f delta_time) noexcept;
         /**
          * @brief 更新所有实体
          * @param [in] registry 注册表
          * @param [in] delta_time 更新时间
-         * @warning 此函数目前只支持圆形的移动，其他形状的实体会直接跳过
+         * @warning 此函数目前只支持圆形 (`tnrw::ecs::render_shape::circle`) 的移动，其他形状的实体会直接跳过
          * @warning 此函数的碰撞只关注在同一场景里的内容，其他场景会被忽略
          */
-        static void update_with_velocity(entt::registry           &registry,
-                                         std::chrono::milliseconds delta_time) noexcept;
+        static void update_with_velocity(entt::registry &registry, milliseconds_f delta_time) noexcept;
     };
 
 } // namespace tnrw::ecs

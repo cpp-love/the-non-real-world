@@ -27,9 +27,9 @@ namespace tnrw {
          */
         template <std::floating_point T>
         struct float_wrapper {
-            using value_type = T;                                               ///< 浮点数值类型
-            value_type                  value;                                  ///< 浮点数值
-            static constexpr value_type epsilon = static_cast<value_type>(0.5); ///< 浮点比较最小阈值
+            using value_type = T;                                                ///< 浮点数值类型
+            value_type                  value;                                   ///< 浮点数值
+            static constexpr value_type epsilon = static_cast<value_type>(5e-3); ///< 浮点比较最小阈值
 
             // 构造、赋值、析构
             constexpr explicit float_wrapper(value_type rhs) noexcept : value(rhs) {}

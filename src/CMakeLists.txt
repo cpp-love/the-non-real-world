@@ -20,7 +20,7 @@ FetchContent_MakeAvailable(ENTT)
 FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG master
+    GIT_TAG v1.x
     FIND_PACKAGE_ARGS 1.15.3 CONFIG REQUIRED
 )
 FetchContent_MakeAvailable(spdlog)
@@ -31,9 +31,20 @@ FetchContent_Declare(
     FIND_PACKAGE_ARGS 3.0.1 COMPONENTS Graphics Window System CONFIG REQUIRED
 )
 FetchContent_MakeAvailable(SFML)
-
-# find_package(TGUI CONFIG REQUIRED)
-# find_package(nlohmann_json CONFIG REQUIRED)
+# FetchContent_Declare(
+#     TGUI
+#     GIT_REPOSITORY https://github.com/texus/tgui.git
+#     GIT_TAG 1.x
+#     FIND_PACKAGE_ARGS 1.10.0 CONFIG REQUIRED
+# )
+# FetchContent_MakeAvailable(TGUI)
+# FetchContent_Declare(
+#     nlohmann_json
+#     GIT_REPOSITORY https://github.com/nlohmann/json.git
+#     GIT_TAG develop
+#     FIND_PACKAGE_ARGS 3.12.0 CONFIG REQUIRED
+# )
+# FetchContent_MakeAvailable(nlohmann_json)
 
 # 包含头文件目录
 target_include_directories(tnrw

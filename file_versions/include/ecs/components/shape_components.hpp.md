@@ -9,6 +9,14 @@
 
 ---
 
+## [0.1.0-2] - 2026-02-24 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 取消 `tnrw::ecs::shape` 的渲染支持，可以使用更全面的 `tnrw::ecs::render_shape` 代替
+
+---
+
 ## [0.1.0-1] - 2025-10-18 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)

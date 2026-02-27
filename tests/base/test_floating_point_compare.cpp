@@ -21,15 +21,15 @@ int main() {
     tnrw::fast_floatf value4{-0.6f};
     tnrw::safe_floatf value5{std::numeric_limits<float>::quiet_NaN()};
     tnrw::safe_floatf value6{std::numeric_limits<float>::infinity()};
-    ASSERT_MSG(tnrw::fast_floatf{value5} != tnrw::fast_floatf{value6}); // 可以，但不要这样做
-    ASSERT_MSG(value1 != tnrw::fast_floatf{value6});                    // 也可以，但不推荐这么做
-    ASSERT_MSG(value1 == value2);
-    ASSERT_MSG(value1 == value3);
-    ASSERT_MSG(value4 != value3);
-    ASSERT_MSG(value4 < value1);
-    ASSERT_MSG(tnrw::safe_floatf(value1) != value5);
-    ASSERT_MSG(tnrw::safe_floatf(value1) != value6);
-    ASSERT_MSG(tnrw::safe_floatf(value1) == tnrw::safe_floatf(value2));
+    TNRW_ASSERT_MSG(tnrw::fast_floatf{value5} != tnrw::fast_floatf{value6}); // 可以，但不要这样做
+    TNRW_ASSERT_MSG(value1 != tnrw::fast_floatf{value6});                    // 也可以，但不推荐这么做
+    TNRW_ASSERT_MSG(value1 == value2);
+    TNRW_ASSERT_MSG(value1 == value3);
+    TNRW_ASSERT_MSG(value4 != value3);
+    TNRW_ASSERT_MSG(value4 < value1);
+    TNRW_ASSERT_MSG(tnrw::safe_floatf(value1) != value5);
+    TNRW_ASSERT_MSG(tnrw::safe_floatf(value1) != value6);
+    TNRW_ASSERT_MSG(tnrw::safe_floatf(value1) == tnrw::safe_floatf(value2));
     // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
     return 0;

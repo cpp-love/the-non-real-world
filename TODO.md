@@ -13,9 +13,7 @@
 
 1. [ ] feat(base): `Unwraped<std::optional/expected>` & `AsThrow<std::optional/expected>`
 
-## 模块 ecs
-
-1. [ ] refactor(ecs): scene_system 去模板
+<!-- ## 模块 ecs -->
 
 ## 模块 math
 
@@ -23,9 +21,8 @@
 
 ## 其他
 
-1. [ ] style(all): 作为index的 `int` 类型 -> `std::size_t` 类型
-2. [ ] style(all): `std::function<...>` -> `const std::function<...> &`
-3. [ ] style(all): `static_cast` -> `std::to_underlying`
+1. [ ] style(all): `std::function<...>` -> `const std::function<...> &`
+2. [ ] style(all): `static_cast` -> `std::to_underlying`
 
 # 进行中
 
@@ -53,18 +50,21 @@
 
 <!-- 1. [x] ? -->
 
-<!-- ## 模块 ecs -->
+## 模块 ecs
 
-<!-- 1. [x] ? -->
+1. [x] refactor(ecs): scene_system 去模板
+   - 相关提交：[f3b17e90](https://github.com/cpp-love/the-non-real-world/commit/f3b17e908962c9c19d390d0d0dd4df61ab057890 "f3b17e90")
 
 ## 模块 math
 
 1. [x] refactor(math): 重构 expressions
-   - 相关提交：[6b2765ec](https://gitee.com/cpp-love/the-non-real-world/commit/6b2765ec021f7a305e872d4f0849bed6d6d4c513 "6b2765ec")
+   - 相关提交：[6b2765ec](https://github.com/cpp-love/the-non-real-world/commit/6b2765ec021f7a305e872d4f0849bed6d6d4c513 "6b2765ec")
 2. [x] refactor(math): 二次重构 expressions
-   <!-- - 相关提交：[]() -->
+   - 相关提交：[294713b0](https://github.com/cpp-love/the-non-real-world/commit/294713b07811f0a14bbf94070fb25dba991eabfb "294713b0")
 
 ## 其他
 
 1. [x] style(all): 代码风格调整
    - 相关提交：[86c1c7a5](https://gitee.com/cpp-love/the-non-real-world/commit/86c1c7a54fc03ef9ecb82008141b90af477413c7 "86c1c7a5")
+1. [x] style(all): 作为index的 `int` 类型 -> `std::size_t` 类型
+   - 没有直接的相关提交
