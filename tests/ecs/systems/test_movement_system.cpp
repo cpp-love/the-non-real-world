@@ -9,6 +9,7 @@
  * 
  */
 
+#include "ecs/components/render_shape_components.hpp"
 #include "ecs/systems/global/scene_system.hpp"
 #include "ecs/systems/movement_system.hpp"
 #include "ecs/systems/render_system.hpp"
@@ -38,7 +39,7 @@ entt::entity create_shape(entt::registry &registry, tnrw::level_identifier_type 
     return entity;
 }
 
-constexpr sf::Vector2u                window_size = {800, 600};    ///< 窗口的大小
+constexpr sf::Vector2u                window_size = {1000, 800};   ///< 窗口的大小
 constexpr tnrw::level_identifier_type first_level = 1;             ///< 第一个关卡
 constexpr tnrw::level_identifier_type second_level = 2;            ///< 第二个关卡
 constexpr float                       velocity_no_direction = 1.f; ///< 没有方向的速度
@@ -83,6 +84,12 @@ int                                   main() {
         tnrw::ecs::render_shape::line line({50.f, -10.f});
         line.setFillColor(sf::Color::Red);
         line.setPosition({50.f, 50.f});
+        return tnrw::ecs::render_shape{std::move(line)};
+    }()));
+    line_vec.push_back(create_shape(registry, first_level, [] {
+        tnrw::ecs::render_shape::line line({10.f, -310.f});
+        line.setFillColor(sf::Color::Cyan);
+        line.setPosition({100.f, 600.f});
         return tnrw::ecs::render_shape{std::move(line)};
     }()));
     line_vec.push_back(create_shape(registry, first_level, [] {
@@ -135,6 +142,8 @@ int                                   main() {
                 is_running = true;
             } else if (event->is<sf::Event::FocusLost>()) {
                 is_running = false;
+            } else if (const auto *resize = event->getIf<sf::Event::Resized>()) {
+                window.setView({window.getView().getCenter(), sf::Vector2f{resize->size}});
             }
         }
 
@@ -160,7 +169,13 @@ int                                   main() {
         }
 
         auto cur = tnrw::ecs::clock::now();
-        movement_system::update_with_velocity(registry, circle_vec[0], cur - prev);
+        movement_system::update_with_velocity(registry, cur - prev);
+        window.setView(
+            {std::get<tnrw::ecs::shape::circle>(
+                 static_cast<tnrw::ecs::shape>(registry.get<tnrw::ecs::render_shape>(circle_vec[0]))
+                     .shape)
+                 .center,
+             window.getView().getSize()});
         prev = cur;
 
         window.clear();

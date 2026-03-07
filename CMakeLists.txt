@@ -33,7 +33,7 @@ target_compile_options(tnrw_compiler_flags
 # 添加优化
 target_compile_options(tnrw_compiler_flags
     INTERFACE
-    $<${gcc_like_cxx}:$<BUILD_INTERFACE:$<$<CONFIG:Debug>:-O2>>>
+    $<${gcc_like_cxx}:$<BUILD_INTERFACE:$<$<CONFIG:Release>:-O2>>>
 )
 
 # 添加gcc对c++23 `print` / `println` 函数的 `Windows` 版本的支持
