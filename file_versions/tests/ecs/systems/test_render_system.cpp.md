@@ -9,7 +9,7 @@
 
 ---
 
-## [0.1.0-2] - 2027-02-27 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+## [0.1.0-2] - 2026-02-27 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Changed(修改)
 

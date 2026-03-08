@@ -9,7 +9,16 @@
 
 ---
 
-## [0.1.0-2] - 2027-02-27 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+## [0.1.0-3] - 2026-03-08 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. 将屏幕中心固定为角色（圆）
+2. 添加一个单独的线段作为测试的一部分
+
+---
+
+## [0.1.0-2] - 2026-02-27 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Changed(修改)
 

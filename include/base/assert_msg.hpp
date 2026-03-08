@@ -39,8 +39,8 @@ namespace tnrw::details {
         try {
             std::string str;
             for (const auto &[index, entry] : stack_trace | std::views::enumerate) {
-                std::format_to(std::back_inserter(str), "frame #{} : {} in line {} in file {}\n", index,
-                               entry.description(), entry.source_line(), entry.source_file());
+                std::format_to(std::back_inserter(str), "frame #{}: {}:{} in function: {}\n", index,
+                               entry.source_file(), entry.source_line(), entry.description());
             }
             return str;
         } catch (std::exception &exception) {

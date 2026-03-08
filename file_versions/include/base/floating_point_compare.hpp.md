@@ -9,6 +9,15 @@
 
 ---
 
+## [0.1.0-3] - 2026-03-08 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 将 `tnrw::no_nan_inf` 的三向比较(`<=>`)的返回值改为 `std::weak_ordering`
+2. 将 `std::isnan(val) || std::isinf(val)` 及其反义的表达改为 `!std::finite(val)` 及其反义的表达
+
+---
+
 ## [0.1.0-2] - 2026-03-07 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Changed(修改)

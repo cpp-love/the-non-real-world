@@ -2,8 +2,8 @@
  * @file floating_point_compare.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 定义了浮点数的比较运算（包含误差）
- * @version 0.1.0-2
- * @date 2026-03-07
+ * @version 0.1.0-3
+ * @date 2026-03-08
  * 
  * @copyright cpp-love
  * 
@@ -74,7 +74,7 @@ namespace tnrw {
          * @warning 如果 `rhs` 是 `NaN` 或 `Inf`，可能会触发断言
          */
         constexpr explicit no_nan_inf(value_type rhs) noexcept : base(rhs) {
-            TNRW_ASSERT_MSG(!std::isnan(rhs) && !std::isinf(rhs),
+            TNRW_ASSERT_MSG(std::isfinite(rhs),
                             "no_nan_inf<T> cannot be constructed from the values `NaN` or `Inf`");
         }
         /**
@@ -83,7 +83,7 @@ namespace tnrw {
          * @warning 如果 `rhs` 是 `NaN` 或 `Inf`，可能会触发断言
          */
         explicit no_nan_inf(has_nan_inf_type rhs) noexcept : base(rhs.value) {
-            TNRW_ASSERT_MSG(!std::isnan(rhs.value) && !std::isinf(rhs.value),
+            TNRW_ASSERT_MSG(!std::isfinite(rhs.value),
                             "no_nan_inf<T> cannot be constructed from the values `NaN` or `Inf`");
         }
     };
@@ -154,14 +154,14 @@ namespace tnrw {
     * @tparam T2 浮点类型2
     * @param [in] lhs 左操作数
     * @param [in] rhs 右操作数
-    * @return std::paritial_ordering 比较结果
+    * @return std::weak_ordering 比较结果
     */
     template <std::floating_point T1, std::floating_point T2>
-    constexpr std::partial_ordering operator<=>(no_nan_inf<T1> lhs, no_nan_inf<T2> rhs) {
+    constexpr std::weak_ordering operator<=>(no_nan_inf<T1> lhs, no_nan_inf<T2> rhs) {
         if (std::abs(lhs.value - rhs.value) < no_nan_inf<decltype(lhs.value - rhs.value)>::epsilon) {
-            return std::partial_ordering::equivalent;
+            return std::weak_ordering::equivalent;
         }
-        return lhs.value <=> rhs.value;
+        return lhs.value < rhs.value ? std::weak_ordering::less : std::weak_ordering::greater;
     }
 
     /**
@@ -174,8 +174,7 @@ namespace tnrw {
      */
     template <std::floating_point T1, std::floating_point T2>
     constexpr std::partial_ordering operator<=>(has_nan_inf<T1> lhs, has_nan_inf<T2> rhs) {
-        if (std::isnan(lhs.value) || std::isnan(rhs.value) || std::isinf(lhs.value)
-            || std::isinf(rhs.value)) {
+        if (!std::isfinite(lhs.value) || !std::isfinite(rhs.value)) {
             return lhs.value <=> rhs.value;
         }
         return static_cast<no_nan_inf<T1>>(lhs) <=> static_cast<no_nan_inf<T2>>(rhs);

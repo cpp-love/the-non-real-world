@@ -9,6 +9,14 @@
 
 ---
 
+## [0.1.0-3] - 2026-03-08 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. 将 `tnrw::ecs::movement_system::update_with_velocity` 的实现方式改为彻底的 CCD 算法，修复了许多移动的bug
+
+---
+
 ## [0.1.0-2] - 2026-02-27 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Changed(修改)
