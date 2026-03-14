@@ -11,6 +11,7 @@
  * 
  */
 
+#undef NDEBUG
 #include "base/assert_msg.hpp"
 #include "base/config.hpp"
 #include "ecs/systems/global/scene_system.hpp"

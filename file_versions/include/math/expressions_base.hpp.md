@@ -9,6 +9,15 @@
 
 ---
 
+## [0.1.0-3] - 2026-03-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 将 `tnrw::math::details::node` 转为 `tnrw::math::node`，
+   并公开一些 API
+
+---
+
 ## [0.1.0-2] - 2026-01-17 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)

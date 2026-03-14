@@ -83,7 +83,7 @@ namespace tnrw {
          * @warning 如果 `rhs` 是 `NaN` 或 `Inf`，可能会触发断言
          */
         explicit no_nan_inf(has_nan_inf_type rhs) noexcept : base(rhs.value) {
-            TNRW_ASSERT_MSG(!std::isfinite(rhs.value),
+            TNRW_ASSERT_MSG(std::isfinite(rhs.value),
                             "no_nan_inf<T> cannot be constructed from the values `NaN` or `Inf`");
         }
     };

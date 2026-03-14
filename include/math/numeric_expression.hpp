@@ -2,8 +2,8 @@
  * @file numeric_expression.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 声明了无字母的代数式类
- * @version 0.1.0-3
- * @date 2026-02-14
+ * @version 0.1.0-4
+ * @date 2026-03-14
  * 
  * @copyright cpp-love
  * 
@@ -39,7 +39,7 @@ namespace tnrw {
         class numeric_expression {
           private:
             // 数据成员
-            details::node_ptr m_root; ///< 私有实现指针，也是代数式树的根节点
+            node_ptr m_root; ///< 私有实现指针，也是代数式树的根节点
 
           public:
             // 友元声明

@@ -9,6 +9,7 @@
  * 
  */
 
+#undef NDEBUG
 #include "base/assert_msg.hpp"
 #include <numeric>
 #include <print>

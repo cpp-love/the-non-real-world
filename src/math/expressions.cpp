@@ -2,8 +2,8 @@
  * @file expressions.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 实现了代数式和无字母的代数式类的细节
- * @version 0.1.0-4
- * @date 2026-02-14
+ * @version 0.1.0-5
+ * @date 2026-03-14
  * 
  * @copyright cpp-love
  * 
@@ -29,7 +29,6 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <numeric>
 #include <print>
@@ -44,158 +43,7 @@
 /// @cond INTERNAL
 
 /// @brief @ref tnrw::math 命名空间的一些功能的实现细节
-namespace tnrw::math::details {
-
-    /**
-     * @brief 单项式节点
-     * @details 
-     *  - 其下没有子节点
-     */
-    struct monomial {
-        integer_constant_type m_coeff = 0; ///< 单项式系数
-        using map_var_exp =
-            std::map<variable_view, integer_constant_type, std::ranges::less>; //< 变量 -> 指数 的键值对
-        map_var_exp m_var_exps{};                                              ///< 变量与幂次的键值对
-    };
-
-    /**
-     * @brief 加法节点
-     * @detailts
-     *  - 若加的项中有常量（包括非整型的），则必须为 `m_children` 成员的第0项（即 `m_children[0]` 的位置）
-     *  - 其下的直接子节点只能为 @ref monomial, @ref division
-     */
-    struct addition {
-        std::vector<node_ptr> m_children; ///< 子节点
-
-        /**
-         * @brief 从节点列表构造的构造函数
-         * @tparam Args 参数类型
-         * @param [in] args 节点列表
-         */
-        template <typename... Args>
-            requires(std::is_same_v<Args &&, node_ptr &&> && ...)
-        explicit addition(Args &&...args) noexcept;
-        /**
-         * @brief 深复制构造函数
-         * @param [in] rhs 另一个对象
-         */
-        addition(const addition &rhs) noexcept;
-        /**
-         * @brief 移动构造函数
-         * @param [in] rhs 另一个对象
-         */
-        addition(addition &&rhs) noexcept = default;
-        /// @brief 析构函数
-        ~addition() noexcept = default;
-        /// @brief 禁止复制赋值运算符重载
-        addition &operator=(const addition &rhs) noexcept = delete;
-        /// @brief 禁止移动赋值运算符重载
-        addition &operator=(addition &&rhs) noexcept = delete;
-    };
-
-    /**
-     * @brief 乘法节点
-     * @details
-     *  - 此节点为临时节点，在简化后不应出现
-     */
-    struct multiplication {
-        std::vector<node_ptr> m_children; ///< 子节点
-
-        /**
-         * @brief 从节点列表构造的构造函数
-         * @tparam Args 参数类型
-         * @param [in] args 节点列表
-         */
-        template <typename... Args>
-            requires(std::is_same_v<Args &&, node_ptr &&> && ...)
-        explicit multiplication(Args &&...args) noexcept;
-        /**
-         * @brief 深复制构造函数
-         * @param [in] rhs 另一个对象
-         */
-        multiplication(const multiplication &rhs) noexcept;
-        /**
-         * @brief 移动构造函数
-         * @param [in] rhs 另一个对象
-         */
-        multiplication(multiplication &&rhs) noexcept = default;
-        /// @brief 析构函数
-        ~multiplication() noexcept = default;
-        /// @brief 禁止复制赋值运算符重载
-        multiplication &operator=(const multiplication &rhs) noexcept = delete;
-        /// @brief 禁止移动赋值运算符重载
-        multiplication &operator=(multiplication &&rhs) noexcept = delete;
-    };
-
-    /**
-     * @brief 除法节点
-     * @details
-     *  - `m_children[0]` 为分子， `m_children[1]` 为分母
-     *  - 其分子的最高同一字母的最高此项应小于分母的
-     *  - 其分子分母的最高此项的系数必须为正
-     *  - 应提取所有在子节点中可提取的取相反数的操作，若本身为负，则在外面套 @ref Negation 节点
-     *  - 此节点下的变量必须按名字排序
-     *  - 其下的直接子节点只能为 @ref monomial, @ref addition
-     */
-    struct division {
-        std::array<node_ptr, 2> m_children; ///< 子节点
-
-        /**
-         * @brief 从分子分母节点构造的构造函数
-         * @param [in] num 分子
-         * @param [in] den 分母
-         */
-        division(node_ptr num, node_ptr den) noexcept;
-        /**
-         * @brief 深复制构造函数
-         * @param [in] rhs 另一个对象
-         */
-        division(const division &rhs) noexcept;
-        /**
-         * @brief 移动构造函数
-         * @param [in] rhs 另一个对象
-         */
-        division(division &&rhs) noexcept = default;
-        /// @brief 析构函数
-        ~division() noexcept = default;
-        /// @brief 禁止复制赋值运算符重载
-        division &operator=(const division &rhs) noexcept = delete;
-        /// @brief 禁止移动赋值运算符重载
-        division &operator=(division &&rhs) noexcept = delete;
-    };
-
-    /// @brief 代数式基本节点
-    struct node {
-        using variant_type = std::variant<monomial, addition, multiplication, division>;
-        variant_type m_value; ///< 值
-    };
-
-    /**
-     * @brief 类型萃取：类型 `T` 是否为 变体( `std::variant` )类型 `V` 的成员
-     * @tparam T 判断类型
-     * @tparam V 变体类型
-     */
-    template <typename T, typename V>
-    struct is_variant_member : std::false_type {};
-    template <typename T, typename T1, typename... Rest>
-    struct is_variant_member<T, std::variant<T1, Rest...>>
-        : std::conditional_t<std::is_same_v<T, T1>, std::true_type,
-                             is_variant_member<T, std::variant<Rest...>>> {};
-
-    /**
-     * @brief 类型萃取： @ref tnrw::math::details::IsVariantMember 的值的模板缩写
-     * @tparam T 判断类型
-     * @tparam V 变体类型
-     */
-    template <typename T, typename V>
-    constexpr bool is_variant_member_v = is_variant_member<T, V>::value;
-
-    /**
-     * @brief 概念：是子节点的类型
-     * @tparam T 类型
-     */
-    template <typename T>
-    concept SubNode = is_variant_member_v<T, node::variant_type>;
+namespace tnrw::math {
 
     // 为了避免 node 未定义的问题，延后定义构造函数
     template <typename... Args>
@@ -231,156 +79,22 @@ namespace tnrw::math::details {
                      std::make_unique<node>(*rhs.m_children[1])} {}
 
     /**
-     * @brief 创建代数式节点的工厂函数
-     * @tparam SubNodeT 创建的子节点类型
-     * @tparam Args 参数类型
-     * @param [in] args 创建子节点的参数
-     * @return node_ptr 创建的节点
-     */
-    template <SubNode SubNodeT, typename... Args>
-        requires std::constructible_from<SubNodeT, Args...>
-    [[nodiscard]] node_ptr make_node(Args &&...args) noexcept {
-        return std::make_unique<node>(SubNodeT{std::forward<Args>(args)...});
-    }
-
-    /**
      * @brief 生成空节点（为0）
      * @return node_ptr 空节点
      */
     node_ptr create_zero_node() noexcept { return make_node<monomial>(0); }
 
     /**
-     * @brief 判断代数式节点是否为0
-     * @param [in] root 代数式节点 
-     * @return true 代数式节点为0
-     * @return false 代数式节点不为0
-     * @warning 这要求 root 节点被化简过
-     */
-    bool     is_zero(const node_ptr &root) noexcept {
-        return std::holds_alternative<monomial>(root->m_value)
-               && std::get<monomial>(root->m_value).m_coeff == 0;
-    }
-
-    /**
-     * @brief 判断两个代数式是否相等
-     * @param [in] lhs 代数式1
-     * @param [in] rhs 代数式2
-     * @return true 相等
-     * @return false 不相等
-     * @warning 这要求 root 节点被化简过
-     * @bug 此函数会将 1 + x 与 x + 1 判断为不相等， 1 + (1 / x) 与 (x + 1) / x 也会被判断为不相等。
-     *      计划通过规范化简步骤，实现相同代数式的化简结果一致来解决
-     */
-    bool is_equal(const node_ptr &lhs, const node_ptr &rhs) noexcept {
-        return std::visit(make_overloaded(
-                              [&](const monomial &value1, const monomial &value2) -> bool {
-                                  if (value1.m_coeff != value2.m_coeff) {
-                                      return false;
-                                  }
-                                  return value1.m_var_exps == value2.m_var_exps;
-                              },
-                              [&]<typename T>(const T &value1, const T &value2) -> bool {
-                                  if (value1.m_children.size() != value2.m_children.size()) {
-                                      return false;
-                                  }
-                                  return std::ranges::all_of(
-                                      std::views::zip(value1.m_children, value2.m_children),
-                                      [](const auto &elem) {
-                                          const auto &[ch1, ch2] = elem;
-                                          return is_equal(ch1, ch2);
-                                      });
-                              },
-                              [&](const auto & /*unused*/, const auto & /*unused*/) { return false; }),
-                          lhs->m_value, rhs->m_value);
-    }
-
-    /**
-     * @brief 判断代数式是否有指定变量
-     * @param [in] lhs 代数式节点
-     * @param [in] variable 指定变量，若为 `std::nullopt`，则查询是否有任意变量
-     * @return true 有指定变量
-     * @return false 没有指定变量
-     * @warning 这要求 root 节点被化简过
-     */
-    bool has_variable(const node_ptr              &lhs,
-                      std::optional<variable_view> variable = std::nullopt) noexcept {
-        return std::visit(make_overloaded(
-                              [&](const monomial &value) {
-                                  return variable.has_value() ? value.m_var_exps.contains(*variable)
-                                                              : !value.m_var_exps.empty();
-                              },
-                              [&](const auto &value) {
-                                  return std::ranges::any_of(value.m_children,
-                                                             [&](const node_ptr &sub_node) {
-                                                                 return has_variable(sub_node, variable);
-                                                             });
-                              }),
-                          lhs->m_value);
-    }
-
-    /**
-     * @brief 将节点转换为 std::string
-     * @param [in] root 代数式节点
-     * @return std::string 节点的字符串表示
-     * @attention 建议 root 节点被化简过
-     */
-    std::string node_to_string(const node_ptr &root) {
-        return std::visit(make_overloaded(
-                              [](const monomial &value) {
-                                  std::string str;
-                                  str += std::format("{}", value.m_coeff);
-                                  for (const auto &[var, exp] : value.m_var_exps) {
-                                      if (exp == 1) {
-                                          str += std::format("*{}", var);
-                                      } else {
-                                          str += std::format("*{}^{}", var, exp);
-                                      }
-                                  }
-                                  if (str.size() > 2 && value.m_coeff == 1) {
-                                      return std::move(str).substr(2);
-                                  }
-                                  return str;
-                              },
-                              [](const addition &value) {
-                                  std::string str = "(";
-                                  for (std::size_t i = 0; i < value.m_children.size(); ++i) {
-                                      if (i) {
-                                          str += ")+(";
-                                      }
-                                      str += node_to_string(value.m_children[i]);
-                                  }
-                                  str += ")";
-                                  return str;
-                              },
-                              [](const multiplication &value) {
-                                  std::string str = "(";
-                                  for (std::size_t i = 0; i < value.m_children.size(); ++i) {
-                                      if (i) {
-                                          str += ")*(";
-                                      }
-                                      str += node_to_string(value.m_children[i]);
-                                  }
-                                  str += ")";
-                                  return str;
-                              },
-                              [](const division &value) {
-                                  return std::format("({})/({})", node_to_string(value.m_children[0]),
-                                                     node_to_string(value.m_children[1]));
-                              }),
-                          root->m_value);
-    }
-
-    /**
      * @brief 简化代数式
      * @param [in, out] root 代数式
      */
-    void simplify(node_ptr &root);
+    void     simplify(node_ptr &root);
 
     /**
      * @brief 代数式节点简化器
      * @tparam SubNodeT 子节点
      */
-    template <SubNode SubNodeT>
+    template <sub_node SubNodeT>
     struct simplifier {
         /**
          * @brief 简化代数式节点
@@ -1373,46 +1087,6 @@ namespace tnrw::math::details {
     }
 
     /**
-     * @brief 计算代数式的近似值
-     * @tparam FloatT 近似值的结果（浮点数）
-     * @param [in] root 代数式节点
-     * @param [in] converter 获取变量对应的近似值的函数，参数是变量的视图，返回值是变量对应的近似值
-     * @return FloatT 代数式的近似值
-     */
-    template <std::floating_point FloatT>
-    FloatT calculate_approximation(const node_ptr                             &root,
-                                   const std::function<FloatT(variable_view)> &converter) {
-        return std::visit(make_overloaded(
-                              [&](const monomial &value) {
-                                  auto ret = static_cast<FloatT>(value.m_coeff);
-                                  for (const auto &[var, exp] : value.m_var_exps) {
-                                      ret *= std::pow(converter(var), exp);
-                                  }
-                                  return ret;
-                              },
-                              [&](const addition &value) {
-                                  FloatT sum = 0;
-                                  for (const auto &child : value.m_children) {
-                                      sum += calculate_approximation<FloatT>(child, converter);
-                                  }
-                                  return sum;
-                              },
-                              [&](const multiplication &value) {
-                                  FloatT mul = 1;
-                                  for (const auto &child : value.m_children) {
-                                      mul *= calculate_approximation<FloatT>(child, converter);
-                                  }
-                                  return mul;
-                              },
-                              [&](const division &value) {
-                                  return calculate_approximation<FloatT>(value.m_children[0], converter)
-                                         / calculate_approximation<FloatT>(value.m_children[1],
-                                                                           converter);
-                              }),
-                          root->m_value);
-    }
-
-    /**
      * @brief 代数式加/减法的内部实现
      * @param [in] lhs 代数式
      * @param [in] rhs 常量
@@ -1480,7 +1154,7 @@ namespace tnrw::math::details {
         simplify(lhs);
     }
 
-} // namespace tnrw::math::details
+} // namespace tnrw::math
 
 /// @endcond
 
@@ -1489,39 +1163,39 @@ namespace tnrw {
 
         // algebraic_expression类的成员定义
         [[nodiscard]] algebraic_expression::algebraic_expression() noexcept
-            : m_root(details::create_zero_node()) {}
+            : m_root(create_zero_node()) {}
 
         [[nodiscard]] algebraic_expression::algebraic_expression(integer_constant_type constant) noexcept
-            : m_root(details::make_node<details::monomial>(constant)) {}
+            : m_root(make_node<monomial>(constant)) {}
 
         [[nodiscard]] algebraic_expression::algebraic_expression(variable_view variable) noexcept
-            : m_root(details::make_node<details::monomial>(
-                  1, details::monomial::map_var_exp{{*m_vars.emplace(variable).first, 1}})) {}
+            : m_root(
+                  make_node<monomial>(1, monomial::map_var_exp{{*m_vars.emplace(variable).first, 1}})) {}
         algebraic_expression::algebraic_expression(numeric_expression num_expr) noexcept
             : m_root(std::move(num_expr.m_root)) {}
 
         [[nodiscard]] algebraic_expression::algebraic_expression(
             const algebraic_expression &rhs) noexcept
-            : m_root(std::make_unique<details::node>(*rhs.m_root)) {}
+            : m_root(std::make_unique<node>(*rhs.m_root)) {}
 
         [[nodiscard]] algebraic_expression::algebraic_expression(algebraic_expression &&rhs) noexcept
             : m_root(std::move(rhs.m_root)) {}
 
         algebraic_expression &
         algebraic_expression::operator=(const integer_constant_type &rhs) & noexcept {
-            m_root = details::make_node<details::monomial>(rhs);
+            m_root = make_node<monomial>(rhs);
             return *this;
         }
         algebraic_expression &algebraic_expression::operator=(variable_view rhs) & noexcept {
             variable_view var = *m_vars.emplace(rhs).first;
-            m_root = details::make_node<details::monomial>(1, details::monomial::map_var_exp{{var, 1}});
+            m_root = make_node<monomial>(1, monomial::map_var_exp{{var, 1}});
             return *this;
         }
 
         algebraic_expression &
         algebraic_expression::operator=(const algebraic_expression &rhs) & noexcept {
             if (this != &rhs) {
-                m_root = std::make_unique<details::node>(*rhs.m_root);
+                m_root = std::make_unique<node>(*rhs.m_root);
             }
             return *this;
         }
@@ -1536,32 +1210,30 @@ namespace tnrw {
         algebraic_expression::~algebraic_expression() noexcept = default;
 
         algebraic_expression &algebraic_expression::operator+=(integer_constant_type rhs) & noexcept {
-            details::plus(m_root, rhs);
+            plus(m_root, rhs);
             return *this;
         }
         algebraic_expression &algebraic_expression::operator+=(variable_view rhs) & noexcept {
             variable_view var = *m_vars.emplace(rhs).first;
-            details::plus(m_root, var);
+            plus(m_root, var);
             return *this;
         }
         algebraic_expression &algebraic_expression::operator+=(algebraic_expression rhs) & noexcept {
-            using namespace details;
             m_root = make_node<addition>(std::move(m_root), std::move(rhs.m_root));
             simplify(m_root);
             return *this;
         }
 
         algebraic_expression &algebraic_expression::operator-=(integer_constant_type rhs) & noexcept {
-            details::plus(m_root, -rhs);
+            plus(m_root, -rhs);
             return *this;
         }
         algebraic_expression &algebraic_expression::operator-=(variable_view rhs) & noexcept {
             variable_view var = *m_vars.emplace(rhs).first;
-            details::minus(m_root, var);
+            minus(m_root, var);
             return *this;
         }
         algebraic_expression &algebraic_expression::operator-=(algebraic_expression rhs) & noexcept {
-            using namespace details;
             m_root =
                 make_node<addition>(std::move(m_root), make_node<multiplication>(make_node<monomial>(-1),
                                                                                  std::move(rhs.m_root)));
@@ -1570,32 +1242,30 @@ namespace tnrw {
         }
 
         algebraic_expression &algebraic_expression::operator*=(integer_constant_type rhs) & noexcept {
-            details::multiply(m_root, rhs);
+            multiply(m_root, rhs);
             return *this;
         }
         algebraic_expression &algebraic_expression::operator*=(variable_view rhs) & noexcept {
             variable_view var = *m_vars.emplace(rhs).first;
-            details::multiply(m_root, var);
+            multiply(m_root, var);
             return *this;
         }
         algebraic_expression &algebraic_expression::operator*=(algebraic_expression rhs) & noexcept {
-            using namespace details;
             m_root = make_node<multiplication>(std::move(m_root), std::move(rhs.m_root));
             simplify(m_root);
             return *this;
         }
 
         algebraic_expression &algebraic_expression::operator/=(integer_constant_type rhs) & noexcept {
-            details::divide(m_root, rhs);
+            divide(m_root, rhs);
             return *this;
         }
         algebraic_expression &algebraic_expression::operator/=(variable_view rhs) & noexcept {
             variable_view var = *m_vars.emplace(rhs).first;
-            details::divide(m_root, var);
+            divide(m_root, var);
             return *this;
         }
         algebraic_expression &algebraic_expression::operator/=(algebraic_expression rhs) & noexcept {
-            using namespace details;
             m_root = make_node<division>(std::move(m_root), std::move(rhs.m_root));
             simplify(m_root);
             return *this;
@@ -1612,55 +1282,55 @@ namespace tnrw {
         }
 
         algebraic_expression &algebraic_expression::operator++() noexcept {
-            details::plus(m_root, 1);
+            plus(m_root, 1);
             return *this;
         }
         algebraic_expression &algebraic_expression::operator--() noexcept {
-            details::plus(m_root, -1);
+            plus(m_root, -1);
             return *this;
         }
 
         [[nodiscard]] algebraic_expression algebraic_expression::operator++(int) noexcept {
             algebraic_expression copy_of_old(*this);
-            details::plus(m_root, 1);
+            plus(m_root, 1);
             return copy_of_old;
         }
         [[nodiscard]] algebraic_expression algebraic_expression::operator--(int) noexcept {
             algebraic_expression copy_of_old(*this);
-            details::plus(m_root, -1);
+            plus(m_root, -1);
             return copy_of_old;
         }
 
         template <std::floating_point FloatT>
         [[nodiscard]] FloatT algebraic_expression::calculate_approximation(
             const std::function<FloatT(variable_view)> &converter) const noexcept {
-            return details::calculate_approximation<FloatT>(m_root, converter);
+            return math::calculate_approximation<FloatT>(m_root, converter);
         }
 
-        void algebraic_expression::clear() noexcept { m_root = details::create_zero_node(); }
+        void                      algebraic_expression::clear() noexcept { m_root = create_zero_node(); }
 
         [[nodiscard]] std::string algebraic_expression::to_string() const noexcept {
-            return details::node_to_string(m_root);
+            return node_to_string(m_root);
         }
 
         [[nodiscard]] std::wstring algebraic_expression::to_wstring() const noexcept {
             return std::format(L"{}", *this);
         }
 
-        void algebraic_expression::change_to_opposite() noexcept { details::multiply(m_root, -1); }
+        void               algebraic_expression::change_to_opposite() noexcept { multiply(m_root, -1); }
 
         [[nodiscard]] bool algebraic_expression::has_variable() const noexcept {
             if (m_vars.empty()) {
                 return false;
             }
-            return details::has_variable(m_root);
+            return math::has_variable(m_root);
         }
 
         [[nodiscard]] bool algebraic_expression::has_variable(variable_view variable) const noexcept {
             if (!m_vars.contains(variable)) {
                 return false;
             }
-            return details::has_variable(m_root, variable);
+            return math::has_variable(m_root, variable);
         }
         [[nodiscard]] std::optional<numeric_expression>
         algebraic_expression::to_numeric_expression() const & noexcept {
@@ -1668,7 +1338,7 @@ namespace tnrw {
                 return std::nullopt;
             }
             numeric_expression ret;
-            ret.m_root = std::make_unique<details::node>(*m_root);
+            ret.m_root = std::make_unique<node>(*m_root);
             return ret;
         }
         [[nodiscard]] std::optional<numeric_expression>
@@ -1790,14 +1460,14 @@ namespace tnrw {
             if (&lhs == &rhs) {
                 return true;
             }
-            return details::is_equal(lhs.m_root, rhs.m_root);
+            return is_equal(lhs.m_root, rhs.m_root);
         }
         [[nodiscard]] bool operator!=(const algebraic_expression &lhs,
                                       const algebraic_expression &rhs) noexcept {
             if (&lhs == &rhs) {
                 return false;
             }
-            return !details::is_equal(lhs.m_root, rhs.m_root);
+            return !is_equal(lhs.m_root, rhs.m_root);
         }
 
         template <typename CharT, typename Traits>
@@ -1815,24 +1485,23 @@ namespace tnrw {
         }
 
         // numeric_expression类的成员定义
-        [[nodiscard]] numeric_expression::numeric_expression() noexcept
-            : m_root(details::create_zero_node()) {}
+        [[nodiscard]] numeric_expression::numeric_expression() noexcept : m_root(create_zero_node()) {}
 
         [[nodiscard]] numeric_expression::numeric_expression(
             const integer_constant_type constant) noexcept
-            : m_root(details::make_node<details::monomial>(constant)) {}
+            : m_root(make_node<monomial>(constant)) {}
 
         numeric_expression::~numeric_expression() noexcept = default;
 
         [[nodiscard]] numeric_expression::numeric_expression(const numeric_expression &rhs) noexcept
-            : m_root(std::make_unique<details::node>(*rhs.m_root)) {}
+            : m_root(std::make_unique<node>(*rhs.m_root)) {}
 
         [[nodiscard]] numeric_expression::numeric_expression(numeric_expression &&rhs) noexcept
             : m_root(std::move(rhs.m_root)) {}
 
         numeric_expression &numeric_expression::operator=(const numeric_expression &rhs) & noexcept {
             if (this != &rhs) {
-                m_root = std::make_unique<details::node>(*rhs.m_root);
+                m_root = std::make_unique<node>(*rhs.m_root);
             }
             return *this;
         }
@@ -1845,46 +1514,42 @@ namespace tnrw {
         }
 
         numeric_expression &numeric_expression::operator+=(const integer_constant_type rhs) & noexcept {
-            details::plus(m_root, rhs);
+            plus(m_root, rhs);
             return *this;
         }
         numeric_expression &numeric_expression::operator+=(const numeric_expression &rhs) & noexcept {
-            using namespace details;
             m_root = make_node<addition>(std::move(m_root), std::make_unique<node>(*rhs.m_root));
             simplify(m_root);
             return *this;
         }
 
         numeric_expression &numeric_expression::operator-=(const integer_constant_type rhs) & noexcept {
-            details::plus(m_root, -rhs);
+            plus(m_root, -rhs);
             return *this;
         }
         numeric_expression &numeric_expression::operator-=(const numeric_expression &rhs) & noexcept {
-            using namespace details;
             m_root = make_node<addition>(
                 std::move(m_root),
                 make_node<multiplication>(make_node<monomial>(-1), std::make_unique<node>(*rhs.m_root)));
-            details::simplify(m_root);
+            simplify(m_root);
             return *this;
         }
 
         numeric_expression &numeric_expression::operator*=(const integer_constant_type rhs) & noexcept {
-            details::multiply(m_root, rhs);
+            multiply(m_root, rhs);
             return *this;
         }
         numeric_expression &numeric_expression::operator*=(const numeric_expression &rhs) & noexcept {
-            using namespace details;
             m_root = make_node<multiplication>(std::move(m_root), std::make_unique<node>(*rhs.m_root));
             simplify(m_root);
             return *this;
         }
 
         numeric_expression &numeric_expression::operator/=(const integer_constant_type rhs) & noexcept {
-            details::divide(m_root, rhs);
+            divide(m_root, rhs);
             return *this;
         }
         numeric_expression &numeric_expression::operator/=(const numeric_expression &rhs) & noexcept {
-            using namespace details;
             m_root = make_node<division>(std::move(m_root), std::make_unique<node>(*rhs.m_root));
             simplify(m_root);
             return *this;
@@ -1899,44 +1564,43 @@ namespace tnrw {
         }
 
         numeric_expression &numeric_expression::operator++() noexcept {
-            details::plus(m_root, 1);
+            plus(m_root, 1);
             return *this;
         }
         numeric_expression &numeric_expression::operator--() noexcept {
-            details::plus(m_root, -1);
+            plus(m_root, -1);
             return *this;
         }
 
         [[nodiscard]] numeric_expression numeric_expression::operator++(int) noexcept {
             numeric_expression copy_of_old(*this);
-            details::plus(m_root, 1);
+            plus(m_root, 1);
             return copy_of_old;
         }
         [[nodiscard]] numeric_expression numeric_expression::operator--(int) noexcept {
             numeric_expression copy_of_old(*this);
-            details::plus(m_root, -1);
+            plus(m_root, -1);
             return copy_of_old;
         }
 
         template <std::floating_point FloatT>
         [[nodiscard]] FloatT numeric_expression::calculate_approximation() const noexcept {
-            return details::calculate_approximation<FloatT>(
-                m_root, [](variable_view /*unused*/) -> FloatT {
-                    unreachable("numeric_expression 不应该有 Variable 节点");
-                });
+            return math::calculate_approximation<FloatT>(m_root, [](variable_view /*unused*/) -> FloatT {
+                unreachable("numeric_expression 不应该有 Variable 节点");
+            });
         }
 
-        void numeric_expression::clear() noexcept { m_root = details::create_zero_node(); }
+        void                      numeric_expression::clear() noexcept { m_root = create_zero_node(); }
 
         [[nodiscard]] std::string numeric_expression::to_string() const noexcept {
-            return details::node_to_string(m_root);
+            return node_to_string(m_root);
         }
 
         [[nodiscard]] std::wstring numeric_expression::to_wstring() const noexcept {
             return std::format(L"{}", *this);
         }
 
-        void numeric_expression::change_to_opposite() noexcept { details::multiply(m_root, -1); }
+        void numeric_expression::change_to_opposite() noexcept { multiply(m_root, -1); }
 
         [[nodiscard]] numeric_expression operator+(const numeric_expression   &lhs,
                                                    const integer_constant_type rhs) noexcept {
@@ -2007,14 +1671,14 @@ namespace tnrw {
             if (&lhs == &rhs) {
                 return true;
             }
-            return details::is_equal(lhs.m_root, rhs.m_root);
+            return is_equal(lhs.m_root, rhs.m_root);
         }
         [[nodiscard]] bool operator!=(const numeric_expression &lhs,
                                       const numeric_expression &rhs) noexcept {
             if (&lhs == &rhs) {
                 return false;
             }
-            return !details::is_equal(lhs.m_root, rhs.m_root);
+            return !is_equal(lhs.m_root, rhs.m_root);
         }
 
         template <typename CharT, typename Traits>

@@ -11,6 +11,7 @@
  * 
  */
 
+#undef NDEBUG
 #include "base/assert_msg.hpp"
 #include "base/overload.hpp"
 #include <functional>

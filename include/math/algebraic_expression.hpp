@@ -2,8 +2,8 @@
  * @file algebraic_expression.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 声明了代数式类
- * @version 0.1.0-3
- * @date 2026-02-14
+ * @version 0.1.0-4
+ * @date 2026-03-14
  * 
  * @copyright cpp-love
  * 
@@ -44,7 +44,7 @@ namespace tnrw {
           private:
             // 数据成员
             inline static std::set<variable_type, std::ranges::less> m_vars; ///< 统一存储变量的地方
-            details::node_ptr m_root; ///< 私有实现指针，也是代数式树的根节点
+            node_ptr m_root; ///< 私有实现指针，也是代数式树的根节点
 
           public:
             // 友元声明

@@ -9,6 +9,15 @@
 
 ---
 
+## [0.1.0-5] - 2026-03-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 将 `tnrw::math::details::node` 转为 `tnrw::math::node`，
+   并公开一些 API
+
+---
+
 ## [0.1.0-4] - 2026-02-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)
@@ -30,9 +39,9 @@
 
 ### Changed(修改)
 
-1. 将 `IntegerConstant`、`Variable`、`Multiplication` 节点合并为一个节点 `monomial`，表示单项式（但是没有分数），
+1. **BREAKING(不向下兼容):** 将 `IntegerConstant`、`Variable`、`Multiplication` 节点合并为一个节点 `monomial`，表示单项式（但是没有分数），
    但是没有删除 `mutiplication` 节点，为了方便代数式的计算与简化
-2. 删除了 `Negation` 节点，逻辑分散到其他节点中
+2. **BREAKING(不向下兼容):** 删除了 `Negation` 节点，逻辑分散到其他节点中
 3. 修改并完善了 `division` 节点的化简策略
 
 ---
@@ -45,7 +54,7 @@
 
 ### Changed(修改)
 
-1. 重构了整个文件，
+1. **BREAKING(不向下兼容):** 重构了整个文件，
    将 `tnrw::math::details::node` 的不同节点分开为6个不同的结构体，
    并采用更现代化的方式处理其他函数
 

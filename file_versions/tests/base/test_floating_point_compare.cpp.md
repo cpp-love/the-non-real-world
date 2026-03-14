@@ -9,6 +9,14 @@
 
 ---
 
+## [0.1.0-2] - 2026-03-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. 修改数据，使其通过测试
+
+---
+
 ## [0.1.0-1] - 2025-11-28 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)
