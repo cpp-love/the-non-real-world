@@ -9,6 +9,14 @@
 
 ---
 
+## [0.1.0-2] - 2026-03-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Removed(移除)
+
+1. 由于不便于管理，将此文件合并到 [ecs/components/shape_components.hpp](../../../../include/ecs/components/shape_components.hpp) 中
+
+---
+
 ## [0.1.0-1] - 2026-02-23 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)

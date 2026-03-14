@@ -2,8 +2,8 @@
  * @file test_render_system.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief `tnrw::ecs::render_system` 的测试用例和使用示例
- * @version 0.1.0-2
- * @date 2026-02-27
+ * @version 0.1.0-3
+ * @date 2026-03-14
  * 
  * @copyright cpp-love
  * 
@@ -11,7 +11,7 @@
  * 
  */
 
-#include "ecs/components/render_shape_components.hpp"
+#include "ecs/components/shape_components.hpp"
 #include "ecs/systems/global/scene_system.hpp"
 #include "ecs/systems/render_system.hpp"
 #include <SFML/Graphics.hpp>
@@ -23,9 +23,9 @@
 #endif // _WIN32
 
 entt::entity create_shape(entt::registry &registry, tnrw::level_identifier_type level_id,
-                          tnrw::ecs::render_shape shape) {
+                          tnrw::ecs::collidable_shape shape) {
     const auto entity = registry.create();
-    registry.emplace<tnrw::ecs::render_shape>(entity, shape);
+    registry.emplace<tnrw::ecs::collidable_shape>(entity, std::move(shape));
     tnrw::ecs::scene_system::insert_scene(registry, level_id);
     tnrw::ecs::scene_system::insert_to_scene(registry, level_id, entity);
     return entity;
@@ -54,43 +54,54 @@ int                                   main() {
         tnrw::ecs::render_shape::line line({30.f, 30.f});
         line.setFillColor(sf::Color::Red);
         line.setPosition({20.f, 20.f});
-        return tnrw::ecs::render_shape{std::move(line)};
+        return tnrw::ecs::collidable_shape{.collision_box = {static_cast<tnrw::ecs::shape::line>(line)},
+                                           .render = tnrw::ecs::render_shape{std::move(line)}};
     }()));
     circle_vec.push_back(create_shape(registry, first_level, [] {
         tnrw::ecs::render_shape::circle circle(30.f);
         circle.setPosition({110.f, 30.f});
         circle.setFillColor(sf::Color::Blue);
-        return tnrw::ecs::render_shape{std::move(circle)};
+        return tnrw::ecs::collidable_shape{
+            .collision_box = {static_cast<tnrw::ecs::shape::circle>(circle)},
+            .render = tnrw::ecs::render_shape{std::move(circle)}};
     }()));
     rect_vec.push_back(create_shape(registry, first_level, [] {
         tnrw::ecs::render_shape::rectangle rect({50.f, 60.f});
         rect.setPosition({400.f, 400.f});
         rect.setFillColor(sf::Color::Yellow);
-        return tnrw::ecs::render_shape{std::move(rect)};
+        return tnrw::ecs::collidable_shape{
+            .collision_box = {static_cast<tnrw::ecs::shape::rectangle>(rect)},
+            .render = tnrw::ecs::render_shape{std::move(rect)}};
     }()));
     line_vec.push_back(create_shape(registry, second_level, [] {
         tnrw::ecs::render_shape::line line({-100.f, 10.f});
         line.setFillColor(sf::Color::Green);
         line.setPosition({200.f, 90.f});
-        return tnrw::ecs::render_shape{std::move(line)};
+        return tnrw::ecs::collidable_shape{.collision_box = {static_cast<tnrw::ecs::shape::line>(line)},
+                                           .render = tnrw::ecs::render_shape{std::move(line)}};
     }()));
     line_vec.push_back(create_shape(registry, second_level, [] {
         tnrw::ecs::render_shape::line line({-150.f, -500.f});
         line.setFillColor(sf::Color::Blue);
         line.setPosition({550.f, 700.f});
-        return tnrw::ecs::render_shape{std::move(line)};
+        return tnrw::ecs::collidable_shape{.collision_box = {static_cast<tnrw::ecs::shape::line>(line)},
+                                           .render = tnrw::ecs::render_shape{std::move(line)}};
     }()));
     circle_vec.push_back(create_shape(registry, second_level, [] {
         tnrw::ecs::render_shape::circle circle(20.f);
         circle.setPosition({280.f, 280.f});
         circle.setFillColor(sf::Color::Cyan);
-        return tnrw::ecs::render_shape{std::move(circle)};
+        return tnrw::ecs::collidable_shape{
+            .collision_box = {static_cast<tnrw::ecs::shape::circle>(circle)},
+            .render = tnrw::ecs::render_shape{std::move(circle)}};
     }()));
     rect_vec.push_back(create_shape(registry, second_level, [] {
         tnrw::ecs::render_shape::rectangle rect({50.f, 60.f});
         rect.setPosition({400.f, 400.f});
         rect.setFillColor(sf::Color::Cyan);
-        return tnrw::ecs::render_shape{std::move(rect)};
+        return tnrw::ecs::collidable_shape{
+            .collision_box = {static_cast<tnrw::ecs::shape::rectangle>(rect)},
+            .render = tnrw::ecs::render_shape{std::move(rect)}};
     }()));
     // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 

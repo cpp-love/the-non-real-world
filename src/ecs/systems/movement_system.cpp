@@ -2,8 +2,8 @@
  * @file movement_system.cpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 实现了移动系统
- * @version 0.1.0-3
- * @date 2026-03-08
+ * @version 0.1.0-4
+ * @date 2026-03-14
  * 
  * @copyright cpp-love
  * 
@@ -15,6 +15,7 @@
 #include "base/overload.hpp"
 // #include "base/sfml_formatter.hpp"
 #include "ecs/components/global/game_base.hpp"
+#include "ecs/components/shape_components.hpp"
 #include "ecs/systems/global/scene_system.hpp"
 #include "math/functions.hpp"
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -326,15 +327,15 @@ namespace tnrw::ecs {
     /// @details 采用 CCD 算法
     void movement_system::update_with_velocity(entt::registry &registry, entt::entity entity,
                                                milliseconds_f delta_time) noexcept {
-        TNRW_ASSERT_MSG(registry.all_of<render_shape>(entity),
-                        "函数参数 `entity`（编号为：{}） 没有组件 `tnrw::ecs::shape`",
+        TNRW_ASSERT_MSG(registry.all_of<collidable_shape>(entity),
+                        "函数参数 `entity`（编号为：{}） 没有组件 `tnrw::ecs::collidable_shape`",
                         static_cast<entt::id_type>(entity));
-        TNRW_ASSERT_MSG(
-            std::holds_alternative<render_shape::circle>(registry.get<render_shape>(entity).shape),
-            "函数参数 `entity`（编号为：{}） 的组件 `tnrw::ecs::shape` 不是圆形",
-            static_cast<entt::id_type>(entity));
+        TNRW_ASSERT_MSG(std::holds_alternative<shape::circle>(
+                            registry.get<collidable_shape>(entity).collision_box.shape),
+                        "函数参数 `entity`（编号为：{}） 的组件 `tnrw::ecs::shape` 不是圆形",
+                        static_cast<entt::id_type>(entity));
 
-        auto list = registry.view<father_scenes, render_shape>(); //< 碰撞列表
+        auto list = registry.view<father_scenes, collidable_shape>(); //< 碰撞列表
         /**
          * @brief 判断当前实体与传入的比较实体是否在同一场景里
          * @param [in] compare_entity 比较实体
@@ -359,8 +360,12 @@ namespace tnrw::ecs {
             });
         };
 
-        auto         &render = registry.get<render_shape>(entity);
+        auto         &collidable = registry.get<collidable_shape>(entity); //< 当前形状
+        auto         &current = std::get<shape::circle>(collidable.collision_box.shape);
+        float         radius_sq = current.radius * current.radius;
+        auto         &render_current = collidable.render; //< 当前渲染形状
         auto         &cur_velocity = velocity(registry, entity);
+
         constexpr int max_iterations = 15; //< 最大迭代次数
         for (int i = 0; true; ++i) {
             // 超过迭代次数，退出
@@ -382,16 +387,12 @@ namespace tnrw::ecs {
                 break;
             }
 
-            auto  current = std::get<shape::circle>(static_cast<shape>(render).shape); //< 当前形状
-            float radius_sq = current.radius * current.radius;
-            auto &render_current = std::get<render_shape::circle>(render.shape); //< 当前渲染形状
-
             // spdlog::trace("velocity is: {}", velocity);
             // spdlog::trace("forward_vec is: {}", forward_vec);
 
-            bool  should_exit = false;               //< 当起点就碰撞时设置为 `true`，表示退出
-            float time_of_impact = 1.f;              //< 最早碰撞时间(TOI)
-            std::optional<sf::Vector2f> normal_line; //< 用于更新的法线
+            bool                        should_exit = false;  //< 当起点就碰撞时设置为 `true`，表示退出
+            float                       time_of_impact = 1.f; //< 最早碰撞时间(TOI)
+            std::optional<sf::Vector2f> normal_line;          //< 用于更新的法线
 
             shape::rectangle            move_collision_rectangle{
                            .position =
@@ -405,8 +406,7 @@ namespace tnrw::ecs {
                 if (!is_in_same_scene(other_entity)) {
                     continue;
                 }
-                auto cur_shape =
-                    static_cast<shape>(registry.get<render_shape>(other_entity)); //< it的形状
+                auto cur_shape = registry.get<collidable_shape>(other_entity).collision_box; //< it的形状
                 if (is_collided(move_collision_rectangle, cur_shape)
                     || is_collided(move_collision_circle, cur_shape)) {
                     // 碰撞了，更新移动的参数
@@ -455,10 +455,15 @@ namespace tnrw::ecs {
 
                                     // 如果穿透，修正
                                     if (no_nan_inf_f{line_center_dis_sq} < no_nan_inf_f{radius_sq}) {
-                                        render_current.move((current.radius
-                                                             - std::sqrt(line_center_dis_sq)
-                                                             - no_nan_inf_f::epsilon)
-                                                            * normal.normalized());
+                                        sf::Vector2f move_off =
+                                            (current.radius - std::sqrt(line_center_dis_sq)
+                                             - no_nan_inf_f::epsilon)
+                                            * normal.normalized();
+                                        current.center += move_off;
+                                        // render_current.move(move_off);
+                                        std::visit(
+                                            [&](auto &transformable) { transformable.move(move_off); },
+                                            render_current.shape);
                                     }
 
                                     // 更新速度
@@ -592,17 +597,26 @@ namespace tnrw::ecs {
 
             if (!normal_line.has_value()) {
                 // 无碰撞时的移动
-                render_current.move(forward_vec);
+                current.center += forward_vec;
+                // render_current.move(forward_vec);
+                std::visit([&](auto &transformable) { transformable.move(forward_vec); },
+                           render_current.shape);
                 break;
             }
             // 有碰撞时的移动
             TNRW_ASSERT_MSG(no_nan_inf_f{0} <= no_nan_inf_f{time_of_impact}
                                 && no_nan_inf_f{time_of_impact} < no_nan_inf_f{1.f},
                             "`time_of_impace` 应在 [0.f, 1.f) 区间内");
-            render_current.move(forward_vec * time_of_impact
-                                - forward_vec.normalized() * no_nan_inf_f::epsilon);
+
+            sf::Vector2f move_off =
+                forward_vec * time_of_impact - forward_vec.normalized() * no_nan_inf_f::epsilon;
+            current.center += move_off;
+            // render_current.move(move_off);
+            std::visit([&](auto &transformable) { transformable.move(move_off); }, render_current.shape);
+
             // spdlog::trace("The next position is: {}",
             //               std::get<shape::circle>(static_cast<shape>(render).shape).center);
+
             // `sf::Vector2f{-vec.y, vec.x}` : 将 `vec` 逆时针旋转 90°
             cur_velocity = cur_velocity.projectedOnto({-normal_line->y, normal_line->x});
             delta_time *= (1.f - time_of_impact);
@@ -610,19 +624,20 @@ namespace tnrw::ecs {
 
         // if (velocity(registry, entity).lengthSquared() != 0) {
         // debug message
-        // spdlog::trace(
-        //     "current shape(entity:{})'s position is: {}, update delta time is: {}",
-        //     static_cast<entt::id_type>(entity),
-        //     std::get<shape::circle>(static_cast<shape>(registry.get<render_shape>(entity)).shape)
-        //         .center,
-        //     delta_time);
+        //     spdlog::trace(
+        //         "current shape(entity:{})'s position is: {}, update delta time is: {}",
+        //         static_cast<entt::id_type>(entity),
+        //         std::get<shape::circle>(registry.get<collidable_shape>(entity).collision_box.shape)
+        //             .center,
+        //         delta_time);
         // }
     }
     void movement_system::update_with_velocity(entt::registry &registry,
                                                milliseconds_f  delta_time) noexcept {
-        auto list = registry.view<render_shape, struct velocity, father_scenes>();
+        auto list = registry.view<collidable_shape, struct velocity, father_scenes>();
         std::ranges::for_each(list, [&](entt::entity entity) -> void {
-            if (std::holds_alternative<render_shape::circle>(registry.get<render_shape>(entity).shape)) {
+            if (std::holds_alternative<shape::circle>(
+                    registry.get<collidable_shape>(entity).collision_box.shape)) {
                 update_with_velocity(registry, entity, delta_time);
             }
         });

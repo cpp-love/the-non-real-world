@@ -9,6 +9,14 @@
 
 ---
 
+## [0.1.0-3] - 2026-03-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Changed(修改)
+
+1. **BREAKING(不向下兼容):** 从 `tnrw::ecs::render_shape` 迁移到 `tnrw::ecs::collidable_shape`
+
+---
+
 ## [0.1.0-2] - 2026-02-27 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Added(新增)
