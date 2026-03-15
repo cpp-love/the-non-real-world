@@ -9,6 +9,14 @@
 
 ---
 
+## [0.1.0-5] - 2026-03-15 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. 新增 `tnrw::ecs::numeric_expression::get_pointer` 函数，用于获取原始指针
+
+---
+
 ## [0.1.0-4] - 2026-03-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Changed(修改)
@@ -21,7 +29,7 @@
 
 ### Added(新增)
 
-1. 添加了 `numeric_expression` 对自己的加减乘除运算
+1. 添加了 `tnrw::ecs::numeric_expression` 对自己的加减乘除运算
 
 ---
 

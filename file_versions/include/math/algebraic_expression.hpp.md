@@ -9,6 +9,15 @@
 
 ---
 
+## [0.1.0-5] - 2026-03-15 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. 新增 `tnrw::ecs::algebraic_expression::get_pointer` 函数，用于获取原始指针
+1. 新增 `tnrw::ecs::algebraic_expression::calculate` 函数，用于计算代数式的精确值
+
+---
+
 ## [0.1.0-4] - 2026-03-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Changed(修改)

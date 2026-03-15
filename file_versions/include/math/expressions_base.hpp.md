@@ -9,6 +9,14 @@
 
 ---
 
+## [0.1.0-4] - 2026-03-15 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. `tnrw::math::calculate` 函数，用于计算 `tnrw::math::node` 的精确值
+
+---
+
 ## [0.1.0-3] - 2026-03-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Changed(修改)

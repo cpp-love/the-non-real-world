@@ -2,8 +2,8 @@
  * @file expressions_base.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 声明了一些表达式的基本元素
- * @version 0.1.0-3
- * @date 2026-03-14
+ * @version 0.1.0-4
+ * @date 2026-03-15
  * 
  * @copyright cpp-love
  * 
@@ -269,7 +269,7 @@ namespace tnrw {
                                   [](const monomial &value) {
                                       std::string str;
                                       str += std::format("{}", value.m_coeff);
-                                      for (const auto &[var, exp] : value.m_var_exps) {
+                                      for (auto [var, exp] : value.m_var_exps) {
                                           if (exp == 1) {
                                               str += std::format("*{}", var);
                                           } else {
@@ -325,7 +325,7 @@ namespace tnrw {
                 make_overloaded(
                     [&](const monomial &value) {
                         auto ret = static_cast<FloatT>(value.m_coeff);
-                        for (const auto &[var, exp] : value.m_var_exps) {
+                        for (auto [var, exp] : value.m_var_exps) {
                             ret *= std::pow(converter(var), exp);
                         }
                         return ret;
@@ -349,6 +349,37 @@ namespace tnrw {
                                / calculate_approximation<FloatT>(value.m_children[1], converter);
                     }),
                 root->m_value);
+        }
+
+        /**
+         * @brief 计算代数式的精确值
+         * @param [in] root 代数式节点
+         * @param [in] converter 获取变量对应的精确值的函数，参数是变量的视图，返回值是变量对应的精确值
+         * @return node_ptr 代数式的精确值
+         */
+        inline node_ptr calculate(const node_ptr                               &root,
+                                  const std::function<node_ptr(variable_view)> &converter) {
+            return std::visit(make_overloaded(
+                                  [&](const monomial &value) {
+                                      multiplication mul_ans(make_node<monomial>(value.m_coeff));
+                                      mul_ans.m_children.reserve(value.m_var_exps.size() + 1);
+                                      for (auto [var, exp] : value.m_var_exps) {
+                                          node_ptr var_value = converter(var);
+                                          while (exp--) {
+                                              mul_ans.m_children.push_back(
+                                                  std::make_unique<node>(*var_value));
+                                          }
+                                      }
+                                      return make_node<multiplication>(std::move(mul_ans));
+                                  },
+                                  [&]<typename T>(const T &value) {
+                                      T cpy = value;
+                                      for (auto &child : cpy.m_children) {
+                                          child = calculate(child, converter);
+                                      }
+                                      return make_node<T>(std::move(cpy));
+                                  }),
+                              root->m_value);
         }
 
     } // namespace math

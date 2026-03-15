@@ -9,6 +9,14 @@
 
 ---
 
+## [0.1.0-6] - 2026-03-15 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
+
+### Added(新增)
+
+1. 对 `math/algebraic_expression.hpp` 和 `math/numeric_expression.hpp` 新增的接口做了实现
+
+---
+
 ## [0.1.0-5] - 2026-03-14 - cpp-love(<15865418+cpp-love@user.noreply.gitee.com>)
 
 ### Changed(修改)

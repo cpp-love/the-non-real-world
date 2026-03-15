@@ -2,8 +2,8 @@
  * @file algebraic_expression.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 声明了代数式类
- * @version 0.1.0-4
- * @date 2026-03-14
+ * @version 0.1.0-5
+ * @date 2026-03-15
  * 
  * @copyright cpp-love
  * 
@@ -219,15 +219,35 @@ namespace tnrw {
 
             // 其他成员函数
             /**
+             * @brief 获取内部指针（左值版）
+             * @return const node_ptr& 内部指针
+             * @warning 对返回的指针修改可能会引发错误，非必要请不要修改其内容
+             */
+            [[nodiscard]] const node_ptr      &get_pointer() const      &noexcept;
+            /**
+             * @brief 获取内部指针（右值版）
+             * @return node_ptr&& 内部指针
+             * @warning 对返回的指针修改可能会引发错误，非必要请不要修改其内容
+             */
+            [[nodiscard]] node_ptr           &&get_pointer()           &&noexcept;
+            /**
              * @brief 计算代数式的近似值
              * @tparam FloatT 返回类型
              * @param [in] converter 获取变量对应的近似值的函数，参数是变量的视图，返回值是变量对应的近似值
-             * @return FloatT 无字母的代数式的近似值
+             * @return FloatT 代数式的近似值
              * @warning 若计算中含有除以0，行为未定义
              */
             template <std::floating_point FloatT>
             [[nodiscard]] FloatT calculate_approximation(
                 const std::function<FloatT(variable_view)> &converter) const noexcept;
+            /**
+             * @brief 计算代数式（精确值）
+             * @param [in] converter 获取变量对应的精确值的函数，参数是变量的视图，返回值是变量对应的精确值
+             * @return numeric_expression 代数式的精确值
+             * @warning 若计算中含有除以0，行为未定义
+             */
+            [[nodiscard]] numeric_expression
+            calculate(const std::function<numeric_expression(variable_view)> &converter) const noexcept;
             /**
              * @brief 清空代数式
              * @details 释放原代数式，重设为0

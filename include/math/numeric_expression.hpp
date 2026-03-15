@@ -2,8 +2,8 @@
  * @file numeric_expression.hpp
  * @author cpp-love (15865418+cpp-love@user.noreply.gitee.com)
  * @brief 声明了无字母的代数式类
- * @version 0.1.0-4
- * @date 2026-03-14
+ * @version 0.1.0-5
+ * @date 2026-03-15
  * 
  * @copyright cpp-love
  * 
@@ -169,6 +169,18 @@ namespace tnrw {
             [[nodiscard]] numeric_expression operator--(int) noexcept;
 
             // 其他成员函数
+            /**
+             * @brief 获取内部指针（左值版）
+             * @return const node_ptr& 内部指针
+             * @warning 对返回的指针修改可能会引发错误，非必要请不要修改其内容
+             */
+            [[nodiscard]] const node_ptr    &get_pointer() const    &noexcept;
+            /**
+             * @brief 获取内部指针（右值版）
+             * @return node_ptr&& 内部指针
+             * @warning 对返回的指针修改可能会引发错误，非必要请不要修改其内容
+             */
+            [[nodiscard]] node_ptr         &&get_pointer()         &&noexcept;
             /**
              * @brief 计算无字母的代数式的近似值
              * @tparam FloatT 返回类型
