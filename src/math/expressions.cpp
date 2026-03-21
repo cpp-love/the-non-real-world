@@ -1319,7 +1319,7 @@ namespace tnrw {
         [[nodiscard]] const node_ptr &algebraic_expression::get_pointer() const & noexcept {
             return m_root;
         }
-        [[nodiscard]] node_ptr &&algebraic_expression::get_pointer() && noexcept {
+        [[nodiscard]] node_ptr algebraic_expression::get_pointer() && noexcept {
             return std::move(m_root);
         }
 
@@ -1618,7 +1618,7 @@ namespace tnrw {
         [[nodiscard]] const node_ptr &numeric_expression::get_pointer() const & noexcept {
             return m_root;
         }
-        [[nodiscard]] node_ptr &&numeric_expression::get_pointer() && noexcept {
+        [[nodiscard]] node_ptr numeric_expression::get_pointer() && noexcept {
             return std::move(m_root);
         }
         template <std::floating_point FloatT>

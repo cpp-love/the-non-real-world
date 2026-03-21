@@ -226,10 +226,10 @@ namespace tnrw {
             [[nodiscard]] const node_ptr      &get_pointer() const      &noexcept;
             /**
              * @brief 获取内部指针（右值版）
-             * @return node_ptr&& 内部指针
+             * @return node_ptr 内部指针
              * @warning 对返回的指针修改可能会引发错误，非必要请不要修改其内容
              */
-            [[nodiscard]] node_ptr           &&get_pointer()           &&noexcept;
+            [[nodiscard]] node_ptr             get_pointer()             &&noexcept;
             /**
              * @brief 计算代数式的近似值
              * @tparam FloatT 返回类型

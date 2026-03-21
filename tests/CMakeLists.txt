@@ -134,6 +134,7 @@ if(TNRW_BUILD_MATH_TESTS)
 
     # 设置链接文件
     add_executable(test_expressions ${CMAKE_CURRENT_SOURCE_DIR}/math/test_expressions.cpp)
+    add_executable(test_complex ${CMAKE_CURRENT_SOURCE_DIR}/math/test_complex.cpp)
 
     # 链接第三方库
     target_link_libraries(test_expressions
@@ -142,8 +143,16 @@ if(TNRW_BUILD_MATH_TESTS)
         tnrw
     )
 
+    target_link_libraries(test_complex
+        PUBLIC
+        tnrw_compiler_flags
+        tnrw
+    )
+
     # 添加安装支持
     install(TARGETS test_expressions DESTINATION bin/tests)
 
-    # todo : 添加测试支持
+    # 添加测试支持
+    add_test(NAME RunTestMath1 COMMAND test_complex)
+    # todo : 添加 test_expression` 测试支持
 endif()

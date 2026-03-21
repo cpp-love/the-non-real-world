@@ -12,7 +12,6 @@
 #undef NDEBUG
 #include "base/assert_msg.hpp"
 #include <numeric>
-#include <print>
 #ifdef _WIN32
 
 #include <windows.h>
