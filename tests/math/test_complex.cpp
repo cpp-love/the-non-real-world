@@ -9,9 +9,9 @@
  * 
  */
 
+#undef NDEBUG
 #include "base/assert_msg.hpp"
 #include "math/complex.hpp"
-#include <utility>
 
 struct integer {
     long long value{};

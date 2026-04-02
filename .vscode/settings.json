@@ -161,6 +161,5 @@
     },
     "python.analysis.autoImportCompletions": false,
     "doxygen_runner.configuration_file_override": "${workspaceFolder}/Doxyfile.internal",
-    "python-envs.defaultEnvManager": "ms-python.python:system",
-    "python-envs.pythonProjects": []
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }

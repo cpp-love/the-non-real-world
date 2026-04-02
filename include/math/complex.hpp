@@ -228,8 +228,10 @@ namespace tnrw::math {
             std::is_nothrow_move_assignable_v<T> && noexcept(std::declval<T>() * std::declval<U>())
             && noexcept(std::declval<T>() + std::declval<T>())
             && noexcept(std::declval<T>() - std::declval<T>())) {
-            real((real() * rhs.real()) - (imag() * rhs.imag()));
-            imag((real() * rhs.imag()) + (imag() * rhs.real()));
+            auto new_real = (real() * rhs.real()) - (imag() * rhs.imag());
+            auto new_imag = (real() * rhs.imag()) + (imag() * rhs.real());
+            real(new_real);
+            imag(new_imag);
             return *this;
         }
         /**
@@ -244,8 +246,10 @@ namespace tnrw::math {
             && noexcept(std::declval<T>() + std::declval<T>())
             && noexcept(std::declval<T>() - std::declval<T>())) {
             auto den = (rhs.real() * rhs.real()) + (rhs.imag() * rhs.imag());
-            real(((real() * rhs.real()) + (imag() * rhs.imag())) / den);
-            imag(((imag() * rhs.real()) - (real() * rhs.imag())) / den);
+            auto new_real = ((real() * rhs.real()) + (imag() * rhs.imag())) / den;
+            auto new_imag = ((imag() * rhs.real()) - (real() * rhs.imag())) / den;
+            real(new_real);
+            imag(new_imag);
             return *this;
         }
 
