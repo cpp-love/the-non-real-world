@@ -15,9 +15,7 @@
 
 <!-- ## 模块 ecs -->
 
-## 模块 math
-
-1. [ ] feat(math): `Complex<T>`
+<!-- ## 模块 math -->
 
 ## 其他
 
@@ -53,18 +51,14 @@
 ## 模块 ecs
 
 1. [x] refactor(ecs): scene_system 去模板
-   - 相关提交：[f3b17e90](https://github.com/cpp-love/the-non-real-world/commit/f3b17e908962c9c19d390d0d0dd4df61ab057890 "f3b17e90")
 
 ## 模块 math
 
 1. [x] refactor(math): 重构 expressions
-   - 相关提交：[6b2765ec](https://github.com/cpp-love/the-non-real-world/commit/6b2765ec021f7a305e872d4f0849bed6d6d4c513 "6b2765ec")
 2. [x] refactor(math): 二次重构 expressions
-   - 相关提交：[294713b0](https://github.com/cpp-love/the-non-real-world/commit/294713b07811f0a14bbf94070fb25dba991eabfb "294713b0")
+3. [x] feat(math): `Complex<T>`
 
 ## 其他
 
 1. [x] style(all): 代码风格调整
-   - 相关提交：[86c1c7a5](https://gitee.com/cpp-love/the-non-real-world/commit/86c1c7a54fc03ef9ecb82008141b90af477413c7 "86c1c7a5")
 1. [x] style(all): 作为index的 `int` 类型 -> `std::size_t` 类型
-   - 没有直接的相关提交

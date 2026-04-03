@@ -14,6 +14,7 @@
 #include "base/floating_point_compare.hpp"
 #include "base/overload.hpp"
 // #include "base/sfml_formatter.hpp"
+#include "base/type_traits.hpp"
 #include "ecs/components/global/game_base.hpp"
 #include "ecs/components/shape_components.hpp"
 #include "ecs/systems/global/scene_system.hpp"
@@ -213,7 +214,7 @@ namespace tnrw::ecs {
          * @return false 两物体不碰撞
          */
         template <typename SubShape>
-            requires requires { std::holds_alternative<SubShape>(std::declval<shape>().shape); }
+            requires is_variant_member_v<SubShape, shape::shape_type>
         [[nodiscard]] bool is_collided(const SubShape &first, const shape &second) {
             return std::visit([&first] [[nodiscard]] (
                                   const auto &second) -> bool { return is_collided(first, second); },
@@ -228,7 +229,7 @@ namespace tnrw::ecs {
          * @return false 两物体不碰撞
          */
         template <typename SubShape>
-            requires requires { std::holds_alternative<SubShape>(std::declval<shape>().shape); }
+            requires is_variant_member_v<SubShape, shape::shape_type>
         [[nodiscard]] bool is_collided(const shape &first, const SubShape &second) {
             return std::visit([&second] [[nodiscard]] (
                                   const auto &first) -> bool { return is_collided(first, second); },

@@ -24,6 +24,7 @@ if(TNRW_BUILD_BASE_TESTS)
     add_executable(test_floating_point_compare ${CMAKE_CURRENT_SOURCE_DIR}/base/test_floating_point_compare.cpp)
     add_executable(test_SFML_formatter ${CMAKE_CURRENT_SOURCE_DIR}/base/test_SFML_formatter.cpp)
     add_executable(test_overload ${CMAKE_CURRENT_SOURCE_DIR}/base/test_overload.cpp)
+    add_executable(test_observable ${CMAKE_CURRENT_SOURCE_DIR}/base/test_observable.cpp)
 
     # 链接第三方库
     target_link_libraries(test_assert_msg
@@ -56,8 +57,17 @@ if(TNRW_BUILD_BASE_TESTS)
         tnrw
     )
 
+    target_link_libraries(test_observable
+        PUBLIC
+        tnrw_compiler_flags
+        tnrw
+    )
+
     # 添加安装支持
-    install(TARGETS test_assert_msg test_string_convert test_floating_point_compare test_SFML_formatter test_overload DESTINATION bin/tests)
+    install(
+        TARGETS test_assert_msg test_string_convert test_floating_point_compare
+        test_SFML_formatter test_overload test_observable
+        DESTINATION bin/tests)
 
     # 添加测试支持
     add_test(NAME RunTestBase1 COMMAND test_string_convert)
@@ -75,6 +85,11 @@ if(TNRW_BUILD_BASE_TESTS)
     add_test(NAME TestBase5StandardUse COMMAND test_overload)
     set_tests_properties(TestBase5StandardUse
         PROPERTIES PASS_REGULAR_EXPRESSION "value: 2\ncall from lambda\nvalue: 1\ncall from lambda3\\s*"
+    )
+    add_test(NAME RunTestBase6 COMMAND test_observable)
+    add_test(NAME TestBase6StandardUse COMMAND test_observable)
+    set_tests_properties(TestBase6StandardUse
+        PROPERTIES PASS_REGULAR_EXPRESSION "value changed, now is: 11\nvalue changed, now is: 22\\s*"
     )
 
     # todo : 解决下面的测试失败的问题

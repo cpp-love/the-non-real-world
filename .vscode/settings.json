@@ -19,17 +19,19 @@
     },
     "search.exclude": {
         "**/node_modules/**": true,
-        "**/bower_components": true,
+        "**/bower_components/**": true,
         "**/*.code-search": true,
         "**/out/**": true,
-        "**/build/**": true
+        "**/build/**": true,
+        "**/__pycache__/**": true
     },
     "files.watcherExclude": {
         "**/.git/objects/**": true,
         "**/.git/subtree-cache/**": true,
         "**/.hg/store/**": true,
         "**/out/**": true,
-        "**/build/**": true
+        "**/build/**": true,
+        "**/__pycache__/**": true
     },
     "files.associations": {
         ".clang-tidy": "yaml",
